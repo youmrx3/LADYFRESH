@@ -1,0 +1,339 @@
+@import "tailwindcss";
+
+/*
+  Lady Fresh — jetons de design.
+
+  Deux étages. L'étage sombre (encre + or, repris de la plaque du logo) porte
+  la marque : hero, gammes, vidéos. L'étage clair (porcelaine, comme le
+  carrelage des visuels de campagne) porte le commerce : sélecteur, boutique,
+  commande. La bascule se fait exactement au choix Gros / Demi-gros.
+
+  L'accent n'est jamais fixe : il prend la couleur de la gamme regardée.
+*/
+
+@theme {
+  --color-encre: #0b0b0c;
+  --color-encre-haut: #141416;
+  --color-encre-bord: #26262a;
+
+  --color-or: #cba53c;
+  --color-or-clair: #e7ce84;
+
+  --color-porcelaine: #f1f3f2;
+  --color-porcelaine-haut: #ffffff;
+  --color-trait: #dfe3e2;
+
+  --color-graphite: #1a1d1e;
+  --color-graphite-doux: #6c7476;
+  --color-craie: #8b8f8e;
+
+  --font-display: var(--font-jost), "Century Gothic", ui-sans-serif, system-ui;
+  --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-plaque: 14px;
+
+  --ease-plaque: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  /* Retuned per gamme by the hero and the chromatic rail. */
+  --accent: #cba53c;
+  --shell: 1440px;
+  --gutter: clamp(1.25rem, 5vw, 4.5rem);
+}
+
+* {
+  min-width: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-porcelaine);
+  color: var(--color-graphite);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-or);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ------------------------------------------------------------------ shell */
+
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ------------------------------------------------------------- typography */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.display-xl {
+  font-size: clamp(2.75rem, 7.4vw, 5.75rem);
+}
+
+.display-l {
+  font-size: clamp(2.1rem, 4.6vw, 3.5rem);
+}
+
+.display-m {
+  font-size: clamp(1.5rem, 2.6vw, 2.125rem);
+  line-height: 1.06;
+}
+
+/* The wordmark's own voice: light, wide, uppercase. Used for eyebrows. */
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 0.6875rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  line-height: 1.62;
+  text-wrap: pretty;
+}
+
+/* ----------------------------------------------------------------- floors */
+
+.etage-sombre {
+  background: var(--color-encre);
+  color: var(--color-porcelaine);
+}
+
+.etage-clair {
+  background: var(--color-porcelaine);
+  color: var(--color-graphite);
+}
+
+/* Gold hairline, quoted from the logo plaque. */
+.filet {
+  border-color: color-mix(in srgb, var(--color-or) 34%, transparent);
+}
+
+.plaque {
+  border: 1px solid color-mix(in srgb, var(--color-or) 42%, transparent);
+  border-radius: var(--radius-plaque);
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  padding: 0.95rem 1.6rem;
+  border-radius: 4px;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.25s, color 0.25s, border-color 0.25s,
+    transform 0.25s var(--ease-plaque);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-or {
+  background: var(--color-or);
+  color: var(--color-encre);
+  border: 1px solid var(--color-or);
+}
+
+.btn-or:hover {
+  background: var(--color-or-clair);
+  border-color: var(--color-or-clair);
+}
+
+.btn-fantome {
+  background: transparent;
+  color: currentColor;
+  border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+}
+
+.btn-fantome:hover {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.btn-encre {
+  background: var(--color-graphite);
+  color: var(--color-porcelaine-haut);
+  border: 1px solid var(--color-graphite);
+}
+
+.btn-encre:hover {
+  background: #000;
+}
+
+.btn-whatsapp {
+  background: #25d366;
+  color: #06301a;
+  border: 1px solid #25d366;
+}
+
+.btn-whatsapp:hover {
+  background: #34e57a;
+}
+
+.btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------------- fields */
+
+.champ {
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  background: var(--color-porcelaine-haut);
+  border: 1px solid var(--color-trait);
+  border-radius: 4px;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.2s;
+}
+
+.champ:hover {
+  border-color: #c3c9c8;
+}
+
+.champ::placeholder {
+  color: #a3aaa9;
+}
+
+.etiquette {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-graphite-doux);
+}
+
+/* ------------------------------------------------------------- animations */
+
+@keyframes lever {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tracer {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes fondu {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lever {
+  animation: lever 0.85s var(--ease-plaque) both;
+}
+
+.tracer {
+  animation: tracer 1.1s var(--ease-plaque) both;
+}
+
+.fondu {
+  animation: fondu 0.9s ease both;
+}
+
+/* Revealed on scroll by IntersectionObserver in Reveal.tsx. */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.75s var(--ease-plaque), transform 0.75s var(--ease-plaque);
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ misc */
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.saut-ancre {
+  scroll-margin-top: 86px;
+}
