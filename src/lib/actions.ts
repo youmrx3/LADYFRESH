@@ -2,10 +2,18 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE, adminPassword, cookieOptions, isAdmin, issueToken } from "./auth";
+import {
+  ADMIN_COOKIE,
+  adminPassword,
+  comparaisonSure,
+  cookieOptions,
+  isAdmin,
+  issueToken,
+} from "./auth";
+import { limiteDepassee } from "./limite";
 import {
   GAMMES,
   HERO_SLIDES,
@@ -14,12 +22,23 @@ import {
   SETTINGS,
   VIDEOS,
 } from "./catalog";
-import { setOrderStatus } from "./data";
+import { ETIQUETTE_CATALOGUE, setOrderStatus } from "./data";
 import { supabaseAdmin } from "./supabase";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { OrderStatus } from "./types";
 
 export type Retour = { ok?: string; error?: string };
+
+/** Types acceptés au téléversement, et l'extension qu'on leur impose. */
+const EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+};
+const TYPES_AUTORISES = new Set(Object.keys(EXTENSIONS));
 
 /** Champ facultatif : vide devient null, pour que le repli français joue. */
 function texte(formData: FormData, name: string): string | null {
@@ -66,6 +85,8 @@ async function garde() {
 }
 
 function rafraichir() {
+  // L'étiquette vide le cache du catalogue, le chemin vide le rendu des pages.
+  revalidateTag(ETIQUETTE_CATALOGUE);
   revalidatePath("/", "layout");
 }
 
@@ -92,8 +113,29 @@ export async function seConnecter(
         "ADMIN_PASSWORD n'est pas défini. Ajoutez-le dans .env.local puis relancez le serveur.",
     };
   }
-  if (mot(formData, "password") !== attendu)
+
+  /*
+    Bridage global des échecs, pas par IP.
+
+    Deux contraintes se croisent : `headers()` est inutilisable dans une action
+    passée à useActionState, et le middleware ne peut pas intercepter les POST
+    d'actions sans leur faire perdre leur portée de requête. Sans IP, on
+    compte donc les échecs toutes origines confondues.
+
+    Le compromis est assumé : un attaquant peut saturer le compteur et gêner le
+    propriétaire pendant un quart d'heure, mais il ne peut plus parcourir un
+    dictionnaire. Les tentatives réussies ne comptent pas, donc un mot de passe
+    correct passe même pendant une salve.
+  */
+  if (!comparaisonSure(mot(formData, "password"), attendu)) {
+    limiteDepassee("login:echecs", 30, 15 * 60 * 1000);
     return { error: "Mot de passe incorrect." };
+  }
+
+  if (limiteDepassee("login:echecs", 30, 15 * 60 * 1000))
+    return {
+      error: "Trop de tentatives récentes. Réessayez dans quelques minutes.",
+    };
 
   const store = await cookies();
   store.set(ADMIN_COOKIE, issueToken(), cookieOptions);
@@ -471,22 +513,47 @@ export async function televerser(
     if (file.size > 60 * 1024 * 1024)
       return { error: "Fichier trop lourd (60 Mo maximum)." };
 
-    const propre = file.name
-      .replace(/[^a-zA-Z0-9._-]/g, "-")
+    /*
+      Liste blanche stricte. Le bucket est public : un SVG ou un HTML servi
+      depuis le même domaine exécuterait son script dans le contexte du site.
+      On refuse donc tout ce qui n'est pas une image matricielle ou une vidéo,
+      SVG compris.
+    */
+    if (!TYPES_AUTORISES.has(file.type))
+      return {
+        error:
+          "Format refusé. Images JPEG, PNG, WebP, AVIF ou vidéos MP4, WebM uniquement.",
+      };
+
+    const extension = EXTENSIONS[file.type];
+    const base = file.name
+      .replace(/\.[^.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "-")
       .replace(/-+/g, "-")
-      .toLowerCase();
-    const chemin = `${Date.now()}-${propre}`;
+      .replace(/^-|-$/g, "")
+      .toLowerCase()
+      .slice(0, 60);
+    // L'extension vient du type MIME validé, jamais du nom fourni.
+    const chemin = `${Date.now()}-${base || "fichier"}.${extension}`;
 
     const db = supabaseAdmin();
     if (db) {
-      const { error } = await db.storage
-        .from("media")
-        .upload(chemin, file, { contentType: file.type, upsert: false });
+      const { error } = await db.storage.from("media").upload(chemin, file, {
+        contentType: file.type,
+        upsert: false,
+        cacheControl: "31536000",
+      });
       if (error) throw new Error(error.message);
       const { data } = db.storage.from("media").getPublicUrl(chemin);
       return { ok: "Fichier téléversé.", url: data.publicUrl };
     }
 
+    // Repli local : impossible sur un disque en lecture seule, on le dit.
+    if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
+      return {
+        error:
+          "Le téléversement local ne fonctionne pas en production. Configurez Supabase Storage.",
+      };
     const dossier = join(process.cwd(), "public", "uploads");
     await mkdir(dossier, { recursive: true });
     await writeFile(join(dossier, chemin), Buffer.from(await file.arrayBuffer()));

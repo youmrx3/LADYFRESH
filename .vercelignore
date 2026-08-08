@@ -1,0 +1,14 @@
+# Les sources d'origine (75 Mo) ne servent qu'au travail local : ce qui part
+# en production vit dans public/. Sans ce fichier, chaque déploiement pousse
+# 75 Mo inutiles et allonge le build d'autant.
+Data/
+
+# Filet local de commandes : ni pertinent ni inscriptible en production.
+.data/
+
+# Téléversements locaux : en production ils vont dans Supabase Storage.
+public/uploads/*
+!public/uploads/.gitignore
+
+lady-fresh-website-spec.md
+.claude/

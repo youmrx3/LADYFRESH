@@ -2,6 +2,7 @@ import "server-only";
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { unstable_cache } from "next/cache";
 import {
   GAMMES,
   HERO_SLIDES,
@@ -24,16 +25,48 @@ import type {
 } from "./types";
 
 /**
- * Every getter falls back to the seed catalogue when Supabase is unreachable
- * or unconfigured, so the storefront never renders empty. Failures are logged,
- * not thrown — a broken database must not take the shop down.
+ * Chaque lecture retombe sur le catalogue de référence quand Supabase est
+ * injoignable ou absent : la boutique ne rend jamais une page vide. Les échecs
+ * sont journalisés, pas levés — une base en panne ne doit pas fermer le
+ * magasin.
  */
 function fallback<T>(label: string, seed: T, error?: unknown): T {
-  if (error) console.warn(`[data] ${label}: falling back to seed catalogue —`, error);
+  if (error) console.warn(`[data] ${label} : repli sur le catalogue —`, error);
   return seed;
 }
 
-export async function getGammes(): Promise<Gamme[]> {
+/**
+ * Le catalogue change quelques fois par mois, mais il était relu à chaque
+ * requête : six allers-retours Supabase pour afficher une page. On le met en
+ * cache sous une étiquette unique, que les actions d'admin invalident après
+ * chaque écriture — les changements restent donc immédiats.
+ */
+export const ETIQUETTE_CATALOGUE = "catalogue";
+
+/*
+  Le wrapper est construit à la première lecture, pas au chargement du module.
+  Créé au niveau module, `unstable_cache` s'installait dès l'import de ce
+  fichier — y compris depuis actions.ts — et l'action de connexion se
+  retrouvait alors hors portée de requête : `cookies()` levait
+  « called outside a request scope » et la page rendait une 500.
+*/
+const wrappers = new Map<string, (...args: never[]) => Promise<unknown>>();
+
+function enCache<T>(cle: string, lire: () => Promise<T>): () => Promise<T> {
+  return () => {
+    let wrapper = wrappers.get(cle);
+    if (!wrapper) {
+      wrapper = unstable_cache(lire, ["catalogue", cle], {
+        tags: [ETIQUETTE_CATALOGUE],
+        revalidate: 300,
+      }) as (...args: never[]) => Promise<unknown>;
+      wrappers.set(cle, wrapper);
+    }
+    return wrapper() as Promise<T>;
+  };
+}
+
+async function getGammesBrut(): Promise<Gamme[]> {
   const db = supabaseRead();
   if (!db) return GAMMES;
   const { data, error } = await db
@@ -45,7 +78,7 @@ export async function getGammes(): Promise<Gamme[]> {
   return data as Gamme[];
 }
 
-export async function getProductTypes(): Promise<ProductType[]> {
+async function getProductTypesBrut(): Promise<ProductType[]> {
   const db = supabaseRead();
   if (!db) return PRODUCT_TYPES;
   const { data, error } = await db
@@ -56,7 +89,7 @@ export async function getProductTypes(): Promise<ProductType[]> {
   return data as ProductType[];
 }
 
-export async function getProducts(): Promise<Product[]> {
+async function getProductsBrut(): Promise<Product[]> {
   const db = supabaseRead();
   if (!db) return PRODUCTS;
   const { data, error } = await db
@@ -76,7 +109,7 @@ export async function getProducts(): Promise<Product[]> {
     .filter((p) => p.variants.length > 0);
 }
 
-export async function getSettings(): Promise<SiteSettings> {
+async function getSettingsBrut(): Promise<SiteSettings> {
   const db = supabaseRead();
   if (!db) return SETTINGS;
   const { data, error } = await db
@@ -89,7 +122,7 @@ export async function getSettings(): Promise<SiteSettings> {
   return { ...SETTINGS, ...stripEmpty(data as Record<string, unknown>) } as SiteSettings;
 }
 
-export async function getHeroSlides(): Promise<HeroSlide[]> {
+async function getHeroSlidesBrut(): Promise<HeroSlide[]> {
   const db = supabaseRead();
   if (!db) return HERO_SLIDES;
   const { data, error } = await db.from("hero_slides").select("*").order("sort_order");
@@ -97,7 +130,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
   return data as HeroSlide[];
 }
 
-export async function getVideos(): Promise<Video[]> {
+async function getVideosBrut(): Promise<Video[]> {
   const db = supabaseRead();
   if (!db) return VIDEOS;
   const { data, error } = await db.from("videos").select("*").order("sort_order");
@@ -119,11 +152,15 @@ function stripEmpty(row: Record<string, unknown>) {
  * exists. Next.js bundles the API route and the pages separately, so an
  * in-memory array would not be shared between them; the file is.
  *
- * This is a development fallback. It needs a writable filesystem and a single
- * instance, neither of which holds on serverless. Configure Supabase before
- * taking real orders.
+ * C'est un filet de développement. Il exige un disque inscriptible et une
+ * seule instance : sur Vercel, ni l'un ni l'autre. Le repli échoue donc
+ * bruyamment plutôt que de rendre une référence de commande pour une commande
+ * qui n'existe nulle part.
  */
 const LOCAL_ORDERS = join(process.cwd(), ".data", "orders.json");
+
+/** Vercel et consorts exposent un disque en lecture seule hors /tmp. */
+const SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
 function readLocalOrders(): Order[] {
   try {
@@ -151,8 +188,15 @@ export function ordersArePersisted() {
 export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
   const db = supabaseAdmin();
   if (!db) {
+    // Rendre une référence pour une commande qu'on n'a pas su écrire, c'est
+    // perdre un client sans le savoir. On échoue, l'API renvoie une erreur.
+    if (SERVERLESS)
+      throw new Error(
+        "Aucune base configurée et disque en lecture seule : la commande ne peut pas être enregistrée.",
+      );
     const local = { ...order, id: order.ref };
-    writeLocalOrders([local, ...readLocalOrders()].slice(0, 500));
+    if (!writeLocalOrders([local, ...readLocalOrders()].slice(0, 500)))
+      throw new Error("La commande n'a pas pu être écrite sur le disque local.");
     return local;
   }
 
@@ -221,3 +265,15 @@ export async function setOrderStatus(id: string, status: OrderStatus) {
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
+
+export const getGammes = enCache("getGammes", getGammesBrut);
+
+export const getProductTypes = enCache("getProductTypes", getProductTypesBrut);
+
+export const getProducts = enCache("getProducts", getProductsBrut);
+
+export const getSettings = enCache("getSettings", getSettingsBrut);
+
+export const getHeroSlides = enCache("getHeroSlides", getHeroSlidesBrut);
+
+export const getVideos = enCache("getVideos", getVideosBrut);

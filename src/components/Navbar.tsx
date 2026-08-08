@@ -173,7 +173,7 @@ function Logo() {
   return (
     <>
       <Image
-        src="/brand/ladyfresh-wordmark-black.png"
+        src="/brand/ladyfresh-wordmark-black.webp"
         alt="Lady Fresh"
         width={520}
         height={110}
@@ -181,7 +181,7 @@ function Logo() {
         className="h-[18px] w-auto sm:h-[21px] dark-hidden"
       />
       <Image
-        src="/brand/ladyfresh-wordmark-white.png"
+        src="/brand/ladyfresh-wordmark-white.webp"
         alt="Lady Fresh"
         width={520}
         height={110}

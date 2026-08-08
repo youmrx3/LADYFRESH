@@ -149,9 +149,12 @@ create table if not exists site_settings (
 insert into site_settings (id) values ('settings') on conflict do nothing;
 
 -- ------------------------------------------------------------------------ RLS
--- Le catalogue est public en lecture. Les commandes sont insérables par tous
--- (le client passe commande sans compte) mais jamais lisibles côté public :
--- l'admin panel les lit via la service-role key, côté serveur uniquement.
+-- Le catalogue est public en lecture. Les commandes, elles, ne sont NI
+-- lisibles NI écrivables avec la clé anon : elles passent toutes par
+-- /api/orders, qui recalcule les prix côté serveur puis écrit avec la
+-- service-role key. Ouvrir l'insertion au public annulerait ce contrôle —
+-- n'importe qui pourrait poster une commande à 0 DA directement sur l'API
+-- REST de Supabase, la clé anon étant publique par construction.
 
 alter table gammes           enable row level security;
 alter table product_types    enable row level security;
@@ -173,14 +176,15 @@ begin
   end loop;
 end $$;
 
+-- Aucune policy sur orders ni order_items : RLS active sans policy = tout est
+-- refusé à la clé anon. Seule la service-role key, qui contourne RLS et ne
+-- quitte jamais le serveur, lit et écrit ces tables.
 drop policy if exists "public insert orders" on orders;
-create policy "public insert orders" on orders for insert with check (true);
-
 drop policy if exists "public insert order_items" on order_items;
-create policy "public insert order_items" on order_items for insert with check (true);
 
--- Aucune policy de select/update/delete sur orders : seule la service-role key
--- (qui contourne RLS) peut les lire et les modifier depuis l'admin panel.
+-- Le bucket media est public en lecture seule. L'écriture passe par la
+-- service-role key depuis l'action de téléversement.
+drop policy if exists "media public write" on storage.objects;
 
 -- -------------------------------------------------------------- stockage
 -- Bucket public pour les images de gammes, les visuels du hero et les vidéos
@@ -193,6 +197,7 @@ on conflict (id) do nothing;
 drop policy if exists "media public read" on storage.objects;
 create policy "media public read" on storage.objects
   for select using (bucket_id = 'media');
+-- Pas de policy d'insert/update/delete : seul le serveur téléverse.
 
 -- ------------------------------------------------------------- trilingue
 -- Le français reste la colonne de référence ; `_ar` et `_en` sont facultatives

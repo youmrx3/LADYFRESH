@@ -5,7 +5,7 @@ import { BasculeLangue, BasculeTheme } from "@/components/Bascules";
 import { adminPassword, isAdmin } from "@/lib/auth";
 import { getT } from "@/i18n/server";
 
-export const metadata = { title: "Connexion" };
+export const metadata = { title: "Connexion", robots: { index: false, follow: false } };
 
 export default async function Connexion() {
   if (await isAdmin()) redirect("/admin");
@@ -17,14 +17,14 @@ export default async function Connexion() {
       <div className="w-full max-w-[24rem]">
         <div className="flex items-center justify-between gap-4">
           <Image
-            src="/brand/ladyfresh-wordmark-black.png"
+            src="/brand/ladyfresh-wordmark-black.webp"
             alt="Lady Fresh"
             width={520}
             height={110}
             className="dark-hidden h-[20px] w-auto"
           />
           <Image
-            src="/brand/ladyfresh-wordmark-white.png"
+            src="/brand/ladyfresh-wordmark-white.webp"
             alt="Lady Fresh"
             width={520}
             height={110}

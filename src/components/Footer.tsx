@@ -29,14 +29,14 @@ export function Footer({ settings }: { settings: SiteSettings }) {
         <div className="grid gap-10 border-b border-encre-bord pb-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <Image
-              src="/brand/ladyfresh-wordmark-black.png"
+              src="/brand/ladyfresh-wordmark-black.webp"
               alt="Lady Fresh"
               width={520}
               height={110}
               className="dark-hidden h-[22px] w-auto"
             />
             <Image
-              src="/brand/ladyfresh-wordmark-white.png"
+              src="/brand/ladyfresh-wordmark-white.webp"
               alt="Lady Fresh"
               width={520}
               height={110}

@@ -12,7 +12,7 @@ import { isAdmin } from "@/lib/auth";
 import { supabaseAdminConfigured } from "@/lib/supabase";
 import { getT } from "@/i18n/server";
 
-export const metadata = { title: "Gestion" };
+export const metadata = { title: "Gestion", robots: { index: false, follow: false } };
 
 export default async function LayoutAdmin({
   children,
@@ -35,14 +35,14 @@ export default async function LayoutAdmin({
   const marque = (
     <Link href="/" className="block shrink-0">
       <Image
-        src="/brand/ladyfresh-wordmark-black.png"
+        src="/brand/ladyfresh-wordmark-black.webp"
         alt="Lady Fresh"
         width={520}
         height={110}
         className="dark-hidden h-[16px] w-auto"
       />
       <Image
-        src="/brand/ladyfresh-wordmark-white.png"
+        src="/brand/ladyfresh-wordmark-white.webp"
         alt="Lady Fresh"
         width={520}
         height={110}

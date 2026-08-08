@@ -205,6 +205,7 @@ export const en: Dictionary = {
   api: {
     /* Le francais insere une espace fine avant le deux-points, pas les autres. */
     sep: ": ",
+    tropDeCommandes: "Too many orders from this connection. Try again later.",
     illisible: "Could not read the request.",
     vide: "Your order is empty.",
     aucuneRef: "No valid product in the order.",

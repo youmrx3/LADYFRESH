@@ -25,12 +25,18 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-/* Le kufi géométrique tient la même voix que Jost une fois passé en arabe. */
+/*
+  Le kufi géométrique tient la même voix que Jost une fois passé en arabe.
+  `preload: false` : sans lui, les visiteurs francophones et anglophones
+  téléchargeaient une fonte arabe qu'aucun glyphe de leur page n'utilise. Le
+  navigateur ne va la chercher que s'il rencontre de l'arabe à rendre.
+*/
 const kufi = Noto_Kufi_Arabic({
   subsets: ["arabic"],
   weight: ["300", "400", "500"],
   variable: "--font-kufi",
   display: "swap",
+  preload: false,
 });
 
 export async function generateMetadata(): Promise<Metadata> {

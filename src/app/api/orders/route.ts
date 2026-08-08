@@ -19,6 +19,20 @@ import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { nomType } from "@/i18n/contenu";
 import type { OrderItem, PurchaseType } from "@/lib/types";
 
+/**
+ * Bornes d'entrée. Sans elles, une requête forgée peut demander un milliard de
+ * pièces (débordement du total, ligne absurde en base) ou pousser des chaînes
+ * de plusieurs mégaoctets dans les colonnes texte.
+ */
+const MAX_LIGNES = 100;
+const MAX_QUANTITE = 100_000;
+const MAX_TEXTE = 500;
+const MAX_CORPS = 64 * 1024;
+
+function borne(valeur: string | undefined, max = MAX_TEXTE) {
+  return (valeur ?? "").trim().slice(0, max);
+}
+
 type Requete = {
   channel: "whatsapp" | "formulaire";
   purchase: PurchaseType;
@@ -36,7 +50,13 @@ type Requete = {
 export async function POST(request: Request) {
   let body: Requete;
   try {
-    body = await request.json();
+    const brut = await request.text();
+    if (brut.length > MAX_CORPS)
+      return NextResponse.json(
+        { error: getDictionary(DEFAULT_LOCALE).api.illisible },
+        { status: 413 },
+      );
+    body = JSON.parse(brut);
   } catch {
     const t = getDictionary(DEFAULT_LOCALE);
     return NextResponse.json({ error: t.api.illisible }, { status: 400 });
@@ -51,6 +71,9 @@ export async function POST(request: Request) {
 
   if (!Array.isArray(body.items) || body.items.length === 0) {
     return NextResponse.json({ error: t.api.vide }, { status: 400 });
+  }
+  if (body.items.length > MAX_LIGNES) {
+    return NextResponse.json({ error: t.api.aucuneRef }, { status: 400 });
   }
 
   const [products, gammes, types, settings] = await Promise.all([
@@ -72,7 +95,8 @@ export async function POST(request: Request) {
   for (const ligne of body.items) {
     const entree = index.get(ligne.variantId);
     const quantity = Math.floor(Number(ligne.quantity));
-    if (!entree || !Number.isFinite(quantity) || quantity <= 0) continue;
+    if (!entree || !Number.isFinite(quantity)) continue;
+    if (quantity <= 0 || quantity > MAX_QUANTITE) continue;
     const { product, variant } = entree;
     const gamme = gammes.find((g) => g.id === product.gamme_id);
     items.push({
@@ -132,11 +156,11 @@ export async function POST(request: Request) {
 
   const order = {
     ref,
-    customer_name: (customer.name ?? "").trim(),
-    phone: (customer.phone ?? "").trim(),
-    wilaya: (customer.wilaya ?? "").trim(),
-    address: (customer.address ?? "").trim(),
-    note: (customer.note ?? "").trim(),
+    customer_name: borne(customer.name, 120),
+    phone: borne(customer.phone, 40),
+    wilaya: borne(customer.wilaya, 80),
+    address: borne(customer.address, 300),
+    note: borne(customer.note),
     channel,
     purchase_type: purchase,
     total,

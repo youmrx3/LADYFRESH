@@ -209,6 +209,7 @@ export const fr = {
   api: {
     /* Le francais insere une espace fine avant le deux-points, pas les autres. */
     sep: " : ",
+    tropDeCommandes: "Trop de commandes envoyées depuis cette connexion. Réessayez plus tard.",
     illisible: "Requête illisible.",
     vide: "Votre commande est vide.",
     aucuneRef: "Aucune référence valide dans la commande.",

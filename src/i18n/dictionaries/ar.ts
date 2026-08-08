@@ -209,6 +209,7 @@ export const ar: Dictionary = {
   api: {
     /* Le francais insere une espace fine avant le deux-points, pas les autres. */
     sep: ": ",
+    tropDeCommandes: "عدد كبير من الطلبات من هذا الاتصال. أعيدي المحاولة لاحقًا.",
     illisible: "تعذّرت قراءة الطلب.",
     vide: "طلبك فارغ.",
     aucuneRef: "لا يوجد منتج صالح في الطلب.",
