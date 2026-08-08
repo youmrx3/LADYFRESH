@@ -1,23 +1,21 @@
 export type PurchaseType = "gros" | "demi_gros";
 
-export type ProductType =
-  | "brume"
-  | "gel_intime"
-  | "deodorant_intime"
-  | "deodorant_femme";
-
-export const PRODUCT_TYPES: { value: ProductType; label: string }[] = [
-  { value: "brume", label: "Brume" },
-  { value: "gel_intime", label: "Gel intime" },
-  { value: "deodorant_intime", label: "Déodorant intime" },
-  { value: "deodorant_femme", label: "Déodorant femme" },
-];
-
-export const PRODUCT_TYPE_LABEL: Record<ProductType, string> = {
-  brume: "Brume parfumée",
-  gel_intime: "Gel lavant intime",
-  deodorant_intime: "Déodorant intime",
-  deodorant_femme: "Déodorant femme",
+/**
+ * Les types de produits sont des données, pas une énumération figée : la
+ * marque doit pouvoir en ajouter un sans toucher au code.
+ */
+export type ProductType = {
+  id: string;
+  slug: string;
+  name: string;
+  name_ar?: string | null;
+  name_en?: string | null;
+  /** Version courte, pour les filtres de la boutique. */
+  short_name: string;
+  short_name_ar?: string | null;
+  short_name_en?: string | null;
+  sort_order: number;
+  active: boolean;
 };
 
 export type Gamme = {
@@ -45,7 +43,7 @@ export type Variant = {
   price_demi_gros: number;
   price_gros: number;
   units_per_carton: number;
-  /** Each size is photographed separately, so the image lives on the variant. */
+  /** Chaque taille est photographiée à part, la photo vit donc sur le format. */
   image: string;
   active: boolean;
 };
@@ -54,7 +52,7 @@ export type Product = {
   id: string;
   slug: string;
   name: string;
-  type: ProductType;
+  type_id: string;
   gamme_id: string;
   color_name: string;
   color_hex: string;
@@ -114,13 +112,6 @@ export type SiteSettings = {
 
 export type OrderStatus = "nouvelle" | "en_cours" | "traitee" | "livree";
 
-export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
-  nouvelle: "Nouvelle",
-  en_cours: "En cours",
-  traitee: "Traitée",
-  livree: "Livrée",
-};
-
 export type OrderItem = {
   id: string;
   order_id: string;
@@ -148,11 +139,4 @@ export type Order = {
   status: OrderStatus;
   created_at: string;
   items: OrderItem[];
-};
-
-/** A line in the client-side order docket, before it becomes an Order. */
-export type CartLine = {
-  variantId: string;
-  productId: string;
-  quantity: number;
 };

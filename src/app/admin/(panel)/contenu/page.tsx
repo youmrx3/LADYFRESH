@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   Champ,
   Envoyer,
@@ -6,7 +5,8 @@ import {
   Liste,
   Zone,
 } from "@/components/admin/Champs";
-import { Televersement } from "@/components/admin/Televersement";
+import { ChampImage } from "@/components/admin/ChampImage";
+import { OngletsLangue } from "@/components/admin/OngletsLangue";
 import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
 import {
   enregistrerReglages,
@@ -16,14 +16,24 @@ import {
   supprimerVideo,
 } from "@/lib/actions";
 import { getGammes, getHeroSlides, getSettings, getVideos } from "@/lib/data";
-import { supabaseAdminConfigured } from "@/lib/supabase";
 import { fill } from "@/i18n";
+import { champ } from "@/i18n/contenu";
+import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function Contenu() {
+export default async function Contenu({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string }>;
+}) {
   const { t } = await getT();
+  const { edit } = await searchParams;
+  const langue: Locale = isLocale(edit) ? edit : DEFAULT_LOCALE;
+  const fr = langue === "fr";
+  const dir = langue === "ar" ? "rtl" : "ltr";
+
   const [settings, slides, videos, gammes] = await Promise.all([
     getSettings(),
     getHeroSlides(),
@@ -33,128 +43,116 @@ export default async function Contenu() {
   const a = t.admin;
   const optionsGammes = gammes.map((g) => ({ value: g.id, label: g.name }));
 
+  const labelsImage = {
+    choisirFichier: a.commun.choisirFichier,
+    televersement: a.commun.televersement,
+    retirer: a.commun.retirerImage,
+    aucune: a.commun.aucuneImage,
+    ouCollerUrl: a.commun.ouCollerUrl,
+  };
+
   return (
     <div className="max-w-[68rem]">
       <EnTetePage eyebrow={a.contenu.reglages} titre={a.contenu.titre} />
 
+      <div className="mb-6">
+        <OngletsLangue
+          actif={langue}
+          base="/admin/contenu"
+          label={a.commun.langueEditee}
+        />
+        {!fr && (
+          <p className="mt-2 text-[12.5px] text-graphite-doux">
+            {a.commun.videFrRepris}
+          </p>
+        )}
+      </div>
+
       <div className="space-y-10">
-        {/* ---------------------------------------------------- réglages */}
+        {/* ------------------------------------------- commande et contact */}
         <section>
           <h2 className="display display-m">{a.contenu.commandeContact}</h2>
           <FormAction
             action={enregistrerReglages}
             className="mt-3 rounded-[10px] border border-trait p-4 sm:p-5"
           >
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Champ
-                label={a.contenu.numeroWhatsapp}
-                name="whatsapp_number"
-                defaultValue={settings.whatsapp_number}
-                placeholder="213555123456"
-                required
-              />
-              <Champ
-                label={a.contenu.minGros}
-                name="min_gros_cartons"
-                type="number"
-                min={1}
-                defaultValue={settings.min_gros_cartons}
-              />
-              <Champ
-                label={a.contenu.minDemi}
-                name="min_demi_gros_pieces"
-                type="number"
-                min={1}
-                defaultValue={settings.min_demi_gros_pieces}
-              />
-              <Champ
-                label={a.contenu.telephoneAffiche}
-                name="contact_phone"
-                defaultValue={settings.contact_phone}
-              />
-              <Champ
-                label={a.contenu.email}
-                name="contact_email"
-                type="email"
-                defaultValue={settings.contact_email}
-              />
-              <Champ
-                label={a.contenu.adresse}
-                name="contact_address"
-                defaultValue={settings.contact_address}
-              />
-              <Champ label="Instagram" name="instagram_url" defaultValue={settings.instagram_url} />
-              <Champ label="Facebook" name="facebook_url" defaultValue={settings.facebook_url} />
-              <Champ label="TikTok" name="tiktok_url" defaultValue={settings.tiktok_url} />
-            </div>
+            <input type="hidden" name="edit_lang" value={langue} />
 
-            <p className="eyebrow mt-6 text-graphite-doux">
-              {a.contenu.textesHero}
-            </p>
-            <div className="mt-2 grid gap-3">
+            {fr && (
+              <>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Champ
+                    label={a.contenu.numeroWhatsapp}
+                    name="whatsapp_number"
+                    dir="ltr"
+                    defaultValue={settings.whatsapp_number}
+                    placeholder="213555123456"
+                    required
+                  />
+                  <Champ
+                    label={a.contenu.minGros}
+                    name="min_gros_cartons"
+                    type="number"
+                    min={1}
+                    defaultValue={settings.min_gros_cartons}
+                  />
+                  <Champ
+                    label={a.contenu.minDemi}
+                    name="min_demi_gros_pieces"
+                    type="number"
+                    min={1}
+                    defaultValue={settings.min_demi_gros_pieces}
+                  />
+                  <Champ
+                    label={a.contenu.telephoneAffiche}
+                    name="contact_phone"
+                    dir="ltr"
+                    defaultValue={settings.contact_phone}
+                  />
+                  <Champ
+                    label={a.contenu.email}
+                    name="contact_email"
+                    type="email"
+                    dir="ltr"
+                    defaultValue={settings.contact_email}
+                  />
+                  <Champ
+                    label={a.contenu.adresse}
+                    name="contact_address"
+                    defaultValue={settings.contact_address}
+                  />
+                  <Champ label="Instagram" name="instagram_url" dir="ltr" defaultValue={settings.instagram_url} />
+                  <Champ label="Facebook" name="facebook_url" dir="ltr" defaultValue={settings.facebook_url} />
+                  <Champ label="TikTok" name="tiktok_url" dir="ltr" defaultValue={settings.tiktok_url} />
+                </div>
+                <p className="eyebrow mt-6 text-graphite-doux">
+                  {a.contenu.textesHero}
+                </p>
+              </>
+            )}
+
+            <div className={`grid gap-3 ${fr ? "mt-2" : ""}`}>
               <Champ
                 label={a.contenu.surtitre}
                 name="hero_eyebrow"
-                defaultValue={settings.hero_eyebrow}
+                dir={dir}
+                defaultValue={champ(settings, "hero_eyebrow", langue)}
               />
               <Zone
                 label={a.contenu.titreHero}
                 name="hero_title"
-                defaultValue={settings.hero_title}
+                dir={dir}
+                defaultValue={champ(settings, "hero_title", langue)}
                 rows={2}
               />
               <Zone
                 label={a.contenu.accroche}
                 name="hero_lede"
-                defaultValue={settings.hero_lede}
+                dir={dir}
+                defaultValue={champ(settings, "hero_lede", langue)}
                 rows={2}
               />
             </div>
-
-            <details className="mt-4 rounded border border-dashed border-trait p-3">
-              <summary className="eyebrow cursor-pointer text-graphite-doux">
-                {a.commun.traductions}
-              </summary>
-              <p className="mt-2 text-[12.5px] text-graphite-doux">
-                {a.commun.videFrRepris}
-              </p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <Champ
-                  label={`${a.contenu.surtitre} — ${a.commun.arabe}`}
-                  name="hero_eyebrow_ar"
-                  defaultValue={settings.hero_eyebrow_ar}
-                />
-                <Champ
-                  label={`${a.contenu.surtitre} — ${a.commun.anglais}`}
-                  name="hero_eyebrow_en"
-                  defaultValue={settings.hero_eyebrow_en}
-                />
-                <Zone
-                  label={`${a.commun.titreChamp} — ${a.commun.arabe}`}
-                  name="hero_title_ar"
-                  defaultValue={settings.hero_title_ar}
-                  rows={2}
-                />
-                <Zone
-                  label={`${a.commun.titreChamp} — ${a.commun.anglais}`}
-                  name="hero_title_en"
-                  defaultValue={settings.hero_title_en}
-                  rows={2}
-                />
-                <Zone
-                  label={`${a.contenu.accroche} — ${a.commun.arabe}`}
-                  name="hero_lede_ar"
-                  defaultValue={settings.hero_lede_ar}
-                  rows={2}
-                />
-                <Zone
-                  label={`${a.contenu.accroche} — ${a.commun.anglais}`}
-                  name="hero_lede_en"
-                  defaultValue={settings.hero_lede_en}
-                  rows={2}
-                />
-              </div>
-            </details>
 
             <div className="mt-4">
               <Envoyer variante="or">{a.contenu.enregistrerReglages}</Envoyer>
@@ -162,27 +160,7 @@ export default async function Contenu() {
           </FormAction>
         </section>
 
-        {/* --------------------------------------------------- fichiers */}
-        <section>
-          <h2 className="display display-m">{a.contenu.fichiers}</h2>
-          <p className="mt-1 text-[13.5px] text-graphite-doux">
-            {a.contenu.fichiersAide}
-          </p>
-          <div className="mt-3">
-            <Televersement
-              actif={supabaseAdminConfigured}
-              labels={{
-                champ: a.contenu.televerser,
-                bouton: a.contenu.televersement,
-                envoi: a.contenu.envoi,
-                envoye: a.contenu.envoye,
-                inactif: a.contenu.televersementInactif,
-              }}
-            />
-          </div>
-        </section>
-
-        {/* -------------------------------------------------- slideshow */}
+        {/* ------------------------------------------------------ slideshow */}
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -191,36 +169,48 @@ export default async function Contenu() {
                 {a.contenu.slideshowAide}
               </p>
             </div>
-            <Volet
-              label={a.contenu.ajouterVisuel}
-              labelOuvert={a.commun.annuler}
-              ton="principal"
-            >
-              <FormAction
-                action={enregistrerSlide}
-                className="rounded-[10px] border border-dashed border-trait p-4"
+            {fr && (
+              <Volet
+                label={a.contenu.ajouterVisuel}
+                labelOuvert={a.commun.annuler}
+                ton="principal"
               >
-                <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <Champ label={a.commun.image} name="image" required />
-                  <Champ label={a.contenu.surtitre} name="eyebrow" />
-                  <Champ label={a.contenu.legende} name="caption" />
-                  <Liste
-                    label={a.produits.gamme}
-                    name="gamme_id"
-                    options={optionsGammes}
-                  />
-                  <Champ
-                    label={a.commun.ordre}
-                    name="sort_order"
-                    type="number"
-                    defaultValue={slides.length + 1}
-                  />
-                  <div>
+                <FormAction
+                  action={enregistrerSlide}
+                  className="rounded-[10px] border border-dashed border-trait p-4"
+                >
+                  <input type="hidden" name="edit_lang" value="fr" />
+                  <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <Champ label={a.contenu.surtitre} name="eyebrow" />
+                    <Champ label={a.contenu.legende} name="caption" />
+                    <Liste
+                      label={a.produits.gamme}
+                      name="gamme_id"
+                      options={optionsGammes}
+                      placeholder={a.produits.gamme}
+                    />
+                    <Champ
+                      label={a.commun.ordre}
+                      name="sort_order"
+                      type="number"
+                      defaultValue={slides.length + 1}
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <ChampImage
+                      label={a.commun.image}
+                      name="image"
+                      labels={labelsImage}
+                      ratio="3 / 4"
+                      required
+                    />
+                  </div>
+                  <div className="mt-4">
                     <Envoyer variante="or">{a.commun.ajouter}</Envoyer>
                   </div>
-                </div>
-              </FormAction>
-            </Volet>
+                </FormAction>
+              </Volet>
+            )}
           </div>
 
           <ul className="mt-4 space-y-2.5">
@@ -232,88 +222,74 @@ export default async function Contenu() {
                 visuel={
                   <span className="relative block h-14 w-11 shrink-0 overflow-hidden rounded bg-comptoir">
                     {slide.image && (
-                      <Image
+                      /* URL arbitraire : pas de next/image ici. */
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
                         src={slide.image}
                         alt=""
-                        fill
-                        sizes="44px"
-                        className="object-cover"
+                        className="absolute inset-0 h-full w-full object-cover"
                       />
                     )}
                   </span>
                 }
-                titre={slide.caption || slide.image}
-                meta={slide.eyebrow}
+                titre={champ(slide, "caption", langue) || slide.image}
+                meta={champ(slide, "eyebrow", langue)}
                 actions={
-                  <FormAction action={supprimerSlide}>
-                    <input type="hidden" name="id" value={slide.id} />
-                    <Envoyer variante="danger" confirmer={a.contenu.confirmSupprVisuel}>
-                      {a.commun.supprimer}
-                    </Envoyer>
-                  </FormAction>
+                  fr ? (
+                    <FormAction action={supprimerSlide}>
+                      <input type="hidden" name="id" value={slide.id} />
+                      <Envoyer variante="danger" confirmer={a.contenu.confirmSupprVisuel}>
+                        {a.commun.supprimer}
+                      </Envoyer>
+                    </FormAction>
+                  ) : undefined
                 }
               >
                 <FormAction action={enregistrerSlide}>
                   <input type="hidden" name="id" value={slide.id} />
+                  <input type="hidden" name="edit_lang" value={langue} />
                   <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    <Champ
-                      label={a.commun.image}
-                      name="image"
-                      defaultValue={slide.image}
-                      required
-                    />
                     <Champ
                       label={a.contenu.surtitre}
                       name="eyebrow"
-                      defaultValue={slide.eyebrow}
+                      dir={dir}
+                      defaultValue={champ(slide, "eyebrow", langue)}
                     />
                     <Champ
                       label={a.contenu.legende}
                       name="caption"
-                      defaultValue={slide.caption}
+                      dir={dir}
+                      defaultValue={champ(slide, "caption", langue)}
                     />
-                    <Liste
-                      label={a.produits.gamme}
-                      name="gamme_id"
-                      options={optionsGammes}
-                      defaultValue={slide.gamme_id}
-                    />
-                    <Champ
-                      label={a.commun.ordre}
-                      name="sort_order"
-                      type="number"
-                      defaultValue={slide.sort_order}
-                    />
+                    {fr && (
+                      <>
+                        <Liste
+                          label={a.produits.gamme}
+                          name="gamme_id"
+                          options={optionsGammes}
+                          defaultValue={slide.gamme_id}
+                        />
+                        <Champ
+                          label={a.commun.ordre}
+                          name="sort_order"
+                          type="number"
+                          defaultValue={slide.sort_order}
+                        />
+                      </>
+                    )}
                   </div>
-
-                  <details className="mt-3 rounded border border-dashed border-trait p-3">
-                    <summary className="eyebrow cursor-pointer text-graphite-doux">
-                      {a.commun.traductions}
-                    </summary>
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <Champ
-                        label={`${a.contenu.surtitre} — ${a.commun.arabe}`}
-                        name="eyebrow_ar"
-                        defaultValue={slide.eyebrow_ar}
-                      />
-                      <Champ
-                        label={`${a.contenu.surtitre} — ${a.commun.anglais}`}
-                        name="eyebrow_en"
-                        defaultValue={slide.eyebrow_en}
-                      />
-                      <Champ
-                        label={`${a.contenu.legende} — ${a.commun.arabe}`}
-                        name="caption_ar"
-                        defaultValue={slide.caption_ar}
-                      />
-                      <Champ
-                        label={`${a.contenu.legende} — ${a.commun.anglais}`}
-                        name="caption_en"
-                        defaultValue={slide.caption_en}
+                  {fr && (
+                    <div className="mt-3">
+                      <ChampImage
+                        label={a.commun.image}
+                        name="image"
+                        defaultValue={slide.image}
+                        labels={labelsImage}
+                        ratio="3 / 4"
+                        required
                       />
                     </div>
-                  </details>
-
+                  )}
                   <div className="mt-4">
                     <Envoyer>{a.commun.enregistrer}</Envoyer>
                   </div>
@@ -323,7 +299,7 @@ export default async function Contenu() {
           </ul>
         </section>
 
-        {/* ----------------------------------------------------- vidéos */}
+        {/* --------------------------------------------------------- vidéos */}
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -337,37 +313,49 @@ export default async function Contenu() {
                 )}
               </p>
             </div>
-            <Volet
-              label={a.contenu.ajouterVideo}
-              labelOuvert={a.commun.annuler}
-              ton="principal"
-            >
-              <FormAction
-                action={enregistrerVideo}
-                className="rounded-[10px] border border-dashed border-trait p-4"
+            {fr && (
+              <Volet
+                label={a.contenu.ajouterVideo}
+                labelOuvert={a.commun.annuler}
+                ton="principal"
               >
-                <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <Champ label={a.commun.titreChamp} name="title" />
-                  <Champ label={a.contenu.sousTitre} name="note" />
-                  <Champ
-                    label={a.contenu.fichierVideo}
-                    name="src"
-                    placeholder="/videos/…"
-                    required
-                  />
-                  <Champ label={a.contenu.imageAttente} name="poster" />
-                  <Champ
-                    label={a.commun.ordre}
-                    name="sort_order"
-                    type="number"
-                    defaultValue={videos.length + 1}
-                  />
-                  <div>
+                <FormAction
+                  action={enregistrerVideo}
+                  className="rounded-[10px] border border-dashed border-trait p-4"
+                >
+                  <input type="hidden" name="edit_lang" value="fr" />
+                  <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <Champ label={a.commun.titreChamp} name="title" />
+                    <Champ label={a.contenu.sousTitre} name="note" />
+                    <Champ
+                      label={a.commun.ordre}
+                      name="sort_order"
+                      type="number"
+                      defaultValue={videos.length + 1}
+                    />
+                  </div>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <ChampImage
+                      label={a.contenu.fichierVideo}
+                      name="src"
+                      accept="video/*"
+                      labels={labelsImage}
+                      ratio="16 / 9"
+                      required
+                    />
+                    <ChampImage
+                      label={a.contenu.imageAttente}
+                      name="poster"
+                      labels={labelsImage}
+                      ratio="16 / 9"
+                    />
+                  </div>
+                  <div className="mt-4">
                     <Envoyer variante="or">{a.commun.ajouter}</Envoyer>
                   </div>
-                </div>
-              </FormAction>
-            </Volet>
+                </FormAction>
+              </Volet>
+            )}
           </div>
 
           <ul className="mt-4 space-y-2.5">
@@ -376,77 +364,64 @@ export default async function Contenu() {
                 key={video.id}
                 labelModifier={a.commun.modifier}
                 labelFermer={a.commun.fermer}
-                titre={video.title || video.src}
-                meta={video.note}
+                titre={champ(video, "title", langue) || video.src}
+                meta={champ(video, "note", langue)}
                 actions={
-                  <FormAction action={supprimerVideo}>
-                    <input type="hidden" name="id" value={video.id} />
-                    <Envoyer variante="danger" confirmer={a.contenu.confirmSupprVideo}>
-                      {a.commun.supprimer}
-                    </Envoyer>
-                  </FormAction>
+                  fr ? (
+                    <FormAction action={supprimerVideo}>
+                      <input type="hidden" name="id" value={video.id} />
+                      <Envoyer variante="danger" confirmer={a.contenu.confirmSupprVideo}>
+                        {a.commun.supprimer}
+                      </Envoyer>
+                    </FormAction>
+                  ) : undefined
                 }
               >
                 <FormAction action={enregistrerVideo}>
                   <input type="hidden" name="id" value={video.id} />
+                  <input type="hidden" name="edit_lang" value={langue} />
                   <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <Champ
                       label={a.commun.titreChamp}
                       name="title"
-                      defaultValue={video.title}
+                      dir={dir}
+                      defaultValue={champ(video, "title", langue)}
                     />
                     <Champ
                       label={a.contenu.sousTitre}
                       name="note"
-                      defaultValue={video.note}
+                      dir={dir}
+                      defaultValue={champ(video, "note", langue)}
                     />
-                    <Champ
-                      label={a.contenu.fichierVideo}
-                      name="src"
-                      defaultValue={video.src}
-                      required
-                    />
-                    <Champ
-                      label={a.contenu.imageAttente}
-                      name="poster"
-                      defaultValue={video.poster}
-                    />
-                    <Champ
-                      label={a.commun.ordre}
-                      name="sort_order"
-                      type="number"
-                      defaultValue={video.sort_order}
-                    />
+                    {fr && (
+                      <Champ
+                        label={a.commun.ordre}
+                        name="sort_order"
+                        type="number"
+                        defaultValue={video.sort_order}
+                      />
+                    )}
                   </div>
-
-                  <details className="mt-3 rounded border border-dashed border-trait p-3">
-                    <summary className="eyebrow cursor-pointer text-graphite-doux">
-                      {a.commun.traductions}
-                    </summary>
+                  {fr && (
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <Champ
-                        label={`${a.commun.titreChamp} — ${a.commun.arabe}`}
-                        name="title_ar"
-                        defaultValue={video.title_ar}
+                      <ChampImage
+                        label={a.contenu.fichierVideo}
+                        name="src"
+                        accept="video/*"
+                        defaultValue={video.src}
+                        labels={labelsImage}
+                        ratio="16 / 9"
+                        required
                       />
-                      <Champ
-                        label={`${a.commun.titreChamp} — ${a.commun.anglais}`}
-                        name="title_en"
-                        defaultValue={video.title_en}
-                      />
-                      <Champ
-                        label={`${a.contenu.sousTitre} — ${a.commun.arabe}`}
-                        name="note_ar"
-                        defaultValue={video.note_ar}
-                      />
-                      <Champ
-                        label={`${a.contenu.sousTitre} — ${a.commun.anglais}`}
-                        name="note_en"
-                        defaultValue={video.note_en}
+                      <ChampImage
+                        label={a.contenu.imageAttente}
+                        name="poster"
+                        defaultValue={video.poster}
+                        labels={labelsImage}
+                        ratio="16 / 9"
                       />
                     </div>
-                  </details>
-
+                  )}
                   <div className="mt-4">
                     <Envoyer>{a.commun.enregistrer}</Envoyer>
                   </div>

@@ -19,20 +19,6 @@ export const fr = {
     cartonCourt: "ct",
   },
 
-  types: {
-    brume: "Brume parfumée",
-    gel_intime: "Gel lavant intime",
-    deodorant_intime: "Déodorant intime",
-    deodorant_femme: "Déodorant femme",
-  },
-
-  typesCourts: {
-    brume: "Brume",
-    gel_intime: "Gel intime",
-    deodorant_intime: "Déodorant intime",
-    deodorant_femme: "Déodorant femme",
-  },
-
   couleurs: {
     Rouge: "Rouge",
     Rose: "Rose",
@@ -265,9 +251,19 @@ export const fr = {
       "Exécutez supabase/schema.sql puis renseignez les clés Supabase dans .env.local. Le site affiche en attendant le catalogue de référence.",
 
     onglets: {
+      courts: {
+        commandes: "Commandes",
+        types: "Types",
+        gammes: "Gammes",
+        produits: "Produits",
+        formats: "Formats",
+        contenu: "Contenu",
+      },
       commandes: "Commandes",
       gammes: "Gammes",
       produits: "Produits & prix",
+      types: "Types de produits",
+      formats: "Formats & prix",
       contenu: "Contenu du site",
     },
 
@@ -310,9 +306,42 @@ export const fr = {
       traductions: "Traductions",
       arabe: "Arabe",
       anglais: "Anglais",
+      langueEditee: "Langue éditée",
+      choisirFichier: "Choisir un fichier",
+      televersement: "Envoi…",
+      retirerImage: "Retirer l'image",
+      aucuneImage: "Aucune image",
+      ouCollerUrl: "ou collez une adresse",
+      apercu: "Aperçu",
+      obligatoire: "obligatoire",
       videFrRepris: "Vide = le français est repris.",
     },
 
+    types: {
+      titre: "Types de produits",
+      nouveau: "Nouveau type",
+      aide: "Les types classent le catalogue et alimentent le filtre « Produit » de la boutique. Un type utilisé par des produits ne peut pas être supprimé.",
+      nom: "Nom complet",
+      nomCourt: "Nom court (filtre)",
+      confirmSuppr: "Supprimer le type « {nom} » ?",
+      utilise: "{n} produit utilise ce type",
+      utilisePluriel: "{n} produits utilisent ce type",
+      inutilise: "Aucun produit",
+      encoreUtilise:
+        "Ce type est encore utilisé par {n} produit(s). Changez leur type avant de le supprimer.",
+    },
+    formats: {
+      titre: "Formats & prix",
+      nouveau: "Nouveau format",
+      aide: "Choisissez le produit, puis ajoutez-lui un format avec son prix et sa photo. Un produit sans format n'apparaît pas en boutique.",
+      demiCourt: "Demi-gros",
+      grosCourt: "Gros",
+      produit: "Produit",
+      choisirProduit: "Choisissez un produit",
+      aucunFormat: "Aucun format — ce produit n'est pas en vente.",
+      total: "{n} format sur {p} produits",
+      totalPluriel: "{n} formats sur {p} produits",
+    },
     gammes: {
       catalogue: "Catalogue",
       titre: "Gammes",

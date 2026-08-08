@@ -8,6 +8,58 @@ import type {
   Video,
 } from "./types";
 
+/** Les quatre types livrés d'origine. L'admin peut en ajouter d'autres. */
+export const PRODUCT_TYPES: ProductType[] = [
+  {
+    id: "t-brume",
+    slug: "brume",
+    name: "Brume parfumée",
+    name_ar: "بخاخ معطر",
+    name_en: "Fragrance mist",
+    short_name: "Brume",
+    short_name_ar: "بخاخ",
+    short_name_en: "Mist",
+    sort_order: 1,
+    active: true,
+  },
+  {
+    id: "t-gel-intime",
+    slug: "gel-intime",
+    name: "Gel lavant intime",
+    name_ar: "جل منظف حميمي",
+    name_en: "Intimate wash",
+    short_name: "Gel intime",
+    short_name_ar: "جل حميمي",
+    short_name_en: "Intimate wash",
+    sort_order: 2,
+    active: true,
+  },
+  {
+    id: "t-deodorant-intime",
+    slug: "deodorant-intime",
+    name: "Déodorant intime",
+    name_ar: "مزيل روائح حميمي",
+    name_en: "Intimate deodorant",
+    short_name: "Déodorant intime",
+    short_name_ar: "مزيل حميمي",
+    short_name_en: "Intimate deo",
+    sort_order: 3,
+    active: true,
+  },
+  {
+    id: "t-deodorant-femme",
+    slug: "deodorant-femme",
+    name: "Déodorant femme",
+    name_ar: "مزيل روائح للجسم",
+    name_en: "Body deodorant",
+    short_name: "Déodorant femme",
+    short_name_ar: "مزيل للجسم",
+    short_name_en: "Body deo",
+    sort_order: 4,
+    active: true,
+  },
+];
+
 /**
  * Reference catalogue. Supabase is the live source of truth once it is
  * configured (see supabase/schema.sql); this file seeds it and keeps the
@@ -170,14 +222,14 @@ export const COLOR_ORDER = [
 
 type Line = {
   gamme: string;
-  type: ProductType;
+  type: string;
   sizes: { label: string; tariff: keyof typeof TARIFF; image: string }[];
 };
 
 const LINES: Line[] = [
   {
     gamme: "rouge-sensuel",
-    type: "brume",
+    type: "t-brume",
     sizes: [
       { label: "150 ml", tariff: "brume_150", image: "/products/rouge-sensuel-brume-150.png" },
       { label: "250 ml", tariff: "brume_250", image: "/products/rouge-sensuel-brume-250.png" },
@@ -185,44 +237,44 @@ const LINES: Line[] = [
   },
   {
     gamme: "rouge-sensuel",
-    type: "gel_intime",
+    type: "t-gel-intime",
     sizes: [{ label: "250 ml", tariff: "gel_intime", image: "/products/rouge-sensuel-gel-intime.png" }],
   },
   {
     gamme: "rouge-sensuel",
-    type: "deodorant_intime",
+    type: "t-deodorant-intime",
     sizes: [{ label: "150 ml", tariff: "deodorant_intime", image: "/products/rouge-sensuel-deo-intime.png" }],
   },
   {
     gamme: "rouge-sensuel",
-    type: "deodorant_femme",
+    type: "t-deodorant-femme",
     sizes: [{ label: "200 ml", tariff: "deodorant_femme", image: "/products/rouge-sensuel-deo-femme.png" }],
   },
 
   {
     gamme: "rose-douceur",
-    type: "brume",
+    type: "t-brume",
     sizes: [{ label: "150 ml", tariff: "brume_150", image: "/products/rose-douceur-brume-150.png" }],
   },
   {
     gamme: "rose-douceur",
-    type: "gel_intime",
+    type: "t-gel-intime",
     sizes: [{ label: "250 ml", tariff: "gel_intime", image: "/products/rose-douceur-gel-intime.png" }],
   },
   {
     gamme: "rose-douceur",
-    type: "deodorant_intime",
+    type: "t-deodorant-intime",
     sizes: [{ label: "150 ml", tariff: "deodorant_intime", image: "/products/rose-douceur-deo-intime.png" }],
   },
   {
     gamme: "rose-douceur",
-    type: "deodorant_femme",
+    type: "t-deodorant-femme",
     sizes: [{ label: "200 ml", tariff: "deodorant_femme", image: "/products/rose-douceur-deo-femme.png" }],
   },
 
   {
     gamme: "princess",
-    type: "brume",
+    type: "t-brume",
     sizes: [
       { label: "150 ml", tariff: "brume_150", image: "/products/princess-brume-150.png" },
       { label: "250 ml", tariff: "brume_250", image: "/products/princess-brume-250.png" },
@@ -230,13 +282,13 @@ const LINES: Line[] = [
   },
   {
     gamme: "princess",
-    type: "deodorant_femme",
+    type: "t-deodorant-femme",
     sizes: [{ label: "200 ml", tariff: "deodorant_femme", image: "/products/princess-deo-femme.png" }],
   },
 
   {
     gamme: "ara",
-    type: "brume",
+    type: "t-brume",
     sizes: [
       { label: "150 ml", tariff: "brume_150", image: "/products/ara-brume-150.png" },
       { label: "250 ml", tariff: "brume_250", image: "/products/ara-brume-250.png" },
@@ -244,13 +296,13 @@ const LINES: Line[] = [
   },
   {
     gamme: "ara",
-    type: "deodorant_femme",
+    type: "t-deodorant-femme",
     sizes: [{ label: "200 ml", tariff: "deodorant_femme", image: "/products/ara-deo-femme.png" }],
   },
 
   {
     gamme: "move-confiant",
-    type: "brume",
+    type: "t-brume",
     sizes: [
       { label: "150 ml", tariff: "brume_150", image: "/products/move-confiant-brume-150.png" },
       { label: "250 ml", tariff: "brume_250", image: "/products/move-confiant-brume-250.png" },
@@ -258,23 +310,23 @@ const LINES: Line[] = [
   },
   {
     gamme: "move-confiant",
-    type: "gel_intime",
+    type: "t-gel-intime",
     sizes: [{ label: "250 ml", tariff: "gel_intime", image: "/products/move-confiant-gel-intime.png" }],
   },
   {
     gamme: "move-confiant",
-    type: "deodorant_intime",
+    type: "t-deodorant-intime",
     sizes: [{ label: "150 ml", tariff: "deodorant_intime", image: "/products/move-confiant-deo-intime.png" }],
   },
   {
     gamme: "move-confiant",
-    type: "deodorant_femme",
+    type: "t-deodorant-femme",
     sizes: [{ label: "200 ml", tariff: "deodorant_femme", image: "/products/move-confiant-deo-femme.png" }],
   },
 
   {
     gamme: "bleu-confort",
-    type: "brume",
+    type: "t-brume",
     sizes: [
       { label: "150 ml", tariff: "brume_150", image: "/products/bleu-confort-brume-150.png" },
       { label: "250 ml", tariff: "brume_250", image: "/products/bleu-confort-brume-250.png" },
@@ -282,44 +334,38 @@ const LINES: Line[] = [
   },
   {
     gamme: "bleu-confort",
-    type: "gel_intime",
+    type: "t-gel-intime",
     sizes: [{ label: "250 ml", tariff: "gel_intime", image: "/products/bleu-confort-gel-intime.png" }],
   },
   {
     gamme: "bleu-confort",
-    type: "deodorant_intime",
+    type: "t-deodorant-intime",
     sizes: [{ label: "150 ml", tariff: "deodorant_intime", image: "/products/bleu-confort-deo-intime.png" }],
   },
   {
     gamme: "bleu-confort",
-    type: "deodorant_femme",
+    type: "t-deodorant-femme",
     sizes: [{ label: "200 ml", tariff: "deodorant_femme", image: "/products/bleu-confort-deo-femme.png" }],
   },
 
   {
     gamme: "shower",
-    type: "gel_intime",
+    type: "t-gel-intime",
     sizes: [{ label: "250 ml", tariff: "gel_intime", image: "/products/shower-gel-intime.png" }],
   },
   {
     gamme: "shower",
-    type: "deodorant_intime",
+    type: "t-deodorant-intime",
     sizes: [{ label: "150 ml", tariff: "deodorant_intime", image: "/products/shower-deo-intime.png" }],
   },
 ];
 
-const TYPE_NAME: Record<ProductType, string> = {
-  brume: "Brume parfumée",
-  gel_intime: "Gel lavant intime",
-  deodorant_intime: "Déodorant intime",
-  deodorant_femme: "Déodorant femme",
-};
-
 export const PRODUCTS: Product[] = LINES.map((line, index) => {
   const gamme = GAMMES.find((g) => g.slug === line.gamme)!;
-  const productId = `p-${line.gamme}-${line.type}`;
+  const type = PRODUCT_TYPES.find((t) => t.id === line.type)!;
+  const productId = `p-${line.gamme}-${type.slug}`;
   const variants: Variant[] = line.sizes.map((size, i) => ({
-    id: `v-${line.gamme}-${line.type}-${i}`,
+    id: `v-${line.gamme}-${type.slug}-${i}`,
     product_id: productId,
     size_label: size.label,
     price_demi_gros: TARIFF[size.tariff].demi,
@@ -331,9 +377,9 @@ export const PRODUCTS: Product[] = LINES.map((line, index) => {
 
   return {
     id: productId,
-    slug: `${line.gamme}-${line.type}`,
-    name: `${TYPE_NAME[line.type]} ${gamme.name}`,
-    type: line.type,
+    slug: `${line.gamme}-${type.slug}`,
+    name: `${type.name} ${gamme.name}`,
+    type_id: type.id,
     gamme_id: gamme.id,
     color_name: gamme.color_name,
     color_hex: gamme.color_hex,

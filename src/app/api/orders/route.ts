@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   createOrder,
   getGammes,
+  getProductTypes,
   getProducts,
   getSettings,
   ordersArePersisted,
@@ -15,6 +16,7 @@ import {
 } from "@/lib/format";
 import { fill, getDictionary, type Dictionary } from "@/i18n";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
+import { nomType } from "@/i18n/contenu";
 import type { OrderItem, PurchaseType } from "@/lib/types";
 
 type Requete = {
@@ -51,9 +53,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.api.vide }, { status: 400 });
   }
 
-  const [products, gammes, settings] = await Promise.all([
+  const [products, gammes, types, settings] = await Promise.all([
     getProducts(),
     getGammes(),
+    getProductTypes(),
     getSettings(),
   ]);
 
@@ -77,7 +80,7 @@ export async function POST(request: Request) {
       order_id: "",
       variant_id: variant.id,
       // Le libellé est figé dans la langue du client : c'est ce qu'il a lu.
-      product_name: `${t.types[product.type]} ${gamme?.name ?? ""}`.trim(),
+      product_name: `${nomType(product, types, locale)} ${gamme?.name ?? ""}`.trim(),
       gamme_name: gamme?.name ?? "",
       size_label: variant.size_label,
       unit_price: unitPrice(variant, purchase),

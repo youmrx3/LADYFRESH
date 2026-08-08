@@ -12,15 +12,17 @@ import { Videos } from "@/components/Videos";
 import {
   getGammes,
   getHeroSlides,
+  getProductTypes,
   getProducts,
   getSettings,
   getVideos,
 } from "@/lib/data";
 
 export default async function Accueil() {
-  const [gammes, products, settings, slides, videos] = await Promise.all([
+  const [gammes, products, types, settings, slides, videos] = await Promise.all([
     getGammes(),
     getProducts(),
+    getProductTypes(),
     getSettings(),
     getHeroSlides(),
     getVideos(),
@@ -30,7 +32,12 @@ export default async function Accueil() {
   const referenceCount = products.reduce((n, p) => n + p.variants.length, 0);
 
   return (
-    <BoutiqueProvider products={products} gammes={gammes} settings={settings}>
+    <BoutiqueProvider
+      products={products}
+      gammes={gammes}
+      types={types}
+      settings={settings}
+    >
       <Navbar />
       <main>
         <Hero
@@ -40,7 +47,7 @@ export default async function Accueil() {
           referenceCount={referenceCount}
         />
         <CommentCommander settings={settings} />
-        <RailGammes gammes={gammes} products={products} />
+        <RailGammes gammes={gammes} products={products} types={types} />
         <SelecteurAchat />
         <Boutique />
         <Commande />

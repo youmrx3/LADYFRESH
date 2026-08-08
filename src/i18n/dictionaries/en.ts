@@ -17,20 +17,6 @@ export const en: Dictionary = {
     cartonCourt: "ct",
   },
 
-  types: {
-    brume: "Fragrance mist",
-    gel_intime: "Intimate wash",
-    deodorant_intime: "Intimate deodorant",
-    deodorant_femme: "Body deodorant",
-  },
-
-  typesCourts: {
-    brume: "Mist",
-    gel_intime: "Intimate wash",
-    deodorant_intime: "Intimate deo",
-    deodorant_femme: "Body deo",
-  },
-
   couleurs: {
     Rouge: "Red",
     Rose: "Pink",
@@ -259,9 +245,19 @@ export const en: Dictionary = {
       "Run supabase/schema.sql then add your Supabase keys to .env.local. Until then the site shows the reference catalogue.",
 
     onglets: {
+      courts: {
+        commandes: "Orders",
+        types: "Types",
+        gammes: "Ranges",
+        produits: "Products",
+        formats: "Sizes",
+        contenu: "Content",
+      },
       commandes: "Orders",
       gammes: "Ranges",
       produits: "Products & prices",
+      types: "Product types",
+      formats: "Sizes & prices",
       contenu: "Site content",
     },
 
@@ -304,9 +300,42 @@ export const en: Dictionary = {
       traductions: "Translations",
       arabe: "Arabic",
       anglais: "English",
+      langueEditee: "Editing language",
+      choisirFichier: "Choose a file",
+      televersement: "Uploading…",
+      retirerImage: "Remove image",
+      aucuneImage: "No image",
+      ouCollerUrl: "or paste an address",
+      apercu: "Preview",
+      obligatoire: "required",
       videFrRepris: "Empty = French is used.",
     },
 
+    types: {
+      titre: "Product types",
+      nouveau: "New type",
+      aide: "Types classify the catalogue and drive the shop's Product filter. A type in use by products cannot be deleted.",
+      nom: "Full name",
+      nomCourt: "Short name (filter)",
+      confirmSuppr: "Delete the “{nom}” type?",
+      utilise: "{n} product uses this type",
+      utilisePluriel: "{n} products use this type",
+      inutilise: "No products",
+      encoreUtilise:
+        "This type is still used by {n} product(s). Change their type before deleting it.",
+    },
+    formats: {
+      titre: "Sizes & prices",
+      nouveau: "New size",
+      aide: "Pick the product, then give it a size with its price and photo. A product with no size does not appear in the shop.",
+      demiCourt: "Half-wh.",
+      grosCourt: "Wholesale",
+      produit: "Product",
+      choisirProduit: "Choose a product",
+      aucunFormat: "No size — this product is not on sale.",
+      total: "{n} size across {p} products",
+      totalPluriel: "{n} sizes across {p} products",
+    },
     gammes: {
       catalogue: "Catalogue",
       titre: "Ranges",

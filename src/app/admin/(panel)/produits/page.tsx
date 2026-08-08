@@ -1,40 +1,48 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   Bascule,
   Champ,
+  ChampCouleur,
   Envoyer,
   FormAction,
   Liste,
 } from "@/components/admin/Champs";
+import { ChampImage } from "@/components/admin/ChampImage";
 import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
-import {
-  enregistrerProduit,
-  enregistrerVariante,
-  supprimerProduit,
-  supprimerVariante,
-} from "@/lib/actions";
-import { getGammes, getProducts, getSettings } from "@/lib/data";
+import { enregistrerProduit, supprimerProduit } from "@/lib/actions";
+import { getGammes, getProductTypes, getProducts, getSettings } from "@/lib/data";
 import { da } from "@/lib/format";
 import { fill } from "@/i18n";
+import { champ, nomTypeCourt } from "@/i18n/contenu";
 import { getT } from "@/i18n/server";
-import { PRODUCT_TYPES, type Product } from "@/lib/types";
+import type { Gamme, Product, ProductType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function Produits() {
-  const { t } = await getT();
-  const [gammes, products, settings] = await Promise.all([
+  const { t, locale } = await getT();
+  const [gammes, types, products, settings] = await Promise.all([
     getGammes(),
+    getProductTypes(),
     getProducts(),
     getSettings(),
   ]);
   const a = t.admin;
 
   const optionsGammes = gammes.map((g) => ({ value: g.id, label: g.name }));
-  const optionsTypes = PRODUCT_TYPES.map((type) => ({
-    value: type.value,
-    label: t.typesCourts[type.value],
+  const optionsTypes = types.map((type) => ({
+    value: type.id,
+    label: champ(type, "name", locale) || type.slug,
   }));
+
+  const labelsImage = {
+    choisirFichier: a.commun.choisirFichier,
+    televersement: a.commun.televersement,
+    retirer: a.commun.retirerImage,
+    aucune: a.commun.aucuneImage,
+    ouCollerUrl: a.commun.ouCollerUrl,
+  };
 
   return (
     <div>
@@ -47,250 +55,134 @@ export default async function Produits() {
         })}`}
       />
 
-      <Volet
-        label={a.produits.nouveau}
-        labelOuvert={a.commun.annuler}
-        ton="principal"
-      >
-        <div
-          className="rounded-[10px] border border-trait p-4"
-          style={{ background: "var(--comptoir-surface)" }}
+      {types.length === 0 ? (
+        <p className="rounded border border-dashed border-trait px-5 py-8 text-[14px] text-graphite-doux">
+          {a.types.aide}{" "}
+          <Link href="/admin/types" className="underline underline-offset-2">
+            {a.types.nouveau}
+          </Link>
+        </p>
+      ) : (
+        <Volet
+          label={a.produits.nouveau}
+          labelOuvert={a.commun.annuler}
+          ton="principal"
         >
-          <p className="mb-3 text-[13px] text-graphite-doux">
-            {a.produits.dabordProduit}
-          </p>
-          <FormAction action={enregistrerProduit}>
-            <ChampsProduit
-              t={t}
-              optionsGammes={optionsGammes}
-              optionsTypes={optionsTypes}
-              ordreParDefaut={products.length + 1}
-            />
-            <div className="mt-4">
-              <Envoyer variante="or">{a.commun.creer}</Envoyer>
-            </div>
-          </FormAction>
-        </div>
-      </Volet>
+          <div
+            className="rounded-[10px] border border-trait p-4"
+            style={{ background: "var(--comptoir-surface)" }}
+          >
+            <p className="mb-3 text-[13px] text-graphite-doux">
+              {a.produits.dabordProduit}
+            </p>
+            <FormAction action={enregistrerProduit}>
+              <ChampsProduit
+                t={t}
+                optionsGammes={optionsGammes}
+                optionsTypes={optionsTypes}
+                labelsImage={labelsImage}
+                ordreParDefaut={products.length + 1}
+              />
+              <div className="mt-4">
+                <Envoyer variante="or">{a.commun.creer}</Envoyer>
+              </div>
+            </FormAction>
+          </div>
+        </Volet>
+      )}
 
       <ul className="mt-6 space-y-2.5">
-        {products.map((product) => {
-          const gamme = gammes.find((g) => g.id === product.gamme_id);
-          return (
-            <Ligne
-              key={product.id}
-              labelModifier={a.commun.modifier}
-              labelFermer={a.commun.fermer}
-              visuel={
-                <span
-                  className="relative block h-12 w-12 shrink-0 overflow-hidden rounded"
-                  style={{
-                    background: `color-mix(in srgb, ${product.color_hex} 10%, var(--comptoir-surface))`,
-                  }}
-                >
-                  {product.image && (
-                    <Image
-                      src={product.image}
-                      alt=""
-                      fill
-                      sizes="48px"
-                      className="object-contain p-1"
-                    />
-                  )}
-                </span>
-              }
-              titre={`${t.types[product.type]} ${gamme?.name ?? ""}`}
-              meta={`${product.variants
-                .map((v) => `${v.size_label} · ${da(v.price_demi_gros, t.unites.devise)}`)
-                .join("  |  ")}${product.active ? "" : ` · ${a.commun.masque}`}`}
-              actions={
+        {products.map((product) => (
+          <Ligne
+            key={product.id}
+            labelModifier={a.commun.modifier}
+            labelFermer={a.commun.fermer}
+            visuel={
+              <span
+                className="relative block h-12 w-12 shrink-0 overflow-hidden rounded"
+                style={{
+                  background: `color-mix(in srgb, ${product.color_hex} 10%, var(--comptoir-surface))`,
+                }}
+              >
+                {product.image && (
+                  <Image
+                    src={product.image}
+                    alt=""
+                    fill
+                    sizes="48px"
+                    className="object-contain p-1"
+                  />
+                )}
+              </span>
+            }
+            titre={nomLigne(product, types, gammes, locale)}
+            meta={metaLigne(product, t.unites.devise, a.formats.aucunFormat, product.active ? "" : a.commun.masque)}
+            actions={
+              <>
                 <FormAction action={supprimerProduit}>
                   <input type="hidden" name="id" value={product.id} />
                   <Envoyer
                     variante="danger"
                     confirmer={fill(a.produits.confirmSuppr, {
-                      nom: `${t.types[product.type]} ${gamme?.name ?? ""}`,
+                      nom: nomLigne(product, types, gammes, locale),
                     })}
                   >
                     {a.commun.supprimer}
                   </Envoyer>
                 </FormAction>
-              }
-            >
-              <FormAction action={enregistrerProduit}>
-                <input type="hidden" name="id" value={product.id} />
-                <ChampsProduit
-                  t={t}
-                  product={product}
-                  optionsGammes={optionsGammes}
-                  optionsTypes={optionsTypes}
-                  ordreParDefaut={product.sort_order}
-                />
-                <div className="mt-4">
-                  <Envoyer>{a.commun.enregistrer}</Envoyer>
-                </div>
-              </FormAction>
-
-              {/* ------------------------------------------- formats */}
-              <div className="mt-6 border-t border-trait pt-4">
-                <p className="eyebrow text-graphite-doux">
-                  {a.produits.formats}
-                </p>
-
-                <ul className="mt-3 space-y-2">
-                  {product.variants.map((variant) => (
-                    <li
-                      key={variant.id}
-                      className="rounded border border-trait p-3"
-                    >
-                      <FormAction action={enregistrerVariante}>
-                        <input type="hidden" name="id" value={variant.id} />
-                        <input
-                          type="hidden"
-                          name="product_id"
-                          value={product.id}
-                        />
-                        <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-6">
-                          <Champ
-                            label={a.produits.format}
-                            name="size_label"
-                            defaultValue={variant.size_label}
-                            required
-                          />
-                          <Champ
-                            label={fill(a.produits.prixDemi, {
-                              devise: t.unites.devise,
-                            })}
-                            name="price_demi_gros"
-                            type="number"
-                            min={0}
-                            defaultValue={variant.price_demi_gros}
-                          />
-                          <Champ
-                            label={fill(a.produits.prixGros, {
-                              devise: t.unites.devise,
-                            })}
-                            name="price_gros"
-                            type="number"
-                            min={0}
-                            defaultValue={variant.price_gros}
-                          />
-                          <Champ
-                            label={a.produits.parCarton}
-                            name="units_per_carton"
-                            type="number"
-                            min={1}
-                            defaultValue={variant.units_per_carton}
-                          />
-                          <Champ
-                            label={a.produits.photo}
-                            name="image"
-                            defaultValue={variant.image}
-                            className="lg:col-span-2"
-                          />
-                        </div>
-                        <div className="mt-3 flex flex-wrap items-center gap-3">
-                          <Bascule
-                            label={a.commun.actif}
-                            name="active"
-                            defaultChecked={variant.active}
-                          />
-                          <Envoyer>{a.commun.enregistrer}</Envoyer>
-                          <span className="data text-[11.5px] text-graphite-doux">
-                            {fill(a.produits.cartonEgale, {
-                              n: variant.units_per_carton,
-                              prix: da(
-                                variant.price_gros * variant.units_per_carton,
-                                t.unites.devise,
-                              ),
-                            })}
-                          </span>
-                        </div>
-                      </FormAction>
-
-                      <FormAction action={supprimerVariante} className="mt-2">
-                        <input type="hidden" name="id" value={variant.id} />
-                        <Envoyer
-                          variante="danger"
-                          confirmer={fill(a.produits.confirmSupprFormat, {
-                            format: variant.size_label,
-                          })}
-                        >
-                          {a.produits.supprimerFormat}
-                        </Envoyer>
-                      </FormAction>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-3">
-                  <Volet
-                    label={a.produits.ajouterFormat}
-                    labelOuvert={a.commun.annuler}
-                  >
-                    <FormAction
-                      action={enregistrerVariante}
-                      className="rounded border border-dashed border-trait p-3"
-                    >
-                      <input
-                        type="hidden"
-                        name="product_id"
-                        value={product.id}
-                      />
-                      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-6">
-                        <Champ
-                          label={a.produits.format}
-                          name="size_label"
-                          placeholder="150 ml"
-                          required
-                        />
-                        <Champ
-                          label={fill(a.produits.prixDemi, {
-                            devise: t.unites.devise,
-                          })}
-                          name="price_demi_gros"
-                          type="number"
-                          min={0}
-                        />
-                        <Champ
-                          label={fill(a.produits.prixGros, {
-                            devise: t.unites.devise,
-                          })}
-                          name="price_gros"
-                          type="number"
-                          min={0}
-                        />
-                        <Champ
-                          label={a.produits.parCarton}
-                          name="units_per_carton"
-                          type="number"
-                          min={1}
-                          defaultValue={12}
-                        />
-                        <Champ
-                          label={a.produits.photo}
-                          name="image"
-                          className="lg:col-span-2"
-                        />
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-3">
-                        <Bascule
-                          label={a.commun.actif}
-                          name="active"
-                          defaultChecked
-                        />
-                        <Envoyer variante="or">{a.commun.ajouter}</Envoyer>
-                      </div>
-                    </FormAction>
-                  </Volet>
-                </div>
+                <Link
+                  href="/admin/formats"
+                  className="eyebrow text-graphite-doux underline underline-offset-4 hover:text-graphite"
+                >
+                  {a.formats.titre} →
+                </Link>
+              </>
+            }
+          >
+            <FormAction action={enregistrerProduit}>
+              <input type="hidden" name="id" value={product.id} />
+              <ChampsProduit
+                t={t}
+                product={product}
+                optionsGammes={optionsGammes}
+                optionsTypes={optionsTypes}
+                labelsImage={labelsImage}
+                ordreParDefaut={product.sort_order}
+              />
+              <div className="mt-4">
+                <Envoyer>{a.commun.enregistrer}</Envoyer>
               </div>
-            </Ligne>
-          );
-        })}
+            </FormAction>
+          </Ligne>
+        ))}
       </ul>
     </div>
   );
+}
+
+function nomLigne(
+  product: Product,
+  types: ProductType[],
+  gammes: Gamme[],
+  locale: Parameters<typeof champ>[2],
+) {
+  const type = types.find((x) => x.id === product.type_id);
+  const gamme = gammes.find((g) => g.id === product.gamme_id);
+  return `${champ(type, "name", locale) || product.slug} ${gamme?.name ?? ""}`.trim();
+}
+
+function metaLigne(
+  product: Product,
+  devise: string,
+  aucun: string,
+  masque: string,
+) {
+  const formats = product.variants.length
+    ? product.variants
+        .map((v) => `${v.size_label} · ${da(v.price_demi_gros, devise)}`)
+        .join("  |  ")
+    : aucun;
+  return masque ? `${formats} · ${masque}` : formats;
 }
 
 function ChampsProduit({
@@ -298,54 +190,55 @@ function ChampsProduit({
   product,
   optionsGammes,
   optionsTypes,
+  labelsImage,
   ordreParDefaut,
 }: {
   t: Awaited<ReturnType<typeof getT>>["t"];
   product?: Product;
   optionsGammes: { value: string; label: string }[];
   optionsTypes: { value: string; label: string }[];
+  labelsImage: React.ComponentProps<typeof ChampImage>["labels"];
   ordreParDefaut: number;
 }) {
   const a = t.admin;
   return (
-    <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Champ label={a.commun.nom} name="name" defaultValue={product?.name} required />
-      <Champ
-        label={a.commun.slug}
-        name="slug"
-        defaultValue={product?.slug}
-        placeholder="rouge-sensuel-brume"
-        required
-      />
-      <Liste
-        label={a.produits.type}
-        name="type"
-        options={optionsTypes}
-        defaultValue={product?.type}
-      />
-      <Liste
-        label={a.produits.gamme}
-        name="gamme_id"
-        options={optionsGammes}
-        defaultValue={product?.gamme_id}
-      />
-      <Champ
-        label={a.produits.couleurFiltre}
-        name="color_name"
-        defaultValue={product?.color_name}
-      />
-      <Champ
-        label={a.produits.teinte}
-        name="color_hex"
-        type="color"
-        defaultValue={product?.color_hex ?? "#c4102b"}
-      />
-      <Champ
-        label={a.produits.imageDefaut}
-        name="image"
-        defaultValue={product?.image}
-      />
-      <div className="flex items-end gap-3">
+    <>
+      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Liste
+          label={a.produits.type}
+          name="type_id"
+          options={optionsTypes}
+          defaultValue={product?.type_id}
+          placeholder={a.produits.type}
+          required
+        />
+        <Liste
+          label={a.produits.gamme}
+          name="gamme_id"
+          options={optionsGammes}
+          defaultValue={product?.gamme_id}
+          placeholder={a.produits.gamme}
+          required
+        />
+        <Champ
+          label={a.commun.slug}
+          name="slug"
+          defaultValue={product?.slug}
+          placeholder="rouge-sensuel-brume"
+          required
+        />
+        <Champ label={a.commun.nom} name="name" defaultValue={product?.name} />
+        <Champ
+          label={a.produits.couleurFiltre}
+          name="color_name"
+          defaultValue={product?.color_name}
+        />
+        <ChampCouleur
+          label={a.produits.teinte}
+          name="color_hex"
+          defaultValue={product?.color_hex}
+          apercu={a.commun.apercu}
+        />
         <Champ
           label={a.commun.ordre}
           name="sort_order"
@@ -358,6 +251,16 @@ function ChampsProduit({
           defaultChecked={product?.active ?? true}
         />
       </div>
-    </div>
+
+      <div className="mt-3">
+        <ChampImage
+          label={a.produits.imageDefaut}
+          name="image"
+          defaultValue={product?.image}
+          labels={labelsImage}
+          ratio="4 / 5"
+        />
+      </div>
+    </>
   );
 }

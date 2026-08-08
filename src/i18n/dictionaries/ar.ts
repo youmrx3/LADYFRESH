@@ -21,20 +21,6 @@ export const ar: Dictionary = {
     cartonCourt: "كرتون",
   },
 
-  types: {
-    brume: "بخاخ معطر",
-    gel_intime: "جل منظف حميمي",
-    deodorant_intime: "مزيل روائح حميمي",
-    deodorant_femme: "مزيل روائح للجسم",
-  },
-
-  typesCourts: {
-    brume: "بخاخ",
-    gel_intime: "جل حميمي",
-    deodorant_intime: "مزيل حميمي",
-    deodorant_femme: "مزيل للجسم",
-  },
-
   couleurs: {
     Rouge: "أحمر",
     Rose: "وردي",
@@ -263,9 +249,19 @@ export const ar: Dictionary = {
       "شغّلي supabase/schema.sql ثم أضيفي مفاتيح Supabase في ‎.env.local. حتى ذلك الحين يعرض الموقع الكتالوج المرجعي.",
 
     onglets: {
+      courts: {
+        commandes: "الطلبات",
+        types: "الأنواع",
+        gammes: "المجموعات",
+        produits: "المنتجات",
+        formats: "الأحجام",
+        contenu: "المحتوى",
+      },
       commandes: "الطلبات",
       gammes: "المجموعات",
       produits: "المنتجات والأسعار",
+      types: "أنواع المنتجات",
+      formats: "الأحجام والأسعار",
       contenu: "محتوى الموقع",
     },
 
@@ -308,9 +304,42 @@ export const ar: Dictionary = {
       traductions: "الترجمات",
       arabe: "العربية",
       anglais: "الإنجليزية",
+      langueEditee: "اللغة المحرَّرة",
+      choisirFichier: "اختيار ملف",
+      televersement: "جارٍ الإرسال…",
+      retirerImage: "إزالة الصورة",
+      aucuneImage: "لا صورة",
+      ouCollerUrl: "أو الصق عنوانًا",
+      apercu: "معاينة",
+      obligatoire: "إلزامي",
       videFrRepris: "الفراغ = يُعتمد النص الفرنسي.",
     },
 
+    types: {
+      titre: "أنواع المنتجات",
+      nouveau: "نوع جديد",
+      aide: "الأنواع تصنّف الكتالوج وتغذّي تصفية «المنتج» في المتجر. لا يمكن حذف نوع تستعمله منتجات.",
+      nom: "الاسم الكامل",
+      nomCourt: "الاسم المختصر (التصفية)",
+      confirmSuppr: "حذف النوع «{nom}»؟",
+      utilise: "{n} منتج يستعمل هذا النوع",
+      utilisePluriel: "{n} منتجات تستعمل هذا النوع",
+      inutilise: "لا منتج",
+      encoreUtilise:
+        "هذا النوع ما زال مستعملاً من طرف {n} منتج. غيّري نوعها قبل الحذف.",
+    },
+    formats: {
+      titre: "الأحجام والأسعار",
+      nouveau: "حجم جديد",
+      aide: "اختاري المنتج، ثم أضيفي له حجمًا بسعره وصورته. المنتج بلا حجم لا يظهر في المتجر.",
+      demiCourt: "نصف الجملة",
+      grosCourt: "الجملة",
+      produit: "المنتج",
+      choisirProduit: "اختاري منتجًا",
+      aucunFormat: "لا حجم — هذا المنتج غير معروض للبيع.",
+      total: "{n} حجم على {p} منتجات",
+      totalPluriel: "{n} حجمًا على {p} منتجات",
+    },
     gammes: {
       catalogue: "الكتالوج",
       titre: "المجموعات",

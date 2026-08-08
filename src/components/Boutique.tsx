@@ -7,7 +7,7 @@ import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { COLOR_ORDER } from "@/lib/catalog";
 import { da } from "@/lib/format";
-import { PRODUCT_TYPES } from "@/lib/types";
+import { nomTypeCourt } from "@/i18n/contenu";
 
 export function Boutique() {
   const {
@@ -21,8 +21,9 @@ export function Boutique() {
     lines,
     total,
     pieceCount,
+    types,
   } = useBoutique();
-  const { t } = useReglages();
+  const { t, locale } = useReglages();
 
   const couleurs = useMemo(() => {
     const present = new Set(products.map((p) => p.color_name));
@@ -33,7 +34,7 @@ export function Boutique() {
     () =>
       products.filter(
         (p) =>
-          (typeFilter === "tous" || p.type === typeFilter) &&
+          (typeFilter === "tous" || p.type_id === typeFilter) &&
           (colorFilter === "tous" || p.color_name === colorFilter),
       ),
     [products, typeFilter, colorFilter],
@@ -73,13 +74,15 @@ export function Boutique() {
             titre={t.boutique.filtreProduit}
             valeurs={[
               { value: "tous", label: t.boutique.tous },
-              ...PRODUCT_TYPES.map((type) => ({
-                value: type.value,
-                label: t.typesCourts[type.value],
-              })),
+              ...types
+                .filter((type) => type.active)
+                .map((type) => ({
+                  value: type.id,
+                  label: nomTypeCourt(type, locale),
+                })),
             ]}
             actif={typeFilter}
-            onChange={(v) => setTypeFilter(v as typeof typeFilter)}
+            onChange={setTypeFilter}
           />
           <FiltreRangee
             titre={t.boutique.filtreCouleur}

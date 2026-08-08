@@ -33,6 +33,7 @@ export type DocketLine = {
 type Boutique = {
   products: Product[];
   gammes: Gamme[];
+  types: ProductType[];
   settings: SiteSettings;
   purchase: PurchaseType;
   setPurchase: (value: PurchaseType) => void;
@@ -48,9 +49,9 @@ type Boutique = {
   /** Minimum quantity for one line, in the unit currently in play. */
   minQuantity: number;
   meetsMinimum: boolean;
-  /** Shop filters live here so the gammes rail can drive them. */
-  typeFilter: ProductType | "tous";
-  setTypeFilter: (value: ProductType | "tous") => void;
+  /** Les filtres vivent ici pour que la bande des gammes puisse les piloter. */
+  typeFilter: string;
+  setTypeFilter: (value: string) => void;
   colorFilter: string;
   setColorFilter: (value: string) => void;
 };
@@ -62,11 +63,13 @@ const STORAGE_KEY = "ladyfresh.docket.v1";
 export function BoutiqueProvider({
   products,
   gammes,
+  types,
   settings,
   children,
 }: {
   products: Product[];
   gammes: Gamme[];
+  types: ProductType[];
   settings: SiteSettings;
   children: React.ReactNode;
 }) {
@@ -74,7 +77,7 @@ export function BoutiqueProvider({
   const [purchaseChosen, setPurchaseChosen] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [hydrated, setHydrated] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<ProductType | "tous">("tous");
+  const [typeFilter, setTypeFilter] = useState<string>("tous");
   const [colorFilter, setColorFilter] = useState("tous");
 
   useEffect(() => {
@@ -188,6 +191,7 @@ export function BoutiqueProvider({
   const value: Boutique = {
     products,
     gammes,
+    types,
     settings,
     purchase,
     setPurchase,

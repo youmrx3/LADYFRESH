@@ -5,10 +5,6 @@ create extension if not exists "pgcrypto";
 
 -- ---------------------------------------------------------------- énumérations
 do $$ begin
-  create type product_type as enum ('brume','gel_intime','deodorant_intime','deodorant_femme');
-exception when duplicate_object then null; end $$;
-
-do $$ begin
   create type purchase_type as enum ('gros','demi_gros');
 exception when duplicate_object then null; end $$;
 
@@ -35,12 +31,28 @@ create table if not exists gammes (
   created_at  timestamptz not null default now()
 );
 
+-- ------------------------------------------------------- types de produits
+-- Les types sont des données : la marque en ajoute sans toucher au code.
+create table if not exists product_types (
+  id            uuid primary key default gen_random_uuid(),
+  slug          text unique not null,
+  name          text not null,
+  name_ar       text,
+  name_en       text,
+  short_name    text not null default '',
+  short_name_ar text,
+  short_name_en text,
+  sort_order    int  not null default 0,
+  active        boolean not null default true,
+  created_at    timestamptz not null default now()
+);
+
 -- -------------------------------------------------------------------- produits
 create table if not exists products (
   id         uuid primary key default gen_random_uuid(),
   slug       text unique not null,
   name       text not null,
-  type       product_type not null,
+  type_id    uuid references product_types(id) on delete restrict,
   gamme_id   uuid references gammes(id) on delete cascade,
   color_name text not null default '',
   color_hex  text not null default '#000000',
@@ -50,7 +62,7 @@ create table if not exists products (
   created_at timestamptz not null default now()
 );
 create index if not exists products_gamme_idx on products(gamme_id);
-create index if not exists products_type_idx  on products(type);
+create index if not exists products_type_idx  on products(type_id);
 
 -- Une ligne par taille : le prix et la photo dépendent du format.
 create table if not exists product_variants (
@@ -142,6 +154,7 @@ insert into site_settings (id) values ('settings') on conflict do nothing;
 -- l'admin panel les lit via la service-role key, côté serveur uniquement.
 
 alter table gammes           enable row level security;
+alter table product_types    enable row level security;
 alter table products         enable row level security;
 alter table product_variants enable row level security;
 alter table hero_slides      enable row level security;
@@ -153,7 +166,7 @@ alter table order_items      enable row level security;
 do $$
 declare t text;
 begin
-  foreach t in array array['gammes','products','product_variants','hero_slides','videos','site_settings']
+  foreach t in array array['gammes','product_types','products','product_variants','hero_slides','videos','site_settings']
   loop
     execute format('drop policy if exists "public read %1$s" on %1$I', t);
     execute format('create policy "public read %1$s" on %1$I for select using (true)', t);
@@ -184,6 +197,11 @@ create policy "media public read" on storage.objects
 -- ------------------------------------------------------------- trilingue
 -- Le français reste la colonne de référence ; `_ar` et `_en` sont facultatives
 -- et le site retombe sur le français quand elles sont vides.
+
+alter table product_types add column if not exists name_ar        text;
+alter table product_types add column if not exists name_en        text;
+alter table product_types add column if not exists short_name_ar  text;
+alter table product_types add column if not exists short_name_en  text;
 
 alter table gammes        add column if not exists tagline_ar     text;
 alter table gammes        add column if not exists tagline_en     text;

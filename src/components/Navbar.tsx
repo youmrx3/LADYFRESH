@@ -36,9 +36,8 @@ export function Navbar() {
 
   const pose = scrolled || open;
 
-  /* Au-delà de 99, le compteur ferait grossir le bouton jusqu'à écraser le
-     logo. Le chiffre exact reste dans le récapitulatif. */
-  const compteur = pieceCount > 99 ? "99+" : String(pieceCount);
+  /* Le compteur affiche le nombre réel. Le bouton n'est monté qu'à partir de
+     lg, donc la place ne manque pas, et un grossiste veut voir son total. */
   const unite = purchase === "gros" ? t.unites.cartonCourt : t.unites.pieceCourt;
 
   return (
@@ -90,7 +89,7 @@ export function Navbar() {
                 className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                 style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
               >
-                {compteur} {unite}
+                {pieceCount} {unite}
               </span>
             )}
           </a>
@@ -154,7 +153,7 @@ export function Navbar() {
                     className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                     style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
                   >
-                    {compteur} {unite}
+                    {pieceCount} {unite}
                   </span>
                 )}
               </a>

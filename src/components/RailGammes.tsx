@@ -6,8 +6,8 @@ import { useBoutique } from "./BoutiqueProvider";
 import { Reveal } from "./Reveal";
 import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
-import { champ } from "@/i18n/contenu";
-import type { Gamme, Product } from "@/lib/types";
+import { champ, nomType } from "@/i18n/contenu";
+import type { Gamme, Product, ProductType } from "@/lib/types";
 
 /**
  * Le bloc signature : les 7 gammes en une seule bande horizontale. La colonne
@@ -18,9 +18,11 @@ import type { Gamme, Product } from "@/lib/types";
 export function RailGammes({
   gammes,
   products,
+  types,
 }: {
   gammes: Gamme[];
   products: Product[];
+  types: ProductType[];
 }) {
   const [active, setActive] = useState(0);
   const { setColorFilter, setTypeFilter } = useBoutique();
@@ -34,13 +36,13 @@ export function RailGammes({
         products
           .filter((p) => p.gamme_id === gamme.id)
           .map((p) => ({
-            label: t.types[p.type],
+            label: nomType(p, types, locale),
             sizes: p.variants.map((v) => v.size_label),
           })),
       );
     }
     return map;
-  }, [gammes, products, t]);
+  }, [gammes, products, types, locale]);
 
   function versLaBoutique(gamme: Gamme) {
     setTypeFilter("tous");

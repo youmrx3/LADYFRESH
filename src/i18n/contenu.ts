@@ -1,4 +1,5 @@
 import type { Locale } from "./config";
+import type { Gamme, Product, ProductType } from "@/lib/types";
 
 /**
  * Les textes du catalogue vivent en base avec une colonne par langue :
@@ -18,4 +19,38 @@ export function champ<T extends Record<string, unknown>>(
   }
   const fr = row[base];
   return typeof fr === "string" ? fr : "";
+}
+
+/** Nom du colonne d'une langue donnée : `description` ou `description_ar`. */
+export function colonne(base: string, locale: Locale) {
+  return locale === "fr" ? base : `${base}_${locale}`;
+}
+
+export function typeOf(product: Product, types: ProductType[]) {
+  return types.find((t) => t.id === product.type_id);
+}
+
+/** Libellé long d'un type, dans la langue courante. */
+export function nomType(
+  product: Product,
+  types: ProductType[],
+  locale: Locale,
+) {
+  return champ(typeOf(product, types), "name", locale);
+}
+
+/** Libellé court, pour les filtres et les listes serrées. */
+export function nomTypeCourt(type: ProductType | undefined, locale: Locale) {
+  return champ(type, "short_name", locale) || champ(type, "name", locale);
+}
+
+/** Nom complet d'une référence : « Brume parfumée Sensuel ». */
+export function nomProduit(
+  product: Product,
+  types: ProductType[],
+  gammes: Gamme[],
+  locale: Locale,
+) {
+  const gamme = gammes.find((g) => g.id === product.gamme_id);
+  return `${nomType(product, types, locale)} ${gamme?.name ?? ""}`.trim();
 }

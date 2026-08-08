@@ -6,6 +6,7 @@ import {
   GAMMES,
   HERO_SLIDES,
   PRODUCTS,
+  PRODUCT_TYPES,
   SETTINGS,
   VIDEOS,
 } from "./catalog";
@@ -16,6 +17,7 @@ import type {
   Order,
   OrderStatus,
   Product,
+  ProductType,
   SiteSettings,
   Variant,
   Video,
@@ -41,6 +43,17 @@ export async function getGammes(): Promise<Gamme[]> {
     .order("sort_order");
   if (error || !data?.length) return fallback("gammes", GAMMES, error);
   return data as Gamme[];
+}
+
+export async function getProductTypes(): Promise<ProductType[]> {
+  const db = supabaseRead();
+  if (!db) return PRODUCT_TYPES;
+  const { data, error } = await db
+    .from("product_types")
+    .select("*")
+    .order("sort_order");
+  if (error || !data?.length) return fallback("product_types", PRODUCT_TYPES, error);
+  return data as ProductType[];
 }
 
 export async function getProducts(): Promise<Product[]> {

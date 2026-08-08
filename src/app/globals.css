@@ -508,3 +508,53 @@
     border-color: var(--danger);
   }
 }
+
+@layer components {
+  /*
+    Menu déroulant : on garde le <select> natif — sur téléphone, le sélecteur
+    système bat n'importe quelle liste maison — mais on retire son habillage
+    par défaut et on dessine la flèche.
+  */
+  .liste {
+    position: relative;
+    display: block;
+  }
+
+  .liste select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-inline-end: 2.4rem;
+    cursor: pointer;
+    text-overflow: ellipsis;
+  }
+
+  .liste select:focus {
+    border-color: var(--or-trait);
+  }
+
+  .liste-fleche {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: 0.75rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--comptoir-muted);
+  }
+
+  /* Le sélecteur de couleur natif garde une bordure interne : on la mange. */
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
+  }
+
+  input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 2px;
+  }
+}

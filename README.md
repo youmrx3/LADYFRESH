@@ -39,6 +39,7 @@ pour changer un prix, une gamme ou le numéro WhatsApp.
 | Table              | Rôle |
 |--------------------|------|
 | `gammes`           | Les 7 gammes : nom, couleur (qui sert aussi de filtre boutique), visuel |
+| `product_types`    | Les types (brume, gel intime…) — des données, pas une énumération figée |
 | `products`         | Un produit = un type dans une gamme (ex. brume Sensuel) |
 | `product_variants` | Un format = une taille, son prix gros / demi-gros, son carton, sa photo |
 | `orders`           | Une commande, quel que soit le canal |
@@ -84,11 +85,26 @@ repliées : un résumé lisible, l'édition sur demande. La page produits fait
 vingt formulaires ouverts.
 
 - **Commandes** — liste, détail, changement de statut, filtre par statut
+- **Types de produits** — ajout, renommage, ordre. Un type encore porté par des
+  produits refuse d'être supprimé, et le dit.
 - **Gammes** — création, ordre, couleur, visuel
-- **Produits & prix** — produits, formats, prix gros / demi-gros, pièces par
-  carton
+- **Produits** — type, gamme, couleur, photo
+- **Formats & prix** — page à part : on choisit le produit, puis on lui donne
+  un format avec son prix et sa photo
 - **Contenu du site** — numéro WhatsApp, seuils, textes du hero, contacts,
-  réseaux, slideshow, vidéos, téléversement de fichiers
+  réseaux, slideshow, vidéos
+
+Sur téléphone, la navigation passe en barre d'onglets basse — à portée de
+pouce — et la barre haute se réduit au logo et aux réglages.
+
+Les images se téléversent depuis l'ordinateur ou le téléphone, avec aperçu
+immédiat. Sans Supabase, les fichiers vont dans `public/uploads/` ; avec
+Supabase, dans le bucket `media`. On peut aussi coller une adresse.
+
+Chaque page se modifie **une langue à la fois** : un sélecteur en haut choisit
+la langue éditée, et seuls les champs de cette langue s'affichent. Le slug, la
+couleur, l'image et l'ordre ne dépendent pas de la langue et ne s'éditent donc
+que depuis le français, qui porte aussi le texte de repli.
 
 ## Langues
 

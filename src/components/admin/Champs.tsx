@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { Retour } from "@/lib/actions";
 
@@ -20,7 +20,7 @@ export function Envoyer({
       : variante === "fantome"
         ? "btn-fantome"
         : variante === "danger"
-          ? "btn-fantome !border-[#c4102b]/40 !text-[#a30d23]"
+          ? "btn-fantome btn-danger"
           : "btn-encre";
 
   return (
@@ -37,7 +37,7 @@ export function Envoyer({
   );
 }
 
-/** Wraps a server action and renders its ok/error message underneath. */
+/** Enveloppe une action serveur et affiche son message sous le formulaire. */
 export function FormAction({
   action,
   children,
@@ -80,6 +80,7 @@ export function Champ({
   required,
   step,
   min,
+  dir,
   className = "",
 }: {
   label: string;
@@ -90,6 +91,7 @@ export function Champ({
   required?: boolean;
   step?: string;
   min?: number;
+  dir?: "ltr" | "rtl";
   className?: string;
 }) {
   return (
@@ -100,6 +102,7 @@ export function Champ({
         type={type}
         step={step}
         min={min}
+        dir={dir}
         required={required}
         placeholder={placeholder}
         defaultValue={defaultValue ?? ""}
@@ -109,16 +112,68 @@ export function Champ({
   );
 }
 
+/**
+ * Teinte : la pastille montre en direct la couleur choisie, et le code hexa
+ * reste modifiable au clavier — on colle souvent une valeur venue d'ailleurs.
+ */
+export function ChampCouleur({
+  label,
+  name,
+  defaultValue = "#c4102b",
+  apercu,
+}: {
+  label: string;
+  name: string;
+  defaultValue?: string | null;
+  apercu: string;
+}) {
+  const [valeur, setValeur] = useState(defaultValue || "#c4102b");
+  const valide = /^#[0-9a-f]{6}$/i.test(valeur);
+
+  return (
+    <div className="block">
+      <span className="etiquette">{label}</span>
+      <div className="flex items-center gap-2">
+        <span
+          aria-hidden
+          title={apercu}
+          className="h-[42px] w-[42px] shrink-0 rounded border border-trait"
+          style={{ background: valide ? valeur : "transparent" }}
+        />
+        <input
+          type="color"
+          value={valide ? valeur : "#c4102b"}
+          onChange={(e) => setValeur(e.target.value)}
+          aria-label={label}
+          className="h-[42px] w-[52px] shrink-0 cursor-pointer rounded border border-trait bg-transparent p-1"
+        />
+        <input
+          name={name}
+          type="text"
+          dir="ltr"
+          value={valeur}
+          onChange={(e) => setValeur(e.target.value)}
+          aria-label={apercu}
+          className="champ data !py-2 !text-[12.5px]"
+          style={{ borderColor: valide ? undefined : "var(--danger)" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function Zone({
   label,
   name,
   defaultValue,
   rows = 3,
+  dir,
 }: {
   label: string;
   name: string;
   defaultValue?: string | null | undefined;
   rows?: number;
+  dir?: "ltr" | "rtl";
 }) {
   return (
     <label className="block">
@@ -126,6 +181,7 @@ export function Zone({
       <textarea
         name={name}
         rows={rows}
+        dir={dir}
         defaultValue={defaultValue ?? ""}
         className="champ resize-y"
       />
@@ -133,27 +189,63 @@ export function Zone({
   );
 }
 
+/**
+ * Menu déroulant natif, mais habillé : sur téléphone le sélecteur système
+ * reste de loin le plus pratique, on ne le remplace pas par une liste maison.
+ */
 export function Liste({
   label,
   name,
   options,
   defaultValue,
+  placeholder,
+  required,
+  className = "",
 }: {
   label: string;
   name: string;
   options: { value: string; label: string }[];
   defaultValue?: string | null | undefined;
+  placeholder?: string;
+  required?: boolean;
+  className?: string;
 }) {
   return (
-    <label className="block">
+    <label className={`block ${className}`}>
       <span className="etiquette">{label}</span>
-      <select name={name} defaultValue={defaultValue ?? ""} className="champ">
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+      <div className="liste">
+        <select
+          name={name}
+          defaultValue={defaultValue ?? ""}
+          required={required}
+          className="champ"
+        >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          fill="none"
+          className="liste-fleche"
+        >
+          <path
+            d="m6 9 6 6 6-6"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
     </label>
   );
 }
@@ -168,7 +260,7 @@ export function Bascule({
   defaultChecked?: boolean;
 }) {
   return (
-    <label className="flex items-center gap-2 pt-5 text-[13px]">
+    <label className="flex items-center gap-2 py-2 text-[13px]">
       <input
         type="checkbox"
         name={name}

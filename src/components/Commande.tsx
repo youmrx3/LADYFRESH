@@ -6,6 +6,7 @@ import { useBoutique } from "./BoutiqueProvider";
 import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { da } from "@/lib/format";
+import { nomType } from "@/i18n/contenu";
 
 type Etat =
   | { phase: "repos" }
@@ -24,6 +25,7 @@ export function Commande() {
     minQuantity,
     meetsMinimum,
     settings,
+    types,
   } = useBoutique();
   const { t, locale } = useReglages();
 
@@ -170,7 +172,7 @@ export function Commande() {
 
                 <ul className="divide-y divide-trait">
                   {lines.map((l) => {
-                    const nom = `${t.types[l.product.type]} ${l.gamme?.name ?? ""}`;
+                    const nom = `${nomType(l.product, types, locale)} ${l.gamme?.name ?? ""}`;
                     return (
                       <li
                         key={l.variantId}
@@ -193,7 +195,7 @@ export function Commande() {
 
                         <div className="min-w-0">
                           <p className="truncate text-[14.5px] leading-tight">
-                            {t.types[l.product.type]}{" "}
+                            {nomType(l.product, types, locale)}{" "}
                             <span className="text-graphite-doux">
                               {l.gamme?.name}
                             </span>

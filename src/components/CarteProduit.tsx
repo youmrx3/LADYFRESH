@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useBoutique } from "./BoutiqueProvider";
 import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
+import { nomType } from "@/i18n/contenu";
 import { da, unitPrice } from "@/lib/format";
 import type { Gamme, Product } from "@/lib/types";
 
@@ -15,8 +16,8 @@ export function CarteProduit({
   product: Product;
   gamme: Gamme | undefined;
 }) {
-  const { purchase, quantityOf, setQuantity, minQuantity } = useBoutique();
-  const { t } = useReglages();
+  const { purchase, quantityOf, setQuantity, minQuantity, types } = useBoutique();
+  const { t, locale } = useReglages();
   const [taille, setTaille] = useState(0);
 
   const variant = product.variants[taille] ?? product.variants[0];
@@ -47,7 +48,7 @@ export function CarteProduit({
       >
         <Image
           src={variant.image}
-          alt={`${t.types[product.type]} ${gamme?.name ?? ""} ${variant.size_label}`}
+          alt={`${nomType(product, types, locale)} ${gamme?.name ?? ""} ${variant.size_label}`}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 22vw"
           className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.04]"
@@ -70,7 +71,7 @@ export function CarteProduit({
       {/* ------------------------------------------------------------- infos */}
       <div className="flex flex-1 flex-col p-4">
         <h3 className="display text-[1.0625rem] leading-tight">
-          {t.types[product.type]}
+          {nomType(product, types, locale)}
         </h3>
 
         {/* Chaque format a son prix et sa photo. */}
