@@ -11,6 +11,12 @@ import type { OrderStatus } from "./types";
 
 export type Retour = { ok?: string; error?: string };
 
+/** Champ facultatif : vide devient null, pour que le repli français joue. */
+function texte(formData: FormData, name: string): string | null {
+  const v = String(formData.get(name) ?? "").trim();
+  return v || null;
+}
+
 async function garde() {
   if (!(await isAdmin())) throw new Error("Session expirée.");
   const db = supabaseAdmin();
@@ -91,7 +97,11 @@ export async function enregistrerGamme(
       slug: String(formData.get("slug") ?? "").trim(),
       name: String(formData.get("name") ?? "").trim(),
       tagline: String(formData.get("tagline") ?? "").trim(),
+      tagline_ar: texte(formData, "tagline_ar"),
+      tagline_en: texte(formData, "tagline_en"),
       description: String(formData.get("description") ?? "").trim(),
+      description_ar: texte(formData, "description_ar"),
+      description_en: texte(formData, "description_en"),
       color_hex: String(formData.get("color_hex") ?? "#000000"),
       color_name: String(formData.get("color_name") ?? "").trim(),
       cover_image: String(formData.get("cover_image") ?? "").trim(),
@@ -230,8 +240,14 @@ export async function enregistrerReglages(
         Number(formData.get("min_demi_gros_pieces") ?? 5),
       ),
       hero_eyebrow: String(formData.get("hero_eyebrow") ?? ""),
+      hero_eyebrow_ar: texte(formData, "hero_eyebrow_ar"),
+      hero_eyebrow_en: texte(formData, "hero_eyebrow_en"),
       hero_title: String(formData.get("hero_title") ?? ""),
+      hero_title_ar: texte(formData, "hero_title_ar"),
+      hero_title_en: texte(formData, "hero_title_en"),
       hero_lede: String(formData.get("hero_lede") ?? ""),
+      hero_lede_ar: texte(formData, "hero_lede_ar"),
+      hero_lede_en: texte(formData, "hero_lede_en"),
       contact_email: String(formData.get("contact_email") ?? ""),
       contact_phone: String(formData.get("contact_phone") ?? ""),
       contact_address: String(formData.get("contact_address") ?? ""),
@@ -261,7 +277,11 @@ export async function enregistrerSlide(
       image: String(formData.get("image") ?? "").trim(),
       gamme_id: String(formData.get("gamme_id") ?? "") || null,
       eyebrow: String(formData.get("eyebrow") ?? "").trim(),
+      eyebrow_ar: texte(formData, "eyebrow_ar"),
+      eyebrow_en: texte(formData, "eyebrow_en"),
       caption: String(formData.get("caption") ?? "").trim(),
+      caption_ar: texte(formData, "caption_ar"),
+      caption_en: texte(formData, "caption_en"),
       sort_order: Number(formData.get("sort_order") ?? 0),
     };
     if (!valeurs.image) throw new Error("Une image est requise.");
@@ -298,7 +318,11 @@ export async function enregistrerVideo(
     const id = String(formData.get("id") ?? "");
     const valeurs = {
       title: String(formData.get("title") ?? "").trim(),
+      title_ar: texte(formData, "title_ar"),
+      title_en: texte(formData, "title_en"),
       note: String(formData.get("note") ?? "").trim(),
+      note_ar: texte(formData, "note_ar"),
+      note_en: texte(formData, "note_en"),
       src: String(formData.get("src") ?? "").trim(),
       poster: String(formData.get("poster") ?? "").trim() || null,
       sort_order: Number(formData.get("sort_order") ?? 0),

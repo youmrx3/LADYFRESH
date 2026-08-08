@@ -3,30 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const LIENS = [
-  { href: "/admin", label: "Commandes" },
-  { href: "/admin/gammes", label: "Gammes" },
-  { href: "/admin/produits", label: "Produits & prix" },
-  { href: "/admin/contenu", label: "Contenu du site" },
-];
-
-export function LiensAdmin() {
+export function LiensAdmin({
+  liens,
+}: {
+  liens: { href: string; label: string }[];
+}) {
   const path = usePathname();
 
   return (
     <nav className="border-y border-encre-bord lg:border-b-0">
-      <ul className="flex overflow-x-auto lg:block">
-        {LIENS.map((lien) => {
+      <ul className="no-scrollbar flex overflow-x-auto lg:block">
+        {liens.map((lien) => {
           const on =
-            lien.href === "/admin" ? path === "/admin" : path.startsWith(lien.href);
+            lien.href === "/admin"
+              ? path === "/admin"
+              : path.startsWith(lien.href);
           return (
             <li key={lien.href}>
               <Link
                 href={lien.href}
+                aria-current={on ? "page" : undefined}
                 className="block whitespace-nowrap border-encre-bord px-5 py-3.5 text-[14px] transition-colors lg:border-b"
                 style={{
-                  color: on ? "#0b0b0c" : "#8b8f8e",
-                  background: on ? "#cba53c" : "transparent",
+                  color: on ? "var(--or-fg)" : "var(--vitrine-muted)",
+                  background: on ? "var(--or-plein)" : "transparent",
                 }}
               >
                 {lien.label}

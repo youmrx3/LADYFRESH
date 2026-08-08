@@ -180,3 +180,29 @@ on conflict (id) do nothing;
 drop policy if exists "media public read" on storage.objects;
 create policy "media public read" on storage.objects
   for select using (bucket_id = 'media');
+
+-- ------------------------------------------------------------- trilingue
+-- Le français reste la colonne de référence ; `_ar` et `_en` sont facultatives
+-- et le site retombe sur le français quand elles sont vides.
+
+alter table gammes        add column if not exists tagline_ar     text;
+alter table gammes        add column if not exists tagline_en     text;
+alter table gammes        add column if not exists description_ar text;
+alter table gammes        add column if not exists description_en text;
+
+alter table hero_slides   add column if not exists eyebrow_ar text;
+alter table hero_slides   add column if not exists eyebrow_en text;
+alter table hero_slides   add column if not exists caption_ar text;
+alter table hero_slides   add column if not exists caption_en text;
+
+alter table videos        add column if not exists title_ar text;
+alter table videos        add column if not exists title_en text;
+alter table videos        add column if not exists note_ar  text;
+alter table videos        add column if not exists note_en  text;
+
+alter table site_settings add column if not exists hero_eyebrow_ar text;
+alter table site_settings add column if not exists hero_eyebrow_en text;
+alter table site_settings add column if not exists hero_title_ar   text;
+alter table site_settings add column if not exists hero_title_en   text;
+alter table site_settings add column if not exists hero_lede_ar    text;
+alter table site_settings add column if not exists hero_lede_en    text;

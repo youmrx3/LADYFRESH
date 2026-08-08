@@ -3,32 +3,32 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { Reveal } from "./Reveal";
+import { useReglages } from "./Reglages";
+import { fill } from "@/i18n";
+import { champ } from "@/i18n/contenu";
 import type { Video } from "@/lib/types";
 
 export function Videos({ videos }: { videos: Video[] }) {
+  const { t } = useReglages();
   if (videos.length === 0) return null;
 
   return (
-    <section className="etage-sombre border-t border-encre-bord py-20 sm:py-24">
+    <section className="etage-vitrine border-t border-encre-bord py-20 sm:py-24">
       <div className="shell">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="eyebrow text-or">Pourquoi nous choisir</p>
+            <p className="eyebrow text-or">{t.videos.eyebrow}</p>
             <h2 className="display display-l mt-4 max-w-[20ch]">
-              La preuve, en mouvement.
+              {t.videos.titre}
             </h2>
           </div>
-          <p className="max-w-[32ch] text-[15px] text-craie">
-            Les produits en situation, filmés pour nos revendeurs et nos
-            clientes.
-          </p>
+          <p className="max-w-[32ch] text-[15px] text-craie">{t.videos.intro}</p>
         </Reveal>
 
         <div
           className="mt-12 grid gap-4 sm:grid-cols-2"
           style={{
-            gridTemplateColumns:
-              videos.length === 1 ? "minmax(0,1fr)" : undefined,
+            gridTemplateColumns: videos.length === 1 ? "minmax(0,1fr)" : undefined,
           }}
         >
           {videos.map((video, i) => (
@@ -43,8 +43,12 @@ export function Videos({ videos }: { videos: Video[] }) {
 }
 
 function Lecteur({ video, solo }: { video: Video; solo: boolean }) {
+  const { t, locale } = useReglages();
   const ref = useRef<HTMLVideoElement>(null);
   const [lance, setLance] = useState(false);
+
+  const titre = champ(video, "title", locale);
+  const note = champ(video, "note", locale);
 
   function jouer() {
     setLance(true);
@@ -71,7 +75,7 @@ function Lecteur({ video, solo }: { video: Video; solo: boolean }) {
           type="button"
           onClick={jouer}
           className="absolute inset-0 h-full w-full"
-          aria-label={`Lire la vidéo : ${video.title}`}
+          aria-label={fill(t.videos.lire, { titre })}
         >
           {video.poster && (
             <Image
@@ -90,20 +94,17 @@ function Lecteur({ video, solo }: { video: Video; solo: boolean }) {
                 "linear-gradient(to top, rgba(11,11,12,0.92) 6%, rgba(11,11,12,0.35) 60%, rgba(11,11,12,0.55))",
             }}
           />
-          <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-or/60 bg-encre/40 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
+          <span className="absolute start-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-or/60 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 rtl:translate-x-1/2">
             <span
               aria-hidden
-              className="ml-1 block h-0 w-0 border-y-[9px] border-l-[14px] border-y-transparent border-l-or"
+              className="ms-1 block h-0 w-0 border-y-[9px] border-s-[14px] border-y-transparent"
+              style={{ borderInlineStartColor: "var(--or-plein)" }}
             />
           </span>
-          <span className="absolute inset-x-0 bottom-0 p-5 text-left">
-            <span className="display display-m block text-porcelaine">
-              {video.title}
-            </span>
-            {video.note && (
-              <span className="mt-1 block text-[14px] text-craie">
-                {video.note}
-              </span>
+          <span className="absolute inset-x-0 bottom-0 p-5 text-start">
+            <span className="display display-m block text-white">{titre}</span>
+            {note && (
+              <span className="mt-1 block text-[14px] text-white/70">{note}</span>
             )}
           </span>
         </button>

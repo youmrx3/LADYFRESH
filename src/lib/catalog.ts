@@ -31,6 +31,12 @@ export const GAMMES: Gamme[] = [
     tagline: "Rouge",
     description:
       "La rose rouge, en brume et en soin. Le parfum le plus affirmé de la maison.",
+    description_ar:
+      "الوردة الحمراء، بخاخًا وعناية. أقوى عطر في المجموعة.",
+    description_en:
+      "The red rose, as a mist and as care. The house's boldest scent.",
+    tagline_ar: "أحمر",
+    tagline_en: "Red",
     color_hex: "#C4102B",
     color_name: "Rouge",
     cover_image: "/gammes/rouge-sensuel.png",
@@ -44,6 +50,12 @@ export const GAMMES: Gamme[] = [
     tagline: "Rose",
     description:
       "Floral, tendre, quotidien. La gamme qui tourne le plus vite en rayon.",
+    description_ar:
+      "زهري، ناعم، يومي. المجموعة الأسرع دورانًا في الرفوف.",
+    description_en:
+      "Floral, soft, everyday. The range that moves fastest off the shelf.",
+    tagline_ar: "وردي",
+    tagline_en: "Pink",
     color_hex: "#E8458B",
     color_name: "Rose",
     cover_image: "/gammes/rose-douceur.png",
@@ -57,6 +69,12 @@ export const GAMMES: Gamme[] = [
     tagline: "Bordeaux",
     description:
       "Brume et déodorant seulement. Un duo profond, fruité, très demandé.",
+    description_ar:
+      "بخاخ ومزيل روائح فقط. ثنائي عميق وفاكهي، مطلوب بكثرة.",
+    description_en:
+      "Mist and deodorant only. A deep, fruity duo, much in demand.",
+    tagline_ar: "عنابي",
+    tagline_en: "Burgundy",
     color_hex: "#A5123F",
     color_name: "Bordeaux",
     cover_image: "/gammes/princess.jpg",
@@ -69,6 +87,12 @@ export const GAMMES: Gamme[] = [
     name: "ARA",
     tagline: "Rose gold",
     description: "Poudré et lumineux. La signature la plus douce du catalogue.",
+    description_ar:
+      "بودري ومشرق. أنعم توقيع في الكتالوج.",
+    description_en:
+      "Powdery and luminous. The softest signature in the catalogue.",
+    tagline_ar: "وردي ذهبي",
+    tagline_en: "Rose gold",
     color_hex: "#C98B85",
     color_name: "Rose gold",
     cover_image: "/gammes/ara.png",
@@ -82,6 +106,12 @@ export const GAMMES: Gamme[] = [
     tagline: "Violet",
     description:
       "Un violet franc, une tenue longue. Pensée pour les journées qui n'arrêtent pas.",
+    description_ar:
+      "بنفسجي صريح وثبات طويل. مصمّمة للأيام التي لا تتوقّف.",
+    description_en:
+      "A frank purple, long wear. Built for days that don't stop.",
+    tagline_ar: "بنفسجي",
+    tagline_en: "Purple",
     color_hex: "#8E3A9E",
     color_name: "Violet",
     cover_image: "/gammes/move-confiant.png",
@@ -94,6 +124,12 @@ export const GAMMES: Gamme[] = [
     name: "Comfort",
     tagline: "Bleu",
     description: "Aquatique et net. La gamme fraîcheur au sens strict.",
+    description_ar:
+      "مائي ونقي. مجموعة الانتعاش بالمعنى الحرفي.",
+    description_en:
+      "Aquatic and clean. The freshness range, literally.",
+    tagline_ar: "أزرق",
+    tagline_en: "Blue",
     color_hex: "#2E9DAF",
     color_name: "Bleu",
     cover_image: "/gammes/bleu-confort.png",
@@ -107,6 +143,12 @@ export const GAMMES: Gamme[] = [
     tagline: "Vert d'eau",
     description:
       "Hygiène intime pure : gel lavant et déodorant. Sans brume, sans détour.",
+    description_ar:
+      "نظافة حميمية خالصة: جل منظف ومزيل روائح. بلا بخاخ، بلا لفّ.",
+    description_en:
+      "Pure intimate care: wash and deodorant. No mist, no detour.",
+    tagline_ar: "أخضر مائي",
+    tagline_en: "Aqua",
     color_hex: "#2FB4A0",
     color_name: "Vert d'eau",
     cover_image: "/gammes/shower.png",
@@ -309,6 +351,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     image: "/gammes/rouge-sensuel.png",
     eyebrow: "Brume parfumée",
     caption: "Sensuel — 150 & 250 ml",
+    eyebrow_ar: "بخاخ معطر",
+    eyebrow_en: "Fragrance mist",
+    caption_ar: "Sensuel — 150 & 250 مل",
+    caption_en: "Sensuel — 150 & 250 ml",
     sort_order: 1,
   },
   {
@@ -317,6 +363,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     image: "/gammes/bleu-confort.png",
     eyebrow: "Déodorant femme",
     caption: "Comfort — 200 ml",
+    eyebrow_ar: "مزيل روائح للجسم",
+    eyebrow_en: "Body deodorant",
+    caption_ar: "Comfort — 200 مل",
+    caption_en: "Comfort — 200 ml",
     sort_order: 2,
   },
   {
@@ -325,6 +375,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     image: "/gammes/ara.png",
     eyebrow: "Déodorant femme",
     caption: "ARA — 200 ml",
+    eyebrow_ar: "مزيل روائح للجسم",
+    eyebrow_en: "Body deodorant",
+    caption_ar: "ARA — 200 مل",
+    caption_en: "ARA — 200 ml",
     sort_order: 3,
   },
   {
@@ -333,6 +387,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     image: "/gammes/move-confiant.png",
     eyebrow: "Déodorant intime",
     caption: "Confiant — 150 ml",
+    eyebrow_ar: "مزيل روائح حميمي",
+    eyebrow_en: "Intimate deodorant",
+    caption_ar: "Confiant — 150 مل",
+    caption_en: "Confiant — 150 ml",
     sort_order: 4,
   },
   {
@@ -341,6 +399,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     image: "/gammes/shower.png",
     eyebrow: "Hygiène intime",
     caption: "Shower — gel & déodorant",
+    eyebrow_ar: "نظافة حميمية",
+    eyebrow_en: "Intimate care",
+    caption_ar: "Shower — جل ومزيل",
+    caption_en: "Shower — wash & deodorant",
     sort_order: 5,
   },
   {
@@ -349,6 +411,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     image: "/gammes/princess.jpg",
     eyebrow: "Duo brume & déodorant",
     caption: "Princess — 150 & 200 ml",
+    eyebrow_ar: "ثنائي بخاخ ومزيل",
+    eyebrow_en: "Mist & deodorant duo",
+    caption_ar: "Princess — 150 & 200 مل",
+    caption_en: "Princess — 150 & 200 ml",
     sort_order: 6,
   },
   {
@@ -357,6 +423,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     image: "/gammes/rose-douceur.png",
     eyebrow: "Déodorant femme",
     caption: "Douceur — 200 ml",
+    eyebrow_ar: "مزيل روائح للجسم",
+    eyebrow_en: "Body deodorant",
+    caption_ar: "Douceur — 200 مل",
+    caption_en: "Douceur — 200 ml",
     sort_order: 7,
   },
 ];
@@ -365,7 +435,11 @@ export const VIDEOS: Video[] = [
   {
     id: "vid-1",
     title: "Une journée entière",
+    title_ar: "يوم كامل",
+    title_en: "A whole day",
     note: "Cours, travail, sorties — la fraîcheur tient.",
+    note_ar: "دراسة، عمل، خرجات — الانتعاش يدوم.",
+    note_en: "Class, work, going out — the freshness holds.",
     src: "/videos/ladyfresh-fraicheur.mp4",
     poster: "/gammes/rose-douceur.png",
     sort_order: 1,
@@ -378,9 +452,17 @@ export const SETTINGS: SiteSettings = {
   min_gros_cartons: 1,
   min_demi_gros_pieces: 5,
   hero_eyebrow: "Cosmétiques — Algérie",
+  hero_eyebrow_ar: "مستحضرات تجميل — الجزائر",
+  hero_eyebrow_en: "Cosmetics — Algeria",
   hero_title: "Sept gammes.\nUne même fraîcheur.",
+  hero_title_ar: "سبع مجموعات.\nانتعاش واحد.",
+  hero_title_en: "Seven ranges.\nOne freshness.",
   hero_lede:
     "Brumes parfumées, gels lavants intimes et déodorants Lady Fresh. Au détail, en demi-gros dès 5 pièces, ou en gros par carton.",
+  hero_lede_ar:
+    "بخاخات معطرة، جل منظف حميمي ومزيلات روائح ليدي فريش. بالتجزئة، بنصف الجملة ابتداءً من 5 قطع، أو بالجملة بالكرتون.",
+  hero_lede_en:
+    "Lady Fresh fragrance mists, intimate washes and deodorants. Retail, half-wholesale from 5 pieces, or wholesale by the carton.",
   contact_email: "contact@ladyfresh.dz",
   contact_phone: "+213 00 00 00 00",
   contact_address: "Alger, Algérie",

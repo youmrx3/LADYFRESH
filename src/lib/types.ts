@@ -23,9 +23,14 @@ export const PRODUCT_TYPE_LABEL: Record<ProductType, string> = {
 export type Gamme = {
   id: string;
   slug: string;
+  /** Nom de marque : jamais traduit. */
   name: string;
   tagline: string;
+  tagline_ar?: string | null;
+  tagline_en?: string | null;
   description: string;
+  description_ar?: string | null;
+  description_en?: string | null;
   color_hex: string;
   color_name: string;
   cover_image: string;
@@ -64,14 +69,22 @@ export type HeroSlide = {
   image: string;
   gamme_id: string;
   eyebrow: string;
+  eyebrow_ar?: string | null;
+  eyebrow_en?: string | null;
   caption: string;
+  caption_ar?: string | null;
+  caption_en?: string | null;
   sort_order: number;
 };
 
 export type Video = {
   id: string;
   title: string;
+  title_ar?: string | null;
+  title_en?: string | null;
   note: string;
+  note_ar?: string | null;
+  note_en?: string | null;
   src: string;
   poster: string | null;
   sort_order: number;
@@ -83,8 +96,14 @@ export type SiteSettings = {
   min_gros_cartons: number;
   min_demi_gros_pieces: number;
   hero_eyebrow: string;
+  hero_eyebrow_ar?: string | null;
+  hero_eyebrow_en?: string | null;
   hero_title: string;
+  hero_title_ar?: string | null;
+  hero_title_en?: string | null;
   hero_lede: string;
+  hero_lede_ar?: string | null;
+  hero_lede_en?: string | null;
   contact_email: string;
   contact_phone: string;
   contact_address: string;

@@ -17,8 +17,6 @@ import {
   getVideos,
 } from "@/lib/data";
 
-export const revalidate = 60;
-
 export default async function Accueil() {
   const [gammes, products, settings, slides, videos] = await Promise.all([
     getGammes(),
@@ -28,11 +26,19 @@ export default async function Accueil() {
     getVideos(),
   ]);
 
+  // Une référence = un format en vente, pas un produit.
+  const referenceCount = products.reduce((n, p) => n + p.variants.length, 0);
+
   return (
     <BoutiqueProvider products={products} gammes={gammes} settings={settings}>
       <Navbar />
       <main>
-        <Hero slides={slides} gammes={gammes} settings={settings} />
+        <Hero
+          slides={slides}
+          gammes={gammes}
+          settings={settings}
+          referenceCount={referenceCount}
+        />
         <CommentCommander settings={settings} />
         <RailGammes gammes={gammes} products={products} />
         <SelecteurAchat />

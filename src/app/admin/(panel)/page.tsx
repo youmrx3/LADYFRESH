@@ -1,163 +1,236 @@
+import Link from "next/link";
 import { Envoyer, FormAction } from "@/components/admin/Champs";
+import { EnTetePage } from "@/components/admin/Volet";
 import { changerStatutCommande } from "@/lib/actions";
 import { getOrders } from "@/lib/data";
-import { da, formatDate, purchaseLabel, quantityUnit } from "@/lib/format";
-import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/types";
+import { da, formatDate } from "@/lib/format";
+import { fill } from "@/i18n";
+import { HTML_LANG } from "@/i18n/config";
+import { getT } from "@/i18n/server";
+import type { OrderStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+const STATUTS: OrderStatus[] = ["nouvelle", "en_cours", "traitee", "livree"];
+
 const TEINTE: Record<OrderStatus, string> = {
   nouvelle: "#c4102b",
-  en_cours: "#cba53c",
-  traitee: "#2e9daf",
+  en_cours: "#b8860b",
+  traitee: "#2e7d9a",
   livree: "#2f8f5b",
 };
 
-export default async function Commandes() {
+export default async function Commandes({
+  searchParams,
+}: {
+  searchParams: Promise<{ statut?: string }>;
+}) {
+  const { t, locale } = await getT();
+  const { statut } = await searchParams;
   const orders = await getOrders();
 
-  const compte = (statut: OrderStatus) =>
-    orders.filter((o) => o.status === statut).length;
+  const filtre = STATUTS.includes(statut as OrderStatus)
+    ? (statut as OrderStatus)
+    : null;
+  const visibles = filtre ? orders.filter((o) => o.status === filtre) : orders;
+  const compte = (s: OrderStatus) => orders.filter((o) => o.status === s).length;
 
   return (
     <div>
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="eyebrow text-graphite-doux">Suivi</p>
-          <h1 className="display display-l mt-2">Commandes</h1>
-        </div>
-        <p className="data text-[13px] text-graphite-doux">
-          {orders.length} au total
-        </p>
-      </header>
+      <EnTetePage
+        eyebrow={t.admin.commandes.suivi}
+        titre={t.admin.commandes.titre}
+        action={
+          <p className="data text-[13px] text-graphite-doux">
+            {fill(t.admin.commandes.total, { n: orders.length })}
+          </p>
+        }
+      />
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {(Object.keys(ORDER_STATUS_LABEL) as OrderStatus[]).map((statut) => (
-          <div
-            key={statut}
-            className="rounded border border-trait bg-porcelaine-haut px-4 py-3"
-          >
-            <p className="eyebrow flex items-center gap-1.5 text-graphite-doux">
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ background: TEINTE[statut] }}
-              />
-              {ORDER_STATUS_LABEL[statut]}
-            </p>
-            <p className="data mt-1 text-[1.35rem]">{compte(statut)}</p>
-          </div>
+      {/* Les compteurs servent aussi de filtre : un clic, pas de menu. */}
+      <nav className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <Onglet
+          href="/admin"
+          actif={!filtre}
+          label={t.admin.commandes.filtreTous}
+          n={orders.length}
+        />
+        {STATUTS.map((s) => (
+          <Onglet
+            key={s}
+            href={`/admin?statut=${s}`}
+            actif={filtre === s}
+            label={t.statuts[s]}
+            n={compte(s)}
+            teinte={TEINTE[s]}
+          />
         ))}
-      </div>
+      </nav>
 
-      {orders.length === 0 ? (
-        <p className="mt-10 rounded border border-dashed border-trait px-6 py-16 text-center text-[15px] text-graphite-doux">
-          Aucune commande pour l&apos;instant. Les commandes WhatsApp et
-          formulaire arrivent toutes ici.
+      {visibles.length === 0 ? (
+        <p className="mt-8 rounded border border-dashed border-trait px-6 py-16 text-center text-[15px] text-graphite-doux">
+          {t.admin.commandes.vide}
         </p>
       ) : (
-        <ul className="mt-8 space-y-4">
-          {orders.map((order) => (
+        <ul className="mt-6 space-y-3">
+          {visibles.map((order) => (
             <li
               key={order.id}
-              className="overflow-hidden rounded-[10px] border border-trait bg-porcelaine-haut"
+              className="overflow-hidden rounded-[10px] border border-trait"
+              style={{ background: "var(--comptoir-surface)" }}
             >
-              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-trait px-5 py-4">
-                <div>
-                  <p className="flex flex-wrap items-center gap-2">
-                    <span className="data text-[15px]">{order.ref}</span>
-                    <span
-                      className="eyebrow rounded-full px-2 py-0.5 text-[9.5px] text-white"
-                      style={{ background: TEINTE[order.status] }}
+              <details>
+                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 p-4">
+                  <span
+                    aria-hidden
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: TEINTE[order.status] }}
+                  />
+                  <span className="data text-[14px]">{order.ref}</span>
+                  <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+                    {order.channel === "whatsapp"
+                      ? t.admin.commandes.canalWhatsapp
+                      : t.admin.commandes.canalForm}
+                  </span>
+                  <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+                    {t.achat[order.purchase_type]}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[13.5px] text-graphite-doux">
+                    {order.customer_name || t.admin.commandes.clientAbsent}
+                  </span>
+                  <span className="data text-[15px]">
+                    {da(order.total, t.unites.devise)}
+                  </span>
+                </summary>
+
+                <div className="border-t border-trait">
+                  <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
+                    <div className="text-[13px] text-graphite-doux">
+                      <p className="data">
+                        {formatDate(order.created_at, HTML_LANG[locale])}
+                      </p>
+                      {order.phone && (
+                        <a
+                          href={`tel:${order.phone.replace(/\s/g, "")}`}
+                          dir="ltr"
+                          className="data inline-block underline underline-offset-2"
+                        >
+                          {order.phone}
+                        </a>
+                      )}
+                      {order.wilaya && <span> · {order.wilaya}</span>}
+                    </div>
+
+                    <FormAction
+                      action={changerStatutCommande}
+                      className="flex items-end gap-2"
                     >
-                      {ORDER_STATUS_LABEL[order.status]}
-                    </span>
-                    <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
-                      {order.channel === "whatsapp" ? "WhatsApp" : "Formulaire"}
-                    </span>
-                    <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
-                      {purchaseLabel(order.purchase_type)}
-                    </span>
-                  </p>
-                  <p className="mt-1.5 text-[14px]">
-                    {order.customer_name || "Client non renseigné"}
-                    {order.phone && (
-                      <a
-                        href={`tel:${order.phone.replace(/\s/g, "")}`}
-                        className="data ml-2 text-graphite-doux underline underline-offset-2"
-                      >
-                        {order.phone}
-                      </a>
-                    )}
-                  </p>
-                  <p className="data mt-0.5 text-[12px] text-graphite-doux">
-                    {formatDate(order.created_at)}
-                    {order.wilaya && ` · ${order.wilaya}`}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <span className="data text-[1.2rem]">{da(order.total)}</span>
-                  <FormAction
-                    action={changerStatutCommande}
-                    className="flex items-end gap-2"
-                  >
-                    <input type="hidden" name="id" value={order.id} />
-                    <label className="block">
-                      <span className="etiquette">Statut</span>
-                      <select
-                        name="status"
-                        defaultValue={order.status}
-                        className="champ !w-auto !py-2 !text-[13px]"
-                      >
-                        {(Object.keys(ORDER_STATUS_LABEL) as OrderStatus[]).map(
-                          (s) => (
-                            <option key={s} value={s}>
-                              {ORDER_STATUS_LABEL[s]}
-                            </option>
-                          ),
-                        )}
-                      </select>
-                    </label>
-                    <Envoyer>Mettre à jour</Envoyer>
-                  </FormAction>
-                </div>
-              </div>
-
-              <table className="w-full">
-                <tbody className="divide-y divide-trait">
-                  {order.items?.map((item) => (
-                    <tr key={item.id || `${item.product_name}${item.size_label}`}>
-                      <td className="px-5 py-2.5 text-[14px]">
-                        {item.product_name}
-                        <span className="data ml-2 text-[12px] text-graphite-doux">
-                          {item.size_label}
+                      <input type="hidden" name="id" value={order.id} />
+                      <label className="block">
+                        <span className="etiquette">
+                          {t.admin.commandes.statut}
                         </span>
-                      </td>
-                      <td className="data px-3 py-2.5 text-right text-[13px] text-graphite-doux">
-                        {item.quantity}{" "}
-                        {quantityUnit(order.purchase_type, item.quantity)}
-                      </td>
-                      <td className="data px-3 py-2.5 text-right text-[13px] text-graphite-doux">
-                        {da(item.unit_price)}
-                      </td>
-                      <td className="data px-5 py-2.5 text-right text-[14px]">
-                        {da(item.line_total)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <select
+                          name="status"
+                          defaultValue={order.status}
+                          className="champ !w-auto !py-2 !text-[13px]"
+                        >
+                          {STATUTS.map((s) => (
+                            <option key={s} value={s}>
+                              {t.statuts[s]}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <Envoyer>{t.admin.commandes.mettreAJour}</Envoyer>
+                    </FormAction>
+                  </div>
 
-              {(order.address || order.note) && (
-                <div className="border-t border-trait bg-porcelaine/60 px-5 py-3 text-[13px] text-graphite-doux">
-                  {order.address && <p>Adresse : {order.address}</p>}
-                  {order.note && <p>Note : {order.note}</p>}
+                  <ul className="divide-y divide-trait border-t border-trait">
+                    {order.items?.map((item, i) => (
+                      <li
+                        key={item.id || `${item.product_name}-${i}`}
+                        className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-2.5"
+                      >
+                        <span className="text-[14px]">
+                          {item.product_name}{" "}
+                          <span className="data text-[12px] text-graphite-doux">
+                            {item.size_label}
+                          </span>
+                        </span>
+                        <span className="data text-[13px] text-graphite-doux">
+                          {item.quantity}{" "}
+                          {order.purchase_type === "gros"
+                            ? t.unites.cartons
+                            : t.unites.pieces}{" "}
+                          × {da(item.unit_price, t.unites.devise)}
+                        </span>
+                        <span className="data text-[14px]">
+                          {da(item.line_total, t.unites.devise)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {(order.address || order.note) && (
+                    <div className="border-t border-trait bg-comptoir px-4 py-3 text-[13px] text-graphite-doux">
+                      {order.address && (
+                        <p>
+                          {t.admin.commandes.adresse}{t.api.sep}{order.address}
+                        </p>
+                      )}
+                      {order.note && (
+                        <p>
+                          {t.admin.commandes.note}{t.api.sep}{order.note}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
+              </details>
             </li>
           ))}
         </ul>
       )}
     </div>
+  );
+}
+
+function Onglet({
+  href,
+  actif,
+  label,
+  n,
+  teinte,
+}: {
+  href: string;
+  actif: boolean;
+  label: string;
+  n: number;
+  teinte?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={actif ? "page" : undefined}
+      className="rounded border px-3 py-2.5 transition-colors"
+      style={{
+        borderColor: actif ? "var(--comptoir-fg)" : "var(--comptoir-line)",
+        background: actif ? "var(--comptoir-fg)" : "var(--comptoir-surface)",
+        color: actif ? "var(--comptoir-surface)" : "inherit",
+      }}
+    >
+      <span className="eyebrow flex items-center gap-1.5 text-[9.5px] opacity-70">
+        {teinte && (
+          <span
+            aria-hidden
+            className="inline-block h-2 w-2 shrink-0 rounded-full"
+            style={{ background: teinte }}
+          />
+        )}
+        {label}
+      </span>
+      <span className="data mt-0.5 block text-[1.2rem]">{n}</span>
+    </Link>
   );
 }

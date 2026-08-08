@@ -1,4 +1,8 @@
+"use client";
+
 import { Reveal } from "./Reveal";
+import { useReglages } from "./Reglages";
+import { fill } from "@/i18n";
 import type { Gamme, SiteSettings } from "@/lib/types";
 
 /**
@@ -12,10 +16,11 @@ export function AppelFinal({
   gammes: Gamme[];
   settings: SiteSettings;
 }) {
+  const { t } = useReglages();
   const noms = [...gammes, ...gammes];
 
   return (
-    <section className="etage-sombre relative overflow-hidden border-t border-encre-bord py-20 sm:py-24">
+    <section className="etage-vitrine relative overflow-hidden border-t border-encre-bord py-20 sm:py-24">
       <div aria-hidden className="pointer-events-none select-none">
         <div className="marquee flex w-max gap-10">
           {noms.map((g, i) => (
@@ -36,16 +41,14 @@ export function AppelFinal({
       <div className="shell relative mt-14 text-center">
         <Reveal>
           <h2 className="display display-l mx-auto max-w-[20ch]">
-            Prête à commander ?
+            {t.appel.titre}
           </h2>
           <p className="lede mx-auto mt-4 max-w-[46ch] text-craie">
-            Demi-gros dès {settings.min_demi_gros_pieces} pièces, gros au
-            carton. Composez votre commande, envoyez-la, on s&apos;occupe du
-            reste.
+            {fill(t.appel.lede, { min: settings.min_demi_gros_pieces })}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#boutique" className="btn btn-or">
-              Composer ma commande
+              {t.appel.cta}
             </a>
             <a
               href={`https://wa.me/${settings.whatsapp_number.replace(/\D/g, "")}`}
@@ -53,7 +56,7 @@ export function AppelFinal({
               rel="noreferrer noopener"
               className="btn btn-fantome"
             >
-              Nous écrire sur WhatsApp
+              {t.appel.ctaWhatsapp}
             </a>
           </div>
         </Reveal>
@@ -65,9 +68,7 @@ export function AppelFinal({
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
         }
-        @media (prefers-reduced-motion: reduce) {
-          .marquee { animation: none; }
-        }
+        @media (prefers-reduced-motion: reduce) { .marquee { animation: none; } }
       `}</style>
     </section>
   );

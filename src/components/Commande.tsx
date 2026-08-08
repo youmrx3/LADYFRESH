@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useBoutique } from "./BoutiqueProvider";
-import { da, purchaseLabel, quantityUnit } from "@/lib/format";
-import { PRODUCT_TYPE_LABEL } from "@/lib/types";
+import { useReglages } from "./Reglages";
+import { fill } from "@/i18n";
+import { da } from "@/lib/format";
 
 type Etat =
   | { phase: "repos" }
@@ -24,6 +25,7 @@ export function Commande() {
     meetsMinimum,
     settings,
   } = useBoutique();
+  const { t, locale } = useReglages();
 
   const [etat, setEtat] = useState<Etat>({ phase: "repos" });
   const [client, setClient] = useState({
@@ -35,9 +37,10 @@ export function Commande() {
   });
 
   const vide = lines.length === 0;
+  const devise = t.unites.devise;
 
   async function envoyer(canal: "whatsapp" | "formulaire") {
-    // Ouverte avant l'await : un onglet ouvert plus tard serait bloqué.
+    // Ouvert avant l'await : un onglet ouvert plus tard serait bloqué.
     const onglet = canal === "whatsapp" ? window.open("", "_blank") : null;
     setEtat({ phase: "envoi", canal });
 
@@ -48,6 +51,7 @@ export function Commande() {
         body: JSON.stringify({
           channel: canal,
           purchase,
+          locale,
           customer: client,
           items: lines.map((l) => ({
             variantId: l.variantId,
@@ -59,7 +63,10 @@ export function Commande() {
 
       if (!reponse.ok) {
         onglet?.close();
-        setEtat({ phase: "erreur", message: data.error ?? "Envoi impossible." });
+        setEtat({
+          phase: "erreur",
+          message: data.error ?? t.commande.envoiImpossible,
+        });
         return;
       }
 
@@ -72,33 +79,31 @@ export function Commande() {
       clear();
     } catch {
       onglet?.close();
-      setEtat({
-        phase: "erreur",
-        message: "Connexion interrompue. Vérifiez votre réseau et réessayez.",
-      });
+      setEtat({ phase: "erreur", message: t.commande.reseau });
     }
   }
 
   if (etat.phase === "envoyee") {
     return (
-      <section id="commande" className="etage-clair saut-ancre border-t border-trait py-20">
+      <section
+        id="commande"
+        className="etage-comptoir saut-ancre border-t border-trait py-20"
+      >
         <div className="shell max-w-[38rem] text-center">
-          <p className="eyebrow text-graphite-doux">Commande enregistrée</p>
+          <p className="eyebrow text-graphite-doux">{t.commande.okEyebrow}</p>
           <h2 className="display display-l mt-4">
-            C&apos;est noté. Réf.{" "}
+            {t.commande.okTitre}{" "}
             <span className="data text-[0.68em]">{etat.ref}</span>
           </h2>
           <p className="lede mt-4 text-graphite-doux">
-            {etat.canal === "whatsapp"
-              ? "WhatsApp s'est ouvert avec votre récapitulatif. Envoyez le message pour confirmer — nous vous rappelons pour la livraison."
-              : "Nous avons reçu votre commande et nous vous rappelons sur le numéro indiqué pour confirmer la livraison."}
+            {etat.canal === "whatsapp" ? t.commande.okWhatsapp : t.commande.okForm}
           </p>
           <button
             type="button"
             onClick={() => setEtat({ phase: "repos" })}
             className="btn btn-encre mt-8"
           >
-            Passer une autre commande
+            {t.commande.okCta}
           </button>
         </div>
       </section>
@@ -106,12 +111,15 @@ export function Commande() {
   }
 
   return (
-    <section id="commande" className="etage-clair saut-ancre border-t border-trait py-16 sm:py-20">
+    <section
+      id="commande"
+      className="etage-comptoir saut-ancre border-t border-trait py-16 sm:py-20"
+    >
       <div className="shell">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow text-graphite-doux">Votre commande</p>
-            <h2 className="display display-l mt-3">Le récapitulatif.</h2>
+            <p className="eyebrow text-graphite-doux">{t.commande.eyebrow}</p>
+            <h2 className="display display-l mt-3">{t.commande.titre}</h2>
           </div>
           {!vide && (
             <button
@@ -119,32 +127,41 @@ export function Commande() {
               onClick={clear}
               className="eyebrow text-graphite-doux underline underline-offset-4 hover:text-graphite"
             >
-              Tout vider
+              {t.commande.toutVider}
             </button>
           )}
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-8">
           {/* ------------------------------------------------- le bordereau */}
-          <div className="overflow-hidden rounded-[var(--radius-plaque)] border border-trait bg-porcelaine-haut">
+          <div
+            className="overflow-hidden rounded-[var(--radius-plaque)] border border-trait"
+            style={{ background: "var(--comptoir-surface)" }}
+          >
             {vide ? (
               <div className="px-6 py-20 text-center">
-                <p className="display display-m">Rien pour l&apos;instant.</p>
+                <p className="display display-m">{t.commande.videTitre}</p>
                 <p className="mt-2 text-[15px] text-graphite-doux">
-                  Ajoutez des références depuis la boutique, elles s&apos;empilent ici.
+                  {t.commande.videTexte}
                 </p>
                 <a href="#boutique" className="btn btn-encre mt-6">
-                  Aller à la boutique
+                  {t.commande.videCta}
                 </a>
               </div>
             ) : (
               <>
-                <div className="hidden border-b border-trait bg-porcelaine/60 px-5 py-2.5 sm:grid sm:grid-cols-[1fr_5.5rem_6rem_6.5rem_2rem] sm:gap-3">
-                  {["Référence", "Qté", "P.U.", "Total", ""].map((h, i) => (
+                <div className="hidden border-b border-trait bg-comptoir px-5 py-2.5 sm:grid sm:grid-cols-[1fr_5.5rem_6rem_6.5rem_2rem] sm:gap-3">
+                  {[
+                    t.commande.colRef,
+                    t.commande.colQte,
+                    t.commande.colPu,
+                    t.commande.colTotal,
+                    "",
+                  ].map((h, i) => (
                     <span
                       key={h || i}
                       className="eyebrow text-[10px] text-graphite-doux"
-                      style={{ textAlign: i === 0 ? "left" : "right" }}
+                      style={{ textAlign: i === 0 ? "start" : "end" }}
                     >
                       {h}
                     </span>
@@ -152,83 +169,92 @@ export function Commande() {
                 </div>
 
                 <ul className="divide-y divide-trait">
-                  {lines.map((l) => (
-                    <li
-                      key={l.variantId}
-                      className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[3.25rem_1fr_5.5rem_6rem_6.5rem_2rem] sm:px-5"
-                    >
-                      <div
-                        className="relative h-14 w-full overflow-hidden rounded"
-                        style={{
-                          background: `color-mix(in srgb, ${l.product.color_hex} 8%, #fff)`,
-                        }}
+                  {lines.map((l) => {
+                    const nom = `${t.types[l.product.type]} ${l.gamme?.name ?? ""}`;
+                    return (
+                      <li
+                        key={l.variantId}
+                        className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[3.25rem_1fr_5.5rem_6rem_6.5rem_2rem] sm:px-5"
                       >
-                        <Image
-                          src={l.variant.image}
-                          alt=""
-                          fill
-                          sizes="52px"
-                          className="object-contain p-1"
-                        />
-                      </div>
+                        <div
+                          className="relative h-14 w-full overflow-hidden rounded"
+                          style={{
+                            background: `color-mix(in srgb, ${l.product.color_hex} 8%, var(--comptoir-surface))`,
+                          }}
+                        >
+                          <Image
+                            src={l.variant.image}
+                            alt=""
+                            fill
+                            sizes="52px"
+                            className="object-contain p-1"
+                          />
+                        </div>
 
-                      <div className="min-w-0">
-                        <p className="truncate text-[14.5px] leading-tight">
-                          {PRODUCT_TYPE_LABEL[l.product.type]}{" "}
-                          <span className="text-graphite-doux">
-                            {l.gamme?.name}
-                          </span>
-                        </p>
-                        <p className="data mt-0.5 text-[11.5px] text-graphite-doux">
-                          {l.variant.size_label}
-                          {purchase === "gros" &&
-                            ` · ${l.variant.units_per_carton} pc/carton`}
-                        </p>
-                        <p className="data mt-1 text-[12px] text-graphite-doux sm:hidden">
-                          {l.quantity} {quantityUnit(purchase, l.quantity)} ×{" "}
-                          {da(l.unit)} = <strong>{da(l.total)}</strong>
-                        </p>
-                      </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-[14.5px] leading-tight">
+                            {t.types[l.product.type]}{" "}
+                            <span className="text-graphite-doux">
+                              {l.gamme?.name}
+                            </span>
+                          </p>
+                          <p className="data mt-0.5 text-[11.5px] text-graphite-doux">
+                            {l.variant.size_label}
+                            {purchase === "gros" &&
+                              ` · ${fill(t.commande.parCarton, {
+                                n: l.variant.units_per_carton,
+                              })}`}
+                          </p>
+                          <p className="data mt-1 text-[12px] text-graphite-doux sm:hidden">
+                            {l.quantity}{" "}
+                            {purchase === "gros"
+                              ? t.unites.cartons
+                              : t.unites.pieces}{" "}
+                            × {da(l.unit, devise)} ={" "}
+                            <strong>{da(l.total, devise)}</strong>
+                          </p>
+                        </div>
 
-                      <div className="hidden items-center justify-end sm:flex">
-                        <input
-                          type="number"
-                          min={1}
-                          value={l.quantity}
-                          onChange={(e) =>
-                            setQuantity(
-                              l.variantId,
-                              Math.max(0, Number(e.target.value) || 0),
-                            )
-                          }
-                          aria-label={`Quantité — ${l.product.name}`}
-                          className="data h-9 w-[4.25rem] rounded border border-trait bg-transparent text-center text-[13px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-                      <span className="data hidden text-right text-[13px] text-graphite-doux sm:block">
-                        {da(l.unit)}
-                      </span>
-                      <span className="data hidden text-right text-[14px] sm:block">
-                        {da(l.total)}
-                      </span>
+                        <div className="hidden items-center justify-end sm:flex">
+                          <input
+                            type="number"
+                            min={1}
+                            value={l.quantity}
+                            onChange={(e) =>
+                              setQuantity(
+                                l.variantId,
+                                Math.max(0, Number(e.target.value) || 0),
+                              )
+                            }
+                            aria-label={fill(t.commande.quantiteLigne, { nom })}
+                            className="data h-9 w-full max-w-[4.75rem] rounded border border-trait bg-transparent text-center text-[13px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        </div>
+                        <span className="data hidden text-end text-[13px] text-graphite-doux sm:block">
+                          {da(l.unit, devise)}
+                        </span>
+                        <span className="data hidden text-end text-[14px] sm:block">
+                          {da(l.total, devise)}
+                        </span>
 
-                      <button
-                        type="button"
-                        onClick={() => setQuantity(l.variantId, 0)}
-                        aria-label={`Retirer ${l.product.name}`}
-                        className="justify-self-end text-[18px] leading-none text-graphite-doux transition-colors hover:text-graphite"
-                      >
-                        ×
-                      </button>
-                    </li>
-                  ))}
+                        <button
+                          type="button"
+                          onClick={() => setQuantity(l.variantId, 0)}
+                          aria-label={fill(t.commande.retirer, { nom })}
+                          className="justify-self-end text-[18px] leading-none text-graphite-doux transition-colors hover:text-graphite"
+                        >
+                          ×
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
 
-                <div className="flex items-baseline justify-between gap-4 border-t border-trait bg-porcelaine/60 px-5 py-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-4 border-t border-trait bg-comptoir px-5 py-4">
                   <span className="eyebrow text-graphite-doux">
-                    {purchaseLabel(purchase)} · {pieceCount} pièces
+                    {t.achat[purchase]} · {pieceCount} {t.unites.pieces}
                   </span>
-                  <span className="data text-[1.4rem]">{da(total)}</span>
+                  <span className="data text-[1.4rem]">{da(total, devise)}</span>
                 </div>
               </>
             )}
@@ -236,18 +262,31 @@ export function Commande() {
 
           {/* ------------------------------------------------- l'expédition */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-[var(--radius-plaque)] border border-trait bg-porcelaine-haut p-5 sm:p-6">
-              <h3 className="display display-m">Envoyer la commande</h3>
+            <div
+              className="rounded-[var(--radius-plaque)] border border-trait p-5 sm:p-6"
+              style={{ background: "var(--comptoir-surface)" }}
+            >
+              <h3 className="display display-m">{t.commande.envoyer}</h3>
 
               {!vide && !meetsMinimum && (
-                <p className="mt-4 rounded border border-or/40 bg-or/8 px-3 py-2.5 text-[13px] leading-snug text-graphite">
+                <p
+                  className="mt-4 rounded border px-3 py-2.5 text-[13px] leading-snug"
+                  style={{
+                    borderColor: "color-mix(in srgb, var(--or-trait) 40%, transparent)",
+                    background: "color-mix(in srgb, var(--or-trait) 8%, transparent)",
+                  }}
+                >
                   {purchase === "gros"
-                    ? `Chaque référence doit atteindre ${minQuantity} carton${
-                        minQuantity > 1 ? "s" : ""
-                      }.`
-                    : `Le demi-gros démarre à ${minQuantity} pièces. Il en manque ${
-                        minQuantity - pieceCount
-                      }.`}
+                    ? fill(
+                        minQuantity > 1
+                          ? t.commande.manqueGrosPluriel
+                          : t.commande.manqueGros,
+                        { n: minQuantity },
+                      )
+                    : fill(t.commande.manqueDemi, {
+                        n: minQuantity,
+                        reste: minQuantity - pieceCount,
+                      })}
                 </p>
               )}
 
@@ -255,45 +294,40 @@ export function Commande() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="etiquette" htmlFor="cmd-nom">
-                      Nom
+                      {t.commande.nom}
                     </label>
                     <input
                       id="cmd-nom"
                       className="champ"
                       value={client.name}
-                      onChange={(e) =>
-                        setClient({ ...client, name: e.target.value })
-                      }
+                      onChange={(e) => setClient({ ...client, name: e.target.value })}
                       autoComplete="name"
                     />
                   </div>
                   <div>
                     <label className="etiquette" htmlFor="cmd-tel">
-                      Téléphone
+                      {t.commande.telephone}
                     </label>
                     <input
                       id="cmd-tel"
                       className="champ"
                       inputMode="tel"
+                      dir="ltr"
                       value={client.phone}
-                      onChange={(e) =>
-                        setClient({ ...client, phone: e.target.value })
-                      }
+                      onChange={(e) => setClient({ ...client, phone: e.target.value })}
                       autoComplete="tel"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="etiquette" htmlFor="cmd-wilaya">
-                    Wilaya
+                    {t.commande.wilaya}
                   </label>
                   <input
                     id="cmd-wilaya"
                     className="champ"
                     value={client.wilaya}
-                    onChange={(e) =>
-                      setClient({ ...client, wilaya: e.target.value })
-                    }
+                    onChange={(e) => setClient({ ...client, wilaya: e.target.value })}
                   />
                 </div>
               </div>
@@ -305,23 +339,23 @@ export function Commande() {
                 className="btn btn-whatsapp mt-5 w-full"
               >
                 {etat.phase === "envoi" && etat.canal === "whatsapp"
-                  ? "Préparation…"
-                  : "Commander via WhatsApp"}
+                  ? t.commande.whatsappPrep
+                  : t.commande.whatsapp}
               </button>
               <p className="mt-2 text-center text-[12px] text-graphite-doux">
-                Ouvre WhatsApp avec le récapitulatif déjà écrit.
+                {t.commande.whatsappAide}
               </p>
 
               {/* ------------------------------- solution sans WhatsApp */}
               <details className="mt-6 border-t border-trait pt-5">
                 <summary className="eyebrow cursor-pointer list-none text-graphite-doux transition-colors hover:text-graphite">
-                  Pas de WhatsApp ? Envoyer par formulaire
+                  {t.commande.sansWhatsapp}
                 </summary>
 
                 <div className="mt-4 space-y-3">
                   <div>
                     <label className="etiquette" htmlFor="cmd-adresse">
-                      Adresse de livraison
+                      {t.commande.adresse}
                     </label>
                     <input
                       id="cmd-adresse"
@@ -335,16 +369,14 @@ export function Commande() {
                   </div>
                   <div>
                     <label className="etiquette" htmlFor="cmd-note">
-                      Note
+                      {t.commande.note}
                     </label>
                     <textarea
                       id="cmd-note"
                       className="champ resize-y"
                       rows={2}
                       value={client.note}
-                      onChange={(e) =>
-                        setClient({ ...client, note: e.target.value })
-                      }
+                      onChange={(e) => setClient({ ...client, note: e.target.value })}
                     />
                   </div>
                   <button
@@ -354,11 +386,11 @@ export function Commande() {
                     className="btn btn-encre w-full"
                   >
                     {etat.phase === "envoi" && etat.canal === "formulaire"
-                      ? "Envoi…"
-                      : "Envoyer la commande"}
+                      ? t.commande.envoiEnCours
+                      : t.commande.envoyerForm}
                   </button>
                   <p className="text-center text-[12px] text-graphite-doux">
-                    Nom et téléphone sont nécessaires pour vous rappeler.
+                    {t.commande.formAide}
                   </p>
                 </div>
               </details>
@@ -366,7 +398,12 @@ export function Commande() {
               {etat.phase === "erreur" && (
                 <p
                   role="alert"
-                  className="mt-4 rounded border border-[#c4102b]/35 bg-[#c4102b]/6 px-3 py-2.5 text-[13px] leading-snug text-[#8f0c20]"
+                  className="mt-4 rounded border px-3 py-2.5 text-[13px] leading-snug"
+                  style={{
+                    borderColor: "color-mix(in srgb, var(--danger) 40%, transparent)",
+                    background: "color-mix(in srgb, var(--danger) 7%, transparent)",
+                    color: "var(--danger)",
+                  }}
                 >
                   {etat.message}
                 </p>
@@ -374,10 +411,10 @@ export function Commande() {
             </div>
 
             <p className="mt-4 px-1 text-[12.5px] leading-relaxed text-graphite-doux">
-              Toutes les commandes, WhatsApp ou formulaire, arrivent dans le même
-              suivi. Une question avant de commander ?{" "}
+              {t.commande.piedDePage}{" "}
               <a
                 href={`tel:${settings.contact_phone.replace(/\s/g, "")}`}
+                dir="ltr"
                 className="underline underline-offset-2"
               >
                 {settings.contact_phone}

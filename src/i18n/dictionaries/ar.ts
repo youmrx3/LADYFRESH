@@ -1,0 +1,397 @@
+import type { Dictionary } from "./fr";
+
+/**
+ * Arabe algérien standard, chiffres occidentaux — c'est ce qui se lit sur les
+ * étiquettes et les factures en Algérie.
+ */
+export const ar: Dictionary = {
+  meta: {
+    title: "ليدي فريش — بخاخات معطرة، جل حميمي ومزيلات الروائح",
+    description:
+      "سبع مجموعات من البخاخات المعطرة، الجل المنظف الحميمي ومزيلات الروائح. بالتجزئة، نصف الجملة ابتداءً من 5 قطع، والجملة بالكرتون. الطلب عبر واتساب.",
+  },
+
+  unites: {
+    devise: "دج",
+    piece: "قطعة",
+    pieces: "قطعة",
+    pieceCourt: "قطعة",
+    carton: "كرتون",
+    cartons: "كرتون",
+    cartonCourt: "كرتون",
+  },
+
+  types: {
+    brume: "بخاخ معطر",
+    gel_intime: "جل منظف حميمي",
+    deodorant_intime: "مزيل روائح حميمي",
+    deodorant_femme: "مزيل روائح للجسم",
+  },
+
+  typesCourts: {
+    brume: "بخاخ",
+    gel_intime: "جل حميمي",
+    deodorant_intime: "مزيل حميمي",
+    deodorant_femme: "مزيل للجسم",
+  },
+
+  couleurs: {
+    Rouge: "أحمر",
+    Rose: "وردي",
+    Bordeaux: "عنابي",
+    "Rose gold": "وردي ذهبي",
+    Violet: "بنفسجي",
+    Bleu: "أزرق",
+    "Vert d'eau": "أخضر مائي",
+  },
+
+  achat: {
+    gros: "بالجملة",
+    demi_gros: "نصف الجملة",
+  },
+
+  nav: {
+    accueil: "الرئيسية",
+    commander: "كيف أطلب",
+    gammes: "مجموعاتنا",
+    boutique: "المتجر",
+    contact: "اتصل بنا",
+    cta: "اطلبي الآن",
+    ouvrirMenu: "فتح القائمة",
+    fermerMenu: "إغلاق القائمة",
+    principale: "الرئيسية",
+    menuMobile: "قائمة الهاتف",
+    accueilAria: "ليدي فريش — الرئيسية",
+    theme: "المظهر",
+    themeClair: "فاتح",
+    themeSombre: "داكن",
+    langue: "اللغة",
+  },
+
+  hero: {
+    ctaBoutique: "تصفحي المتجر",
+    ctaCommander: "كيف أطلب",
+    statGammes: "مجموعات",
+    statReferences: "منتجات",
+    index: "الفهرس",
+    vitrineAria: "المجموعات المعروضة",
+  },
+
+  commander: {
+    eyebrow: "كيف أطلب",
+    titre: "ثلاث خطوات، ويُرسل الطلب.",
+    etapes: [
+      {
+        titre: "اختاري الصيغة",
+        texte:
+          "بالجملة عبر الكرتون، أو نصف الجملة ابتداءً من {min} قطعة. أسعار المتجر تتبع الصيغة المختارة.",
+      },
+      {
+        titre: "كوّني طلبك",
+        texte:
+          "صفّي حسب المنتج أو اللون، وحدّدي الكميات. الملخّص يتحدّث مع كل إضافة.",
+      },
+      {
+        titre: "أرسليه",
+        texte:
+          "زرّ واحد يفتح واتساب وطلبك مكتوب مسبقًا. لا تملكين واتساب؟ الاستمارة ترسله إلينا مباشرة.",
+      },
+    ],
+  },
+
+  gammes: {
+    eyebrow: "مجموعاتنا",
+    titre: "سبعة ألوان، لمسة واحدة.",
+    intro:
+      "لكل مجموعة عطرها ولونها. الأحجام تختلف من مجموعة لأخرى — التفصيل داخل العمود.",
+    voirBoutique: "شاهديها في المتجر",
+    aria: "مجموعة {nom} — شاهديها في المتجر",
+  },
+
+  format: {
+    eyebrow: "صيغة الشراء",
+    titre: "تشترين بالجملة أم بنصف الجملة؟",
+    lede: "هذا الاختيار يحدّد الأسعار ووحدة الكمية في كامل المتجر. يمكنك تغييره في أي وقت.",
+    aria: "نوع الشراء",
+    repere: "بخاخ 250 مل",
+    alaPiece: "للقطعة",
+    auCarton: "للكرتون",
+    minDemi: "ابتداءً من {n} قطعة",
+    minGros: "ابتداءً من {n} كرتون لكل منتج",
+    minGrosPluriel: "ابتداءً من {n} كرتون لكل منتج",
+    detailDemi:
+      "تطلبين بالقطعة وتمزجين بين المجموعات بحرية. الحد الأدنى يخصّ الطلب كاملاً.",
+    detailGros:
+      "تطلبين بالكرتون الكامل. أفضل سعر، مطبّق على كل قطعة داخل الكرتون.",
+    indice:
+      "الأسعار المعروضة هي أسعار نصف الجملة. اختاري «بالجملة» لرؤية أسعار الكرتون.",
+  },
+
+  boutique: {
+    eyebrow: "المتجر",
+    titre: "الكتالوج الكامل.",
+    tarifs: "أسعار {format}",
+    reference: "منتج",
+    references: "منتج",
+    filtreProduit: "المنتج",
+    filtreCouleur: "اللون",
+    tous: "الكل",
+    toutes: "الكل",
+    toutAfficher: "عرض الكل",
+    videTitre: "لا يوجد منتج بهذا التصفية.",
+    videTexte: "جرّبي لونًا آخر، أو اعرضي الكتالوج كاملاً.",
+    parPiece: "/ القطعة",
+    cartonDe: "كرتون {n} = {prix}",
+    ajouterCarton: "+ كرتون واحد",
+    ajouterPieces: "+ {n} قطعة",
+    formatAria: "الحجم",
+    quantiteAria: "الكمية بـ {unite}",
+    retirerUne: "إنقاص وحدة",
+    ajouterUne: "إضافة وحدة",
+    egale: "= {n} قطعة",
+    barreCommander: "اطلبي الآن",
+  },
+
+  commande: {
+    eyebrow: "طلبك",
+    titre: "الملخّص.",
+    toutVider: "إفراغ الكل",
+    videTitre: "لا شيء بعد.",
+    videTexte: "أضيفي منتجات من المتجر، وستتجمّع هنا.",
+    videCta: "إلى المتجر",
+    colRef: "المنتج",
+    colQte: "الكمية",
+    colPu: "سعر الوحدة",
+    colTotal: "المجموع",
+    parCarton: "{n} قطعة/كرتون",
+    retirer: "حذف {nom}",
+    quantiteLigne: "الكمية — {nom}",
+    envoyer: "إرسال الطلب",
+    nom: "الاسم",
+    telephone: "الهاتف",
+    wilaya: "الولاية",
+    adresse: "عنوان التوصيل",
+    note: "ملاحظة",
+    whatsapp: "اطلبي عبر واتساب",
+    whatsappPrep: "جارٍ التحضير…",
+    whatsappAide: "يفتح واتساب والملخّص مكتوب مسبقًا.",
+    sansWhatsapp: "لا تملكين واتساب؟ أرسلي عبر الاستمارة",
+    envoyerForm: "إرسال الطلب",
+    envoiEnCours: "جارٍ الإرسال…",
+    formAide: "الاسم والهاتف ضروريان حتى نعاود الاتصال بك.",
+    manqueGros: "كل منتج يجب أن يبلغ {n} كرتون.",
+    manqueGrosPluriel: "كل منتج يجب أن يبلغ {n} كرتون.",
+    manqueDemi: "نصف الجملة يبدأ من {n} قطعة. تنقص {reste}.",
+    piedDePage:
+      "كل الطلبات، عبر واتساب أو الاستمارة، تصل إلى نفس المتابعة. سؤال قبل الطلب؟",
+    reseau: "انقطع الاتصال. تحقّقي من الشبكة وأعيدي المحاولة.",
+    envoiImpossible: "تعذّر الإرسال.",
+    okEyebrow: "تم تسجيل الطلب",
+    okTitre: "تم. المرجع",
+    okWhatsapp:
+      "فُتح واتساب مع ملخّص طلبك. أرسلي الرسالة للتأكيد — سنتصل بك بخصوص التوصيل.",
+    okForm:
+      "استلمنا طلبك وسنتصل بك على الرقم المذكور لتأكيد التوصيل.",
+    okCta: "طلب آخر",
+  },
+
+  videos: {
+    eyebrow: "لماذا تختاريننا",
+    titre: "الدليل، في الحركة.",
+    intro: "المنتجات أثناء الاستعمال، مصوّرة لموزّعينا وزبوناتنا.",
+    lire: "تشغيل الفيديو: {titre}",
+  },
+
+  appel: {
+    titre: "جاهزة للطلب؟",
+    lede: "نصف الجملة ابتداءً من {min} قطعة، والجملة بالكرتون. كوّني طلبك وأرسليه، ونحن نتكفّل بالباقي.",
+    cta: "تكوين طلبي",
+    ctaWhatsapp: "راسلينا على واتساب",
+  },
+
+  footer: {
+    tagline:
+      "بخاخات معطرة، جل منظف حميمي ومزيلات روائح. مصنوعة لانتعاش يدوم طوال اليوم.",
+    site: "الموقع",
+    contact: "اتصل بنا",
+    liensRapides: "روابط سريعة",
+    formats: "الجملة ونصف الجملة",
+    droits: "جميع الحقوق محفوظة",
+    gestion: "لوحة التحكم",
+  },
+
+  api: {
+    /* Le francais insere une espace fine avant le deux-points, pas les autres. */
+    sep: ": ",
+    illisible: "تعذّرت قراءة الطلب.",
+    vide: "طلبك فارغ.",
+    aucuneRef: "لا يوجد منتج صالح في الطلب.",
+    minDemi: "نصف الجملة يبدأ من {min} قطعة. طلبك يحتوي على {n}.",
+    minGros: "الجملة تبدأ من {min} كرتون لكل منتج.",
+    nomTel: "اذكري على الأقل اسمك ورقم هاتفك.",
+    echec: "تعذّر حفظ الطلب. أعيدي المحاولة.",
+    bonjour: "مرحبًا ليدي فريش، أودّ تسجيل طلب.",
+    ref: "المرجع",
+    format: "الصيغة",
+    total: "المجموع",
+    nom: "الاسم",
+    telephone: "الهاتف",
+    wilaya: "الولاية",
+    note: "ملاحظة",
+  },
+
+  statuts: {
+    nouvelle: "جديدة",
+    en_cours: "قيد المعالجة",
+    traitee: "معالَجة",
+    livree: "مسلَّمة",
+  },
+
+  admin: {
+    gestion: "لوحة التحكم",
+    seDeconnecter: "تسجيل الخروج",
+    connexion: "تسجيل الدخول",
+    espaceGestion: "فضاء الإدارة",
+    motDePasse: "كلمة المرور",
+    entrer: "دخول",
+    verification: "جارٍ التحقق…",
+    retourSite: "← العودة إلى الموقع",
+    pasDeMotDePasse:
+      "لم تُضبط أي كلمة مرور. أضيفي ADMIN_PASSWORD في ملف ‎.env.local ثم أعيدي تشغيل الخادم.",
+    baseAbsente: "قاعدة البيانات غير موصولة — التعديلات لا تُحفظ.",
+    baseAbsenteAide:
+      "شغّلي supabase/schema.sql ثم أضيفي مفاتيح Supabase في ‎.env.local. حتى ذلك الحين يعرض الموقع الكتالوج المرجعي.",
+
+    onglets: {
+      commandes: "الطلبات",
+      gammes: "المجموعات",
+      produits: "المنتجات والأسعار",
+      contenu: "محتوى الموقع",
+    },
+
+    commandes: {
+      suivi: "المتابعة",
+      titre: "الطلبات",
+      total: "{n} في المجموع",
+      vide: "لا توجد طلبات بعد. طلبات واتساب والاستمارة تصل كلها هنا.",
+      statut: "الحالة",
+      mettreAJour: "تحديث",
+      clientAbsent: "الزبون غير مذكور",
+      adresse: "العنوان",
+      note: "ملاحظة",
+      canalWhatsapp: "واتساب",
+      canalForm: "استمارة",
+      filtreTous: "الكل",
+    },
+
+    commun: {
+      enregistrer: "حفظ",
+      creer: "إنشاء",
+      ajouter: "إضافة",
+      supprimer: "حذف",
+      annuler: "إلغاء",
+      modifier: "تعديل",
+      fermer: "إغلاق",
+      nom: "الاسم",
+      slug: "المعرّف",
+      ordre: "الترتيب",
+      visible: "ظاهر",
+      actif: "مفعّل",
+      masque: "مخفي",
+      image: "الصورة",
+      couleur: "اللون",
+      description: "الوصف",
+      titreChamp: "العنوان",
+      rechercher: "بحث",
+      aucunResultat: "لا نتائج.",
+      enCours: "…",
+      traductions: "الترجمات",
+      arabe: "العربية",
+      anglais: "الإنجليزية",
+      videFrRepris: "الفراغ = يُعتمد النص الفرنسي.",
+    },
+
+    gammes: {
+      catalogue: "الكتالوج",
+      titre: "المجموعات",
+      nouvelle: "مجموعة جديدة",
+      aide: "المجموعات ترتّب الشريط الأفقي في الصفحة الرئيسية. اللون يُستعمل أيضًا كتصفية في المتجر.",
+      surtitre: "العنوان الفرعي",
+      nomCouleur: "اسم اللون (التصفية)",
+      couverture: "صورة الغلاف",
+      produits: "{n} منتج",
+      produitsPluriel: "{n} منتج",
+      confirmSuppr: "حذف مجموعة «{nom}» وكل منتجاتها؟",
+      amorcer: "تعبئة قاعدة البيانات",
+      amorcage: "جارٍ التعبئة…",
+      confirmAmorcer: "نسخ الكتالوج المرجعي إلى Supabase؟",
+    },
+
+    produits: {
+      titre: "المنتجات والأسعار",
+      nouveau: "منتج جديد",
+      aide: "المنتج يحمل حجمًا أو أكثر. السعر والصورة وعدد القطع في الكرتون تُضبط لكل حجم.",
+      seuils: "الحدود: الجملة من {gros} كرتون، نصف الجملة من {demi} قطعة.",
+      type: "النوع",
+      gamme: "المجموعة",
+      couleurFiltre: "اللون (التصفية)",
+      teinte: "الدرجة",
+      imageDefaut: "الصورة الافتراضية",
+      formats: "الأحجام والأسعار",
+      format: "الحجم",
+      prixDemi: "نصف الجملة ({devise})",
+      prixGros: "الجملة ({devise})",
+      parCarton: "قطعة / كرتون",
+      photo: "الصورة",
+      ajouterFormat: "إضافة حجم",
+      supprimerFormat: "حذف هذا الحجم",
+      confirmSupprFormat: "حذف الحجم {format}؟",
+      confirmSuppr: "حذف «{nom}» وأحجامه؟",
+      nbFormats: "{n} حجم",
+      nbFormatsPluriel: "{n} أحجام",
+      cartonEgale: "كرتون {n} = {prix} بالجملة",
+      dabordProduit: "أنشئي المنتج أولاً، ثم أضيفي أحجامه.",
+    },
+
+    contenu: {
+      reglages: "الإعدادات",
+      titre: "محتوى الموقع",
+      commandeContact: "الطلب والاتصال",
+      numeroWhatsapp: "رقم واتساب (مع رمز الدولة)",
+      minGros: "الحد الأدنى للجملة (كراتين)",
+      minDemi: "الحد الأدنى لنصف الجملة (قطع)",
+      telephoneAffiche: "الهاتف المعروض",
+      email: "البريد الإلكتروني",
+      adresse: "العنوان",
+      textesHero: "نصوص الواجهة",
+      surtitre: "العنوان الفرعي",
+      titreHero: "العنوان (سطر جديد = السطر الثاني، بالذهبي)",
+      accroche: "النص التقديمي",
+      enregistrerReglages: "حفظ الإعدادات",
+      fichiers: "الملفات",
+      fichiersAide:
+        "أرسلي صورة أو فيديو، ثم الصقي العنوان الناتج في الحقل المناسب.",
+      televerser: "رفع ملف",
+      televersement: "رفع",
+      envoi: "جارٍ الرفع…",
+      envoye: "تم الرفع. انسخي هذا العنوان إلى الحقل المطلوب:",
+      televersementInactif:
+        "الرفع يتطلّب Supabase. حتى ذلك الحين، ضعي ملفاتك في مجلد public/ واذكري المسار، مثلاً ‎/videos/ma-video.mp4.",
+      slideshow: "شريط صور الواجهة",
+      slideshowAide:
+        "كل صورة مرتبطة بمجموعة: لونها يصبغ الواجهة أثناء عرضها.",
+      legende: "التعليق",
+      ajouterVisuel: "إضافة صورة",
+      confirmSupprVisuel: "حذف هذه الصورة؟",
+      videosTitre: "فيديوهات «لماذا تختاريننا»",
+      videosAide: "{n} فيديو منشور. القسم يتكيّف مع العدد — أضيفي حتى أربعة.",
+      videosAidePluriel:
+        "{n} فيديوهات منشورة. القسم يتكيّف مع العدد — أضيفي حتى أربعة.",
+      sousTitre: "العنوان الفرعي",
+      fichierVideo: "ملف الفيديو",
+      imageAttente: "صورة الانتظار",
+      ajouterVideo: "إضافة فيديو",
+      confirmSupprVideo: "حذف هذا الفيديو؟",
+    },
+  },
+};

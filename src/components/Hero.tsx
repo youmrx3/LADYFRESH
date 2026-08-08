@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useReglages } from "./Reglages";
+import { champ } from "@/i18n/contenu";
 import type { Gamme, HeroSlide, SiteSettings } from "@/lib/types";
 
 const DUREE = 5200;
@@ -10,14 +12,16 @@ export function Hero({
   slides,
   gammes,
   settings,
+  referenceCount,
 }: {
   slides: HeroSlide[];
   gammes: Gamme[];
   settings: SiteSettings;
+  referenceCount: number;
 }) {
+  const { t, locale } = useReglages();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const zone = useRef<HTMLDivElement>(null);
 
   const gammeOf = (slide: HeroSlide) =>
     gammes.find((g) => g.id === slide.gamme_id);
@@ -34,52 +38,58 @@ export function Hero({
 
   const active = slides[index];
   const gamme = active ? gammeOf(active) : undefined;
-  const accent = gamme?.color_hex ?? "#cba53c";
+  const accent = gamme?.color_hex ?? "var(--or-plein)";
 
-  const [titreHaut, titreBas] = settings.hero_title.split("\n");
+  const titre = champ(settings, "hero_title", locale);
+  const [titreHaut, titreBas] = titre.split("\n");
+
+  const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
     <section
       id="accueil"
-      className="etage-sombre relative overflow-hidden pt-[72px]"
+      className="etage-vitrine relative overflow-hidden pt-[72px]"
       style={{ ["--accent" as string]: accent }}
     >
       {/* Le halo prend la couleur de la gamme affichée. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute right-[-18%] top-[-10%] h-[70vh] w-[70vh] rounded-full opacity-[0.16] blur-[120px] transition-colors duration-1000"
+        className="pointer-events-none absolute -top-[10%] -end-[18%] h-[70vh] w-[70vh] rounded-full opacity-[0.16] blur-[120px] transition-colors duration-1000"
         style={{ background: accent }}
       />
 
       <div className="shell relative grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)_auto] lg:gap-12 lg:py-24 xl:gap-16">
-        {/* ------------------------------------------------ texte à gauche */}
+        {/* ------------------------------------------------ texte, premier bord */}
         <div className="max-w-[34rem]">
           <p
             className="eyebrow lever flex items-center gap-3 text-craie"
             style={{ animationDelay: "80ms" }}
           >
             <span
-              className="inline-block h-[6px] w-[6px] rounded-full transition-colors duration-700"
+              className="inline-block h-[6px] w-[6px] shrink-0 rounded-full transition-colors duration-700"
               style={{ background: accent }}
             />
-            {settings.hero_eyebrow}
+            {champ(settings, "hero_eyebrow", locale)}
           </p>
 
-          <h1 className="display display-xl lever mt-5" style={{ animationDelay: "160ms" }}>
+          <h1
+            className="display display-xl lever mt-5"
+            style={{ animationDelay: "160ms" }}
+          >
             {titreHaut}
             {titreBas && (
               <>
                 <br />
-                <span className="text-or-clair">{titreBas}</span>
+                <span className="text-or">{titreBas}</span>
               </>
             )}
           </h1>
 
           <p
-            className="lede lever mt-6 max-w-[30rem] text-craie"
+            className="lede lever mt-6 max-w-[32rem] text-craie"
             style={{ animationDelay: "260ms" }}
           >
-            {settings.hero_lede}
+            {champ(settings, "hero_lede", locale)}
           </p>
 
           <div
@@ -87,23 +97,22 @@ export function Hero({
             style={{ animationDelay: "340ms" }}
           >
             <a href="#boutique" className="btn btn-or">
-              Voir la boutique
+              {t.hero.ctaBoutique}
             </a>
             <a href="#commander" className="btn btn-fantome">
-              Comment commander
+              {t.hero.ctaCommander}
             </a>
           </div>
 
           <dl
-            className="lever mt-11 grid max-w-[26rem] grid-cols-3 gap-px overflow-hidden border-y border-encre-bord bg-encre-bord"
+            className="lever mt-11 grid max-w-[20rem] grid-cols-2 gap-px overflow-hidden border-y border-encre-bord bg-encre-bord"
             style={{ animationDelay: "420ms" }}
           >
             {[
-              { k: "Gammes", v: "07" },
-              { k: "Références", v: "27" },
-              { k: "Demi-gros dès", v: `${settings.min_demi_gros_pieces} pc` },
+              { k: t.hero.statGammes, v: pad(gammes.length) },
+              { k: t.hero.statReferences, v: pad(referenceCount) },
             ].map((stat) => (
-              <div key={stat.k} className="bg-encre px-1 py-4">
+              <div key={stat.k} className="bg-encre px-3 py-4">
                 <dt className="eyebrow text-craie">{stat.k}</dt>
                 <dd className="data mt-1.5 text-[1.35rem] text-porcelaine">
                   {stat.v}
@@ -115,7 +124,6 @@ export function Hero({
 
         {/* ------------------------------------------------ slideshow centre */}
         <div
-          ref={zone}
           className="lever relative"
           style={{ animationDelay: "220ms" }}
           onMouseEnter={() => setPaused(true)}
@@ -131,7 +139,7 @@ export function Hero({
               <Image
                 key={slide.id}
                 src={slide.image}
-                alt={slide.caption}
+                alt={champ(slide, "caption", locale)}
                 fill
                 sizes="(max-width: 1024px) 92vw, 400px"
                 priority={i === 0}
@@ -149,44 +157,45 @@ export function Hero({
               }}
             />
 
-            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5">
+            <div className="absolute inset-x-0 bottom-0 p-5">
               <div key={active?.id} className="fondu">
                 <p className="eyebrow" style={{ color: accent }}>
-                  {active?.eyebrow}
+                  {champ(active, "eyebrow", locale)}
                 </p>
-                <p className="display display-m mt-1 text-porcelaine">
-                  {active?.caption}
+                <p className="display display-m mt-1 text-white">
+                  {champ(active, "caption", locale)}
                 </p>
               </div>
             </div>
 
-            {/* Barre de progression du slideshow */}
-            <div className="absolute inset-x-0 top-0 h-[2px] bg-porcelaine/10">
+            {/* Progression du slideshow */}
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-white/15">
               <div
                 key={`${index}-${paused}`}
-                className="h-full origin-left"
+                className="h-full w-full origin-inline-start"
                 style={{
                   background: accent,
                   animation: paused
                     ? "none"
                     : `progression ${DUREE}ms linear forwards`,
-                  width: "100%",
                 }}
               />
             </div>
           </div>
 
-          <style>{`@keyframes progression { from { transform: scaleX(0) } to { transform: scaleX(1) } }`}</style>
+          <style>{`@keyframes progression{from{transform:scaleX(0)}to{transform:scaleX(1)}}`}</style>
         </div>
 
-        {/* ------------------------------------------- index des gammes à droite */}
+        {/* -------------------------------------------- index des gammes */}
         <div
           className="lever no-scrollbar -mx-[var(--gutter)] flex gap-2 overflow-x-auto px-[var(--gutter)] lg:mx-0 lg:w-[160px] lg:flex-col lg:gap-0 lg:px-0"
           style={{ animationDelay: "380ms" }}
           role="tablist"
-          aria-label="Gammes en vitrine"
+          aria-label={t.hero.vitrineAria}
         >
-          <p className="eyebrow mb-3 hidden text-craie lg:block">L&apos;index</p>
+          <p className="eyebrow mb-3 hidden text-craie lg:block">
+            {t.hero.index}
+          </p>
           {slides.map((slide, i) => {
             const g = gammeOf(slide);
             const on = i === index;
@@ -196,18 +205,20 @@ export function Hero({
                 role="tab"
                 aria-selected={on}
                 onClick={() => setIndex(i)}
-                className="group flex shrink-0 items-center gap-2.5 border-encre-bord py-2.5 text-left transition-colors lg:border-t lg:first-of-type:border-t-0"
+                className="group flex shrink-0 items-center gap-2.5 border-encre-bord py-2.5 text-start transition-colors lg:border-t lg:first-of-type:border-t-0"
               >
                 <span
-                  className="h-6 w-[3px] shrink-0 transition-all duration-500"
+                  className="w-[3px] shrink-0 transition-all duration-500"
                   style={{
-                    background: on ? g?.color_hex : "#2a2a2e",
+                    background: on ? g?.color_hex : "var(--vitrine-line)",
                     height: on ? 24 : 12,
                   }}
                 />
                 <span
-                  className="display text-[15px] whitespace-nowrap transition-colors duration-300"
-                  style={{ color: on ? "#f1f3f2" : "#6a6e6d" }}
+                  className="display whitespace-nowrap text-[15px] transition-colors duration-300"
+                  style={{
+                    color: on ? "var(--vitrine-fg)" : "var(--vitrine-muted)",
+                  }}
                 >
                   {g?.name}
                 </span>

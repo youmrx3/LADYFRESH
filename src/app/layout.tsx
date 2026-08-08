@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Instrument_Sans, Jost } from "next/font/google";
+import { IBM_Plex_Mono, Instrument_Sans, Jost, Noto_Kufi_Arabic } from "next/font/google";
+import { ReglagesProvider } from "@/components/Reglages";
+import { DIRECTION, HTML_LANG } from "@/i18n/config";
+import { getT } from "@/i18n/server";
 import "./globals.css";
 
 const jost = Jost({
@@ -22,44 +25,66 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://ladyfresh.dz"),
-  title: {
-    default: "Lady Fresh — Brumes, gels intimes et déodorants",
-    template: "%s · Lady Fresh",
-  },
-  description:
-    "Sept gammes de brumes parfumées, gels lavants intimes et déodorants. Vente au détail, en demi-gros dès 5 pièces et en gros par carton. Commande par WhatsApp.",
-  openGraph: {
-    type: "website",
-    locale: "fr_DZ",
-    siteName: "Lady Fresh",
-    title: "Lady Fresh — Brumes, gels intimes et déodorants",
-    description:
-      "Sept gammes. Une même fraîcheur. Détail, demi-gros dès 5 pièces, gros par carton.",
-  },
-};
+/* Le kufi géométrique tient la même voix que Jost une fois passé en arabe. */
+const kufi = Noto_Kufi_Arabic({
+  subsets: ["arabic"],
+  weight: ["300", "400", "500"],
+  variable: "--font-kufi",
+  display: "swap",
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return {
+    metadataBase: new URL("https://ladyfresh.dz"),
+    title: { default: t.meta.title, template: "%s · Lady Fresh" },
+    description: t.meta.description,
+    openGraph: {
+      type: "website",
+      siteName: "Lady Fresh",
+      title: t.meta.title,
+      description: t.meta.description,
+    },
+  };
+}
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b0c",
   width: "device-width",
   initialScale: 1,
 };
 
-export default function RootLayout({
+/**
+ * Applique le thème mémorisé avant le premier pixel, sinon la page clignote
+ * en clair puis bascule en sombre.
+ */
+const SANS_CLIGNOTEMENT = `try{var t=localStorage.getItem("ladyfresh.theme");document.documentElement.dataset.theme=t==="sombre"?"sombre":"clair"}catch(e){document.documentElement.dataset.theme="clair"}`;
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { locale } = await getT();
+
   return (
-    <html lang="fr" className={`${jost.variable} ${instrument.variable} ${plexMono.variable}`}>
+    <html
+      lang={HTML_LANG[locale]}
+      dir={DIRECTION[locale]}
+      data-theme="clair"
+      data-locale={locale}
+      className={`${jost.variable} ${instrument.variable} ${plexMono.variable} ${kufi.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SANS_CLIGNOTEMENT }} />
+      </head>
       <body>
         {/* Les blocs révélés au scroll partent à opacity 0 : sans JS, ils
             doivent rester lisibles. */}
         <noscript>
           <style>{`.reveal{opacity:1 !important;transform:none !important}`}</style>
         </noscript>
-        {children}
+        <ReglagesProvider locale={locale}>{children}</ReglagesProvider>
       </body>
     </html>
   );

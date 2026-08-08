@@ -5,11 +5,11 @@ import { useFormStatus } from "react-dom";
 import type { Retour } from "@/lib/actions";
 
 export function Envoyer({
-  children = "Enregistrer",
+  children,
   variante = "encre",
   confirmer,
 }: {
-  children?: React.ReactNode;
+  children: React.ReactNode;
   variante?: "encre" | "or" | "fantome" | "danger";
   confirmer?: string;
 }) {
@@ -54,12 +54,18 @@ export function FormAction({
     <form action={formAction} className={className} id={id}>
       {children}
       {etat.error && (
-        <p role="alert" className="mt-2 text-[12.5px] text-[#a30d23]">
+        <p
+          role="alert"
+          className="mt-2 text-[12.5px]"
+          style={{ color: "var(--danger)" }}
+        >
           {etat.error}
         </p>
       )}
       {etat.ok && (
-        <p className="mt-2 text-[12.5px] text-[#0f6b3f]">{etat.ok}</p>
+        <p className="mt-2 text-[12.5px]" style={{ color: "var(--succes)" }}>
+          {etat.ok}
+        </p>
       )}
     </form>
   );
@@ -78,7 +84,7 @@ export function Champ({
 }: {
   label: string;
   name: string;
-  defaultValue?: string | number | null;
+  defaultValue?: string | number | null | undefined;
   type?: string;
   placeholder?: string;
   required?: boolean;
@@ -111,7 +117,7 @@ export function Zone({
 }: {
   label: string;
   name: string;
-  defaultValue?: string | null;
+  defaultValue?: string | null | undefined;
   rows?: number;
 }) {
   return (
@@ -136,7 +142,7 @@ export function Liste({
   label: string;
   name: string;
   options: { value: string; label: string }[];
-  defaultValue?: string | null;
+  defaultValue?: string | null | undefined;
 }) {
   return (
     <label className="block">
@@ -167,7 +173,8 @@ export function Bascule({
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
-        className="h-4 w-4 accent-[#0b0b0c]"
+        className="h-4 w-4"
+        style={{ accentColor: "var(--comptoir-fg)" }}
       />
       {label}
     </label>

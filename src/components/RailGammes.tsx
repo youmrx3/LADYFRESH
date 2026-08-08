@@ -4,7 +4,9 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useBoutique } from "./BoutiqueProvider";
 import { Reveal } from "./Reveal";
-import { PRODUCT_TYPE_LABEL } from "@/lib/types";
+import { useReglages } from "./Reglages";
+import { fill } from "@/i18n";
+import { champ } from "@/i18n/contenu";
 import type { Gamme, Product } from "@/lib/types";
 
 /**
@@ -22,20 +24,23 @@ export function RailGammes({
 }) {
   const [active, setActive] = useState(0);
   const { setColorFilter, setTypeFilter } = useBoutique();
+  const { t, locale } = useReglages();
 
   const contenu = useMemo(() => {
     const map = new Map<string, { label: string; sizes: string[] }[]>();
     for (const gamme of gammes) {
-      const lignes = products
-        .filter((p) => p.gamme_id === gamme.id)
-        .map((p) => ({
-          label: PRODUCT_TYPE_LABEL[p.type],
-          sizes: p.variants.map((v) => v.size_label),
-        }));
-      map.set(gamme.id, lignes);
+      map.set(
+        gamme.id,
+        products
+          .filter((p) => p.gamme_id === gamme.id)
+          .map((p) => ({
+            label: t.types[p.type],
+            sizes: p.variants.map((v) => v.size_label),
+          })),
+      );
     }
     return map;
-  }, [gammes, products]);
+  }, [gammes, products, t]);
 
   function versLaBoutique(gamme: Gamme) {
     setTypeFilter("tous");
@@ -46,19 +51,18 @@ export function RailGammes({
   return (
     <section
       id="gammes"
-      className="etage-sombre saut-ancre border-t border-encre-bord py-20 sm:py-24"
+      className="etage-vitrine saut-ancre border-t border-encre-bord py-20 sm:py-24"
     >
       <div className="shell">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="eyebrow text-or">Nos gammes</p>
+            <p className="eyebrow text-or">{t.gammes.eyebrow}</p>
             <h2 className="display display-l mt-4 max-w-[18ch]">
-              Sept couleurs, un même geste.
+              {t.gammes.titre}
             </h2>
           </div>
           <p className="max-w-[34ch] text-[15px] text-craie">
-            Chaque gamme porte un parfum et une couleur. Les formats changent
-            d&apos;une gamme à l&apos;autre — le détail est dans la colonne.
+            {t.gammes.intro}
           </p>
         </Reveal>
       </div>
@@ -76,8 +80,8 @@ export function RailGammes({
                 onMouseEnter={() => setActive(i)}
                 onFocus={() => setActive(i)}
                 onClick={() => versLaBoutique(gamme)}
-                aria-label={`Gamme ${gamme.name} — voir en boutique`}
-                className="group relative isolate min-w-0 overflow-hidden border-l border-encre/40 text-left transition-[flex-grow] duration-[650ms] first:border-l-0"
+                aria-label={fill(t.gammes.aria, { nom: gamme.name })}
+                className="group relative isolate min-w-0 overflow-hidden border-s border-black/25 text-start transition-[flex-grow] duration-[650ms] first:border-s-0"
                 style={{
                   flexGrow: on ? 5.2 : 1,
                   flexBasis: 0,
@@ -123,16 +127,16 @@ export function RailGammes({
                 >
                   <span className="eyebrow flex items-center gap-2 text-white/70">
                     <span
-                      className="inline-block h-2 w-2 rounded-full ring-1 ring-white/50"
+                      className="inline-block h-2 w-2 shrink-0 rounded-full ring-1 ring-white/50"
                       style={{ background: gamme.color_hex }}
                     />
-                    {gamme.tagline}
+                    {champ(gamme, "tagline", locale)}
                   </span>
                   <span className="display display-l mt-2 block text-white">
                     {gamme.name}
                   </span>
                   <span className="mt-2 block max-w-[36ch] text-[14px] leading-snug text-white/72">
-                    {gamme.description}
+                    {champ(gamme, "description", locale)}
                   </span>
 
                   <span className="mt-5 block border-t border-white/20 pt-4">
@@ -154,7 +158,7 @@ export function RailGammes({
                   </span>
 
                   <span className="eyebrow mt-5 flex items-center gap-2 text-or-clair">
-                    Voir en boutique
+                    {t.gammes.voirBoutique}
                     <span aria-hidden>→</span>
                   </span>
                 </span>
@@ -177,7 +181,7 @@ export function RailGammes({
               <div className="relative aspect-[4/5]">
                 <Image
                   src={gamme.cover_image}
-                  alt={`Gamme ${gamme.name}`}
+                  alt={gamme.name}
                   fill
                   sizes="78vw"
                   className="object-cover"
@@ -191,7 +195,9 @@ export function RailGammes({
                   }}
                 />
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <p className="eyebrow text-white/70">{gamme.tagline}</p>
+                  <p className="eyebrow text-white/70">
+                    {champ(gamme, "tagline", locale)}
+                  </p>
                   <h3 className="display display-m mt-1 text-white">
                     {gamme.name}
                   </h3>
@@ -215,7 +221,7 @@ export function RailGammes({
                     onClick={() => versLaBoutique(gamme)}
                     className="eyebrow mt-4 flex items-center gap-2 text-or-clair"
                   >
-                    Voir en boutique <span aria-hidden>→</span>
+                    {t.gammes.voirBoutique} <span aria-hidden>→</span>
                   </button>
                 </div>
               </div>

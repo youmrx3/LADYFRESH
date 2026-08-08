@@ -78,18 +78,54 @@ Les deux arrivent dans `/admin`, avec leur canal et leur statut.
 httpOnly, 12 h). Pour passer à Supabase Auth plus tard, il suffit de remplacer
 `isAdmin()` dans `src/lib/auth.ts`.
 
-- **Commandes** — liste, détail, changement de statut
+L'action de création est en haut de chaque page, pas en bas. Les lignes sont
+repliées : un résumé lisible, l'édition sur demande. La page produits fait
+2 500 px au lieu de 14 000 — on retrouve une référence sans faire défiler
+vingt formulaires ouverts.
+
+- **Commandes** — liste, détail, changement de statut, filtre par statut
 - **Gammes** — création, ordre, couleur, visuel
 - **Produits & prix** — produits, formats, prix gros / demi-gros, pièces par
   carton
 - **Contenu du site** — numéro WhatsApp, seuils, textes du hero, contacts,
   réseaux, slideshow, vidéos, téléversement de fichiers
 
+## Langues
+
+Français, arabe et anglais, le français par défaut. La langue est gardée dans
+un cookie ; `<html lang dir>` suit, et l'arabe passe la page en RTL.
+
+Les textes d'interface vivent dans `src/i18n/dictionaries/`. Le français est le
+dictionnaire de référence : une clé oubliée en arabe ou en anglais casse la
+compilation, elle ne peut pas passer en production.
+
+Les textes du catalogue (accroches de gammes, hero, vidéos) ont une colonne par
+langue en base — `description`, `description_ar`, `description_en`. Vide =
+le français est repris. Les noms de gammes ne sont jamais traduits : ce sont
+des noms de marque.
+
+En arabe, l'interlettrage et les capitales sont désactivés : l'écriture arabe
+est liée, un `letter-spacing` sépare physiquement les lettres. Les chiffres
+restent latins et alignés à gauche, comme sur les factures algériennes.
+
+## Thèmes
+
+Clair par défaut, sombre au choix, bouton dans la barre de navigation. Le thème
+est appliqué avant le premier pixel par un script inline, donc pas de
+clignotement au chargement.
+
+Les couleurs passent toutes par des jetons sémantiques (`--vitrine-bg`,
+`--comptoir-surface`, `--or-trait`…) redéfinis sous `[data-theme]`. Les
+composants n'écrivent jamais une valeur en dur. Tous les contrastes
+texte/fond mesurés dépassent 4,5:1 dans les deux thèmes.
+
 ## Design
 
-Deux étages. **Encre et or** — repris de la plaque du logo — pour la vitrine :
-hero, gammes, vidéos. **Porcelaine** pour le commerce : sélecteur, boutique,
-commande. La bascule tombe exactement sur le choix Gros / Demi-gros.
+Deux étages. La **vitrine** porte la marque (hero, gammes, vidéos), le
+**comptoir** porte le commerce (sélecteur, boutique, commande). La bascule
+tombe exactement sur le choix Gros / Demi-gros. En thème clair les deux étages
+sont porcelaine et blanc — le monde carrelé des visuels de campagne ; en thème
+sombre la vitrine passe à l'encre et à l'or de la plaque du logo.
 
 L'accent n'est jamais fixe : il prend la couleur de la gamme regardée. Le bloc
 signature est la bande des 7 gammes — une seule rangée pleine largeur, la

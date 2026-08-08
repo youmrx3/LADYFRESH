@@ -1,16 +1,19 @@
 "use client";
 
 import { useBoutique } from "./BoutiqueProvider";
+import { useReglages } from "./Reglages";
+import { fill } from "@/i18n";
 import { da } from "@/lib/format";
 import type { PurchaseType } from "@/lib/types";
 
 /**
- * Le seuil. C'est ici que le site passe de la vitrine (encre et or) au
- * comptoir (porcelaine) : le choix du format ouvre la partie commerce.
+ * Le seuil. C'est ici que le site passe de la vitrine au comptoir : le choix
+ * du format ouvre la partie commerce.
  */
 export function SelecteurAchat() {
   const { purchase, setPurchase, purchaseChosen, settings, products } =
     useBoutique();
+  const { t } = useReglages();
 
   // Repère de prix : la brume 250 ml, la référence la plus vendue.
   const repere = products
@@ -27,39 +30,33 @@ export function SelecteurAchat() {
   }[] = [
     {
       value: "demi_gros",
-      nom: "Demi-gros",
-      unite: "à la pièce",
-      minimum: `Dès ${settings.min_demi_gros_pieces} pièces`,
-      detail:
-        "Vous commandez à l'unité et mélangez librement les gammes. Le minimum porte sur l'ensemble de la commande.",
+      nom: t.achat.demi_gros,
+      unite: t.format.alaPiece,
+      minimum: fill(t.format.minDemi, { n: settings.min_demi_gros_pieces }),
+      detail: t.format.detailDemi,
       prix: repere?.price_demi_gros,
     },
     {
       value: "gros",
-      nom: "Gros",
-      unite: "au carton",
-      minimum: `Dès ${settings.min_gros_cartons} carton${
-        settings.min_gros_cartons > 1 ? "s" : ""
-      } par référence`,
-      detail:
-        "Vous commandez par carton complet. Le meilleur tarif, appliqué à chaque pièce du carton.",
+      nom: t.achat.gros,
+      unite: t.format.auCarton,
+      minimum: fill(
+        settings.min_gros_cartons > 1 ? t.format.minGrosPluriel : t.format.minGros,
+        { n: settings.min_gros_cartons },
+      ),
+      detail: t.format.detailGros,
       prix: repere?.price_gros,
     },
   ];
 
   return (
-    <section id="format" className="saut-ancre etage-clair">
-      {/* Fin de l'étage sombre : le bandeau porte le titre. */}
-      <div className="etage-sombre border-t border-encre-bord pb-28 pt-20 sm:pb-32 sm:pt-24">
+    <section id="format" className="saut-ancre etage-comptoir">
+      {/* Fin de l'étage vitrine : le bandeau porte le titre. */}
+      <div className="etage-vitrine border-t border-encre-bord pb-28 pt-20 sm:pb-32 sm:pt-24">
         <div className="shell max-w-[46rem]">
-          <p className="eyebrow text-or">Votre format</p>
-          <h2 className="display display-l mt-4">
-            Vous achetez en gros ou en demi-gros ?
-          </h2>
-          <p className="lede mt-4 text-craie">
-            Ce choix fixe les prix et l&apos;unité de quantité pour toute la
-            boutique. Vous pouvez en changer à tout moment.
-          </p>
+          <p className="eyebrow text-or">{t.format.eyebrow}</p>
+          <h2 className="display display-l mt-4">{t.format.titre}</h2>
+          <p className="lede mt-4 text-craie">{t.format.lede}</p>
         </div>
       </div>
 
@@ -67,7 +64,7 @@ export function SelecteurAchat() {
         <div
           className="grid gap-4 md:grid-cols-2"
           role="radiogroup"
-          aria-label="Type d'achat"
+          aria-label={t.format.aria}
         >
           {options.map((option) => {
             const on = purchase === option.value;
@@ -78,14 +75,16 @@ export function SelecteurAchat() {
                 role="radio"
                 aria-checked={on}
                 onClick={() => setPurchase(option.value)}
-                className="group rounded-[var(--radius-plaque)] border p-6 text-left transition-all duration-300 sm:p-8"
+                className="rounded-[var(--radius-plaque)] border p-6 text-start transition-all duration-300 sm:p-8"
                 style={{
-                  background: on ? "#0b0b0c" : "#ffffff",
-                  borderColor: on ? "rgba(203,165,60,0.55)" : "var(--color-trait)",
-                  color: on ? "#f1f3f2" : "var(--color-graphite)",
-                  boxShadow: on
-                    ? "0 24px 60px -28px rgba(11,11,12,0.55)"
-                    : "0 12px 32px -26px rgba(11,11,12,0.4)",
+                  background: on
+                    ? "var(--vitrine-fg)"
+                    : "var(--comptoir-surface)",
+                  borderColor: on
+                    ? "color-mix(in srgb, var(--or-plein) 55%, transparent)"
+                    : "var(--comptoir-line)",
+                  color: on ? "var(--vitrine-bg)" : "var(--comptoir-fg)",
+                  boxShadow: on ? "var(--ombre-choix)" : "var(--ombre-carte)",
                 }}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -93,7 +92,9 @@ export function SelecteurAchat() {
                     <h3 className="display display-m">{option.nom}</h3>
                     <p
                       className="eyebrow mt-2"
-                      style={{ color: on ? "#cba53c" : "var(--color-graphite-doux)" }}
+                      style={{
+                        color: on ? "var(--or-plein)" : "var(--comptoir-muted)",
+                      }}
                     >
                       {option.minimum}
                     </p>
@@ -102,49 +103,44 @@ export function SelecteurAchat() {
                     aria-hidden
                     className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors"
                     style={{
-                      borderColor: on ? "#cba53c" : "#c8cecd",
-                      background: on ? "#cba53c" : "transparent",
+                      borderColor: on
+                        ? "var(--or-plein)"
+                        : "var(--comptoir-line)",
+                      background: on ? "var(--or-plein)" : "transparent",
                     }}
                   >
                     {on && (
-                      <span className="block h-2 w-2 rounded-full bg-encre" />
+                      <span
+                        className="block h-2 w-2 rounded-full"
+                        style={{ background: "var(--or-fg)" }}
+                      />
                     )}
                   </span>
                 </div>
 
                 <p
                   className="mt-5 text-[14.5px] leading-relaxed"
-                  style={{ color: on ? "#8b8f8e" : "var(--color-graphite-doux)" }}
+                  style={{ opacity: on ? 0.72 : 1, color: "inherit" }}
                 >
                   {option.detail}
                 </p>
 
                 {option.prix !== undefined && (
                   <p
-                    className="mt-6 flex items-baseline gap-2 border-t pt-4"
+                    className="mt-6 flex flex-wrap items-baseline gap-x-2 gap-y-1 border-t pt-4"
                     style={{
                       borderColor: on
-                        ? "rgba(203,165,60,0.2)"
-                        : "var(--color-trait)",
+                        ? "color-mix(in srgb, var(--or-plein) 24%, transparent)"
+                        : "var(--comptoir-line)",
                     }}
                   >
-                    <span
-                      className="eyebrow"
-                      style={{
-                        color: on ? "#8b8f8e" : "var(--color-graphite-doux)",
-                      }}
-                    >
-                      Brume 250 ml
+                    <span className="eyebrow" style={{ opacity: 0.66 }}>
+                      {t.format.repere}
                     </span>
-                    <span className="data ml-auto text-[1.05rem]">
-                      {da(option.prix)}
+                    <span className="data ms-auto text-[1.05rem]">
+                      {da(option.prix, t.unites.devise)}
                     </span>
-                    <span
-                      className="text-[12px]"
-                      style={{
-                        color: on ? "#8b8f8e" : "var(--color-graphite-doux)",
-                      }}
-                    >
+                    <span className="text-[12px]" style={{ opacity: 0.66 }}>
                       /&nbsp;{option.unite}
                     </span>
                   </p>
@@ -155,13 +151,12 @@ export function SelecteurAchat() {
         </div>
 
         {!purchaseChosen && (
-          <p className="mt-5 flex items-center gap-2 text-[13.5px] text-graphite-doux">
+          <p className="mt-5 flex items-start gap-2 text-[13.5px] text-graphite-doux">
             <span
               aria-hidden
-              className="inline-block h-1.5 w-1.5 rounded-full bg-or"
+              className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-or"
             />
-            Les prix affichés sont ceux du demi-gros. Choisissez « Gros » pour
-            voir les tarifs par carton.
+            {t.format.indice}
           </p>
         )}
       </div>

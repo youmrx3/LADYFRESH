@@ -1,12 +1,26 @@
 import { NextResponse } from "next/server";
-import { createOrder, getGammes, getProducts, getSettings, ordersArePersisted } from "@/lib/data";
-import { da, lineTotal, orderRef, piecesFor, purchaseLabel, unitPrice } from "@/lib/format";
-import { PRODUCT_TYPE_LABEL } from "@/lib/types";
+import {
+  createOrder,
+  getGammes,
+  getProducts,
+  getSettings,
+  ordersArePersisted,
+} from "@/lib/data";
+import {
+  da,
+  lineTotal,
+  orderRef,
+  piecesFor,
+  unitPrice,
+} from "@/lib/format";
+import { fill, getDictionary, type Dictionary } from "@/i18n";
+import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import type { OrderItem, PurchaseType } from "@/lib/types";
 
 type Requete = {
   channel: "whatsapp" | "formulaire";
   purchase: PurchaseType;
+  locale?: string;
   customer?: {
     name?: string;
     phone?: string;
@@ -22,18 +36,19 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Requête illisible." }, { status: 400 });
+    const t = getDictionary(DEFAULT_LOCALE);
+    return NextResponse.json({ error: t.api.illisible }, { status: 400 });
   }
+
+  const locale: Locale = isLocale(body.locale) ? body.locale : DEFAULT_LOCALE;
+  const t = getDictionary(locale);
 
   const purchase: PurchaseType = body.purchase === "gros" ? "gros" : "demi_gros";
   const channel: "whatsapp" | "formulaire" =
     body.channel === "formulaire" ? "formulaire" : "whatsapp";
 
   if (!Array.isArray(body.items) || body.items.length === 0) {
-    return NextResponse.json(
-      { error: "Votre commande est vide." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: t.api.vide }, { status: 400 });
   }
 
   const [products, gammes, settings] = await Promise.all([
@@ -56,14 +71,14 @@ export async function POST(request: Request) {
     const quantity = Math.floor(Number(ligne.quantity));
     if (!entree || !Number.isFinite(quantity) || quantity <= 0) continue;
     const { product, variant } = entree;
+    const gamme = gammes.find((g) => g.id === product.gamme_id);
     items.push({
       id: "",
       order_id: "",
       variant_id: variant.id,
-      product_name: `${PRODUCT_TYPE_LABEL[product.type]} ${
-        gammes.find((g) => g.id === product.gamme_id)?.name ?? ""
-      }`.trim(),
-      gamme_name: gammes.find((g) => g.id === product.gamme_id)?.name ?? "",
+      // Le libellé est figé dans la langue du client : c'est ce qu'il a lu.
+      product_name: `${t.types[product.type]} ${gamme?.name ?? ""}`.trim(),
+      gamme_name: gamme?.name ?? "",
       size_label: variant.size_label,
       unit_price: unitPrice(variant, purchase),
       quantity,
@@ -73,10 +88,7 @@ export async function POST(request: Request) {
   }
 
   if (items.length === 0) {
-    return NextResponse.json(
-      { error: "Aucune référence valide dans la commande." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: t.api.aucuneRef }, { status: 400 });
   }
 
   const pieces = items.reduce((sum, i) => {
@@ -87,7 +99,10 @@ export async function POST(request: Request) {
   if (purchase === "demi_gros" && pieces < settings.min_demi_gros_pieces) {
     return NextResponse.json(
       {
-        error: `Le demi-gros démarre à ${settings.min_demi_gros_pieces} pièces. Votre commande en compte ${pieces}.`,
+        error: fill(t.api.minDemi, {
+          min: settings.min_demi_gros_pieces,
+          n: pieces,
+        }),
       },
       { status: 422 },
     );
@@ -97,9 +112,7 @@ export async function POST(request: Request) {
     items.some((i) => i.quantity < settings.min_gros_cartons)
   ) {
     return NextResponse.json(
-      {
-        error: `Le gros démarre à ${settings.min_gros_cartons} carton par référence.`,
-      },
+      { error: fill(t.api.minGros, { min: settings.min_gros_cartons }) },
       { status: 422 },
     );
   }
@@ -107,10 +120,7 @@ export async function POST(request: Request) {
   const customer = body.customer ?? {};
   if (channel === "formulaire") {
     if (!customer.name?.trim() || !customer.phone?.trim()) {
-      return NextResponse.json(
-        { error: "Indiquez au moins votre nom et votre téléphone." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: t.api.nomTel }, { status: 400 });
     }
   }
 
@@ -136,13 +146,11 @@ export async function POST(request: Request) {
     await createOrder(order);
   } catch (error) {
     console.error("[orders] enregistrement impossible", error);
-    return NextResponse.json(
-      { error: "La commande n'a pas pu être enregistrée. Réessayez." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: t.api.echec }, { status: 500 });
   }
 
   const message = messageWhatsApp({
+    t,
     ref,
     purchase,
     items,
@@ -163,6 +171,7 @@ export async function POST(request: Request) {
 }
 
 function messageWhatsApp({
+  t,
   ref,
   purchase,
   items,
@@ -170,6 +179,7 @@ function messageWhatsApp({
   pieces,
   customer,
 }: {
+  t: Dictionary;
   ref: string;
   purchase: PurchaseType;
   items: OrderItem[];
@@ -177,29 +187,32 @@ function messageWhatsApp({
   pieces: number;
   customer: Requete["customer"];
 }) {
-  const unite = purchase === "gros" ? "carton" : "pc";
-  const lignes = items.map((i) => {
-    const q = `${i.quantity} ${unite}${i.quantity > 1 ? "s" : ""}`;
-    return `• ${i.product_name} ${i.size_label} — ${q} × ${da(
-      i.unit_price,
-    )} = ${da(i.line_total)}`;
-  });
+  const devise = t.unites.devise;
+  const unite = purchase === "gros" ? t.unites.cartons : t.unites.pieces;
 
-  const entete = [
-    `Bonjour Lady Fresh, je souhaite passer commande.`,
+  const lignes = items.map(
+    (i) =>
+      `• ${i.product_name} ${i.size_label} — ${i.quantity} ${unite} × ${da(
+        i.unit_price,
+        devise,
+      )} = ${da(i.line_total, devise)}`,
+  );
+
+  const corps = [
+    t.api.bonjour,
     ``,
-    `Réf. ${ref}`,
-    `Format : ${purchaseLabel(purchase)}`,
+    `${t.api.ref} ${ref}`,
+    `${t.api.format}${t.api.sep}${t.achat[purchase]}`,
     ``,
     ...lignes,
     ``,
-    `Total : ${pieces} pièces — ${da(total)}`,
+    `${t.api.total}${t.api.sep}${pieces} ${t.unites.pieces} — ${da(total, devise)}`,
   ];
 
-  if (customer?.name) entete.push(``, `Nom : ${customer.name}`);
-  if (customer?.phone) entete.push(`Téléphone : ${customer.phone}`);
-  if (customer?.wilaya) entete.push(`Wilaya : ${customer.wilaya}`);
-  if (customer?.note) entete.push(`Note : ${customer.note}`);
+  if (customer?.name) corps.push(``, `${t.api.nom}${t.api.sep}${customer.name}`);
+  if (customer?.phone) corps.push(`${t.api.telephone}${t.api.sep}${customer.phone}`);
+  if (customer?.wilaya) corps.push(`${t.api.wilaya}${t.api.sep}${customer.wilaya}`);
+  if (customer?.note) corps.push(`${t.api.note}${t.api.sep}${customer.note}`);
 
-  return entete.join("\n");
+  return corps.join("\n");
 }

@@ -4,27 +4,35 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { seConnecter } from "@/lib/actions";
 
-export function FormulaireConnexion() {
+type Labels = { motDePasse: string; entrer: string; verification: string };
+
+export function FormulaireConnexion({ labels }: { labels: Labels }) {
   const [etat, action] = useActionState(seConnecter, {});
 
   return (
     <form action={action} className="mt-8">
       <label className="block">
-        <span className="etiquette !text-craie">Mot de passe</span>
+        <span className="etiquette" style={{ color: "var(--vitrine-muted)" }}>
+          {labels.motDePasse}
+        </span>
         <input
           name="password"
           type="password"
           required
           autoFocus
           autoComplete="current-password"
-          className="champ !border-encre-bord !bg-encre-haut !text-porcelaine"
+          className="champ"
         />
       </label>
 
-      <Bouton />
+      <Bouton labels={labels} />
 
       {etat.error && (
-        <p role="alert" className="mt-3 text-[13px] text-[#e06a7d]">
+        <p
+          role="alert"
+          className="mt-3 text-[13px]"
+          style={{ color: "var(--danger)" }}
+        >
           {etat.error}
         </p>
       )}
@@ -32,11 +40,11 @@ export function FormulaireConnexion() {
   );
 }
 
-function Bouton() {
+function Bouton({ labels }: { labels: Labels }) {
   const { pending } = useFormStatus();
   return (
     <button type="submit" disabled={pending} className="btn btn-or mt-4 w-full">
-      {pending ? "Vérification…" : "Entrer"}
+      {pending ? labels.verification : labels.entrer}
     </button>
   );
 }
