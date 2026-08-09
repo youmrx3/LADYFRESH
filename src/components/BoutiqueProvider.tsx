@@ -45,6 +45,8 @@ type Boutique = {
   add: (variantId: string, quantity: number) => void;
   clear: () => void;
   pieceCount: number;
+  /** Total en cartons ; n'a de sens qu'en gros. */
+  cartonCount: number;
   total: number;
   /** Minimum quantity for one line, in the unit currently in play. */
   minQuantity: number;
@@ -176,6 +178,8 @@ export function BoutiqueProvider({
   }, [quantities, variantIndex, gammeIndex, purchase]);
 
   const pieceCount = lines.reduce((sum, l) => sum + l.pieces, 0);
+  // En gros, la quantité saisie est un nombre de cartons.
+  const cartonCount = lines.reduce((sum, l) => sum + l.quantity, 0);
   const total = lines.reduce((sum, l) => sum + l.total, 0);
 
   /**
@@ -202,6 +206,7 @@ export function BoutiqueProvider({
     add,
     clear,
     pieceCount,
+    cartonCount,
     total,
     minQuantity,
     meetsMinimum,

@@ -13,7 +13,7 @@ import { useReglages } from "./Reglages";
  * marque, le total en cours et le bouton de commande.
  */
 export function EnteteBoutique({ campagne }: { campagne: string }) {
-  const { pieceCount, purchase } = useBoutique();
+  const { pieceCount, cartonCount, purchase } = useBoutique();
   const { t } = useReglages();
 
   /*
@@ -30,7 +30,10 @@ export function EnteteBoutique({ campagne }: { campagne: string }) {
     }
   }, [campagne]);
 
-  const unite = purchase === "gros" ? t.unites.cartonCourt : t.unites.pieceCourt;
+  // Même unité que celle saisie dans la boutique : cartons en gros.
+  const gros = purchase === "gros";
+  const compte = gros ? cartonCount : pieceCount;
+  const unite = gros ? t.unites.cartonCourt : t.unites.pieceCourt;
 
   return (
     <header
@@ -66,7 +69,7 @@ export function EnteteBoutique({ campagne }: { campagne: string }) {
                 className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                 style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
               >
-                {pieceCount} {unite}
+                {compte} {unite}
               </span>
             )}
           </a>

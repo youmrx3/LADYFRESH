@@ -7,7 +7,7 @@ import { useBoutique } from "./BoutiqueProvider";
 import { useReglages } from "./Reglages";
 
 export function Navbar() {
-  const { pieceCount, purchase } = useBoutique();
+  const { pieceCount, cartonCount, purchase } = useBoutique();
   const { t } = useReglages();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -36,9 +36,14 @@ export function Navbar() {
 
   const pose = scrolled || open;
 
-  /* Le compteur affiche le nombre réel. Le bouton n'est monté qu'à partir de
-     lg, donc la place ne manque pas, et un grossiste veut voir son total. */
-  const unite = purchase === "gros" ? t.unites.cartonCourt : t.unites.pieceCourt;
+  /*
+    Le compteur affiche le nombre réel, dans l'unité que le client manipule :
+    des cartons en gros, des pièces en demi-gros. Il montrait le total en
+    pièces avec l'étiquette « ct », donc « 24 ct » pour un seul carton.
+  */
+  const gros = purchase === "gros";
+  const compte = gros ? cartonCount : pieceCount;
+  const unite = gros ? t.unites.cartonCourt : t.unites.pieceCourt;
 
   return (
     <header
@@ -88,7 +93,7 @@ export function Navbar() {
                 className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                 style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
               >
-                {pieceCount} {unite}
+                {compte} {unite}
               </span>
             )}
           </a>
@@ -151,7 +156,7 @@ export function Navbar() {
                     className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                     style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
                   >
-                    {pieceCount} {unite}
+                    {compte} {unite}
                   </span>
                 )}
               </a>
