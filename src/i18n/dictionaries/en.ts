@@ -256,7 +256,7 @@ export const en: Dictionary = {
       },
       commandes: "Orders",
       gammes: "Ranges",
-      produits: "Products & prices",
+      produits: "Products",
       types: "Product types",
       formats: "Sizes & prices",
       contenu: "Site content",
@@ -268,6 +268,8 @@ export const en: Dictionary = {
       total: "{n} in total",
       vide: "No orders yet. WhatsApp and form orders both land here.",
       statut: "Status",
+      supprimer: "Delete order",
+      confirmSuppr: "Permanently delete order {ref}? This cannot be undone.",
       mettreAJour: "Update",
       clientAbsent: "No customer name",
       adresse: "Address",
@@ -354,7 +356,7 @@ export const en: Dictionary = {
     },
 
     produits: {
-      titre: "Products & prices",
+      titre: "Products",
       nouveau: "New product",
       aide: "A product carries one or more sizes. Price, photo and pieces per carton are set per size.",
       seuils: "Minimums: wholesale from {gros} carton, half-wholesale from {demi} pieces.",

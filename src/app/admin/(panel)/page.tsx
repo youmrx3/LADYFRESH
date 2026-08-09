@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Envoyer, FormAction } from "@/components/admin/Champs";
 import { EnTetePage } from "@/components/admin/Volet";
-import { changerStatutCommande } from "@/lib/actions";
+import { changerStatutCommande, supprimerCommande } from "@/lib/actions";
 import { getOrders } from "@/lib/data";
 import { da, formatDate } from "@/lib/format";
 import { fill } from "@/i18n";
@@ -154,6 +154,19 @@ export default async function Commandes({
                         </select>
                       </label>
                       <Envoyer>{t.admin.commandes.mettreAJour}</Envoyer>
+                    </FormAction>
+
+                    {/* Irréversible : la confirmation rappelle la référence. */}
+                    <FormAction action={supprimerCommande}>
+                      <input type="hidden" name="id" value={order.id} />
+                      <Envoyer
+                        variante="danger"
+                        confirmer={fill(t.admin.commandes.confirmSuppr, {
+                          ref: order.ref,
+                        })}
+                      >
+                        {t.admin.commandes.supprimer}
+                      </Envoyer>
                     </FormAction>
                   </div>
 

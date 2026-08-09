@@ -260,7 +260,7 @@ export const ar: Dictionary = {
       },
       commandes: "الطلبات",
       gammes: "المجموعات",
-      produits: "المنتجات والأسعار",
+      produits: "المنتجات",
       types: "أنواع المنتجات",
       formats: "الأحجام والأسعار",
       contenu: "محتوى الموقع",
@@ -272,6 +272,8 @@ export const ar: Dictionary = {
       total: "{n} في المجموع",
       vide: "لا توجد طلبات بعد. طلبات واتساب والاستمارة تصل كلها هنا.",
       statut: "الحالة",
+      supprimer: "حذف الطلب",
+      confirmSuppr: "حذف الطلب {ref} نهائيًا؟ لا يمكن التراجع عن هذا.",
       mettreAJour: "تحديث",
       clientAbsent: "الزبون غير مذكور",
       adresse: "العنوان",
@@ -358,7 +360,7 @@ export const ar: Dictionary = {
     },
 
     produits: {
-      titre: "المنتجات والأسعار",
+      titre: "المنتجات",
       nouveau: "منتج جديد",
       aide: "المنتج يحمل حجمًا أو أكثر. السعر والصورة وعدد القطع في الكرتون تُضبط لكل حجم.",
       seuils: "الحدود: الجملة من {gros} كرتون، نصف الجملة من {demi} قطعة.",

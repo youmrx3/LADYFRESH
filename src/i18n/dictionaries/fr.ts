@@ -262,7 +262,7 @@ export const fr = {
       },
       commandes: "Commandes",
       gammes: "Gammes",
-      produits: "Produits & prix",
+      produits: "Produits",
       types: "Types de produits",
       formats: "Formats & prix",
       contenu: "Contenu du site",
@@ -274,6 +274,8 @@ export const fr = {
       total: "{n} au total",
       vide: "Aucune commande pour l'instant. Les commandes WhatsApp et formulaire arrivent toutes ici.",
       statut: "Statut",
+      supprimer: "Supprimer la commande",
+      confirmSuppr: "Supprimer définitivement la commande {ref} ? Cette action est irréversible.",
       mettreAJour: "Mettre à jour",
       clientAbsent: "Client non renseigné",
       adresse: "Adresse",
@@ -362,7 +364,7 @@ export const fr = {
     },
 
     produits: {
-      titre: "Produits & prix",
+      titre: "Produits",
       nouveau: "Nouveau produit",
       aide: "Un produit porte un ou plusieurs formats. Le prix, la photo et le nombre de pièces par carton se règlent par format.",
       seuils:

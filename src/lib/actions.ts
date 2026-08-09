@@ -22,7 +22,12 @@ import {
   SETTINGS,
   VIDEOS,
 } from "./catalog";
-import { ETIQUETTE_CATALOGUE, setOrderStatus, writeLocalSettings } from "./data";
+import {
+  deleteOrder,
+  ETIQUETTE_CATALOGUE,
+  setOrderStatus,
+  writeLocalSettings,
+} from "./data";
 import { supabaseAdmin } from "./supabase";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { OrderStatus } from "./types";
@@ -160,6 +165,18 @@ export async function changerStatutCommande(
   return tenter(async () => {
     await setOrderStatus(id, status);
     return "Statut mis à jour.";
+  });
+}
+
+export async function supprimerCommande(
+  _prev: Retour,
+  formData: FormData,
+): Promise<Retour> {
+  if (!(await isAdmin())) return { error: "Session expirée." };
+  const id = mot(formData, "id");
+  return tenter(async () => {
+    await deleteOrder(id);
+    return "Commande supprimée.";
   });
 }
 

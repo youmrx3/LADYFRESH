@@ -278,6 +278,22 @@ export async function getOrders(): Promise<Order[]> {
   return data as Order[];
 }
 
+/**
+ * Supprime une commande. Les lignes partent avec elle : `order_items` porte
+ * un `on delete cascade` vers `orders`.
+ */
+export async function deleteOrder(id: string) {
+  const db = supabaseAdmin();
+  if (!db) {
+    const restantes = readLocalOrders().filter((o) => o.id !== id);
+    if (!writeLocalOrders(restantes))
+      throw new Error("Fichier local en lecture seule : commande non supprimée.");
+    return;
+  }
+  const { error } = await db.from("orders").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export async function setOrderStatus(id: string, status: OrderStatus) {
   const db = supabaseAdmin();
   if (!db) {
