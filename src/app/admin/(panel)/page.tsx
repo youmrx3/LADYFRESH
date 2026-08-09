@@ -95,6 +95,17 @@ export default async function Commandes({
                   <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
                     {t.achat[order.purchase_type]}
                   </span>
+                  {order.source && (
+                    <span
+                      className="eyebrow rounded-full px-2 py-0.5 text-[9.5px]"
+                      style={{
+                        background: "color-mix(in srgb, var(--or-plein) 22%, transparent)",
+                        color: "var(--or-trait)",
+                      }}
+                    >
+                      {order.source}
+                    </span>
+                  )}
                   <span className="min-w-0 flex-1 truncate text-[13.5px] text-graphite-doux">
                     {order.customer_name || t.admin.commandes.clientAbsent}
                   </span>

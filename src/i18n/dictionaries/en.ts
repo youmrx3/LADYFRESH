@@ -380,6 +380,10 @@ export const en: Dictionary = {
     },
 
     contenu: {
+      langueSite: "Site language",
+      langueSiteAide:
+        "Storefront and back office both follow this. Visitors cannot change it.",
+      appliquer: "Apply",
       reglages: "Settings",
       titre: "Site content",
       commandeContact: "Ordering and contact",

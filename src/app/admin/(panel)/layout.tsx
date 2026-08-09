@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BasculeLangue, BasculeTheme } from "@/components/Bascules";
+import { BasculeTheme } from "@/components/Bascules";
 import {
   BarreOngletsMobile,
   LiensAdmin,
@@ -61,7 +61,6 @@ export default async function LayoutAdmin({
         {marque}
         <span className="eyebrow ms-1 text-or">{t.admin.gestion}</span>
         <div className="ms-auto flex items-center gap-2">
-          <BasculeLangue compact />
           <BasculeTheme compact />
           <form action={seDeconnecter}>
             <button
@@ -99,7 +98,6 @@ export default async function LayoutAdmin({
         <LiensAdmin liens={liens} />
 
         <div className="mt-auto flex items-center justify-between gap-3 px-5 py-4">
-          <BasculeLangue compact />
           <BasculeTheme compact />
         </div>
 

@@ -88,6 +88,7 @@ create table if not exists orders (
   address       text not null default '',
   note          text not null default '',
   channel       order_channel not null,
+  source        text not null default '',
   purchase_type purchase_type not null,
   total         numeric(12,2) not null default 0,
   status        order_status not null default 'nouvelle',
@@ -132,6 +133,7 @@ create table if not exists videos (
 -- Ligne unique : réglages du site.
 create table if not exists site_settings (
   id                    text primary key default 'settings',
+  locale                text not null default 'fr',
   whatsapp_number       text not null default '213000000000',
   min_gros_cartons      int  not null default 1,
   min_demi_gros_pieces  int  not null default 5,
@@ -222,6 +224,9 @@ alter table videos        add column if not exists title_ar text;
 alter table videos        add column if not exists title_en text;
 alter table videos        add column if not exists note_ar  text;
 alter table videos        add column if not exists note_en  text;
+
+alter table site_settings add column if not exists locale          text not null default 'fr';
+alter table orders        add column if not exists source          text not null default '';
 
 alter table site_settings add column if not exists hero_eyebrow_ar text;
 alter table site_settings add column if not exists hero_eyebrow_en text;

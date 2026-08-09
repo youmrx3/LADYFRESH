@@ -22,7 +22,7 @@ import {
   SETTINGS,
   VIDEOS,
 } from "./catalog";
-import { ETIQUETTE_CATALOGUE, setOrderStatus } from "./data";
+import { ETIQUETTE_CATALOGUE, setOrderStatus, writeLocalSettings } from "./data";
 import { supabaseAdmin } from "./supabase";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { OrderStatus } from "./types";
@@ -368,8 +368,8 @@ export async function enregistrerReglages(
   formData: FormData,
 ): Promise<Retour> {
   return tenter(async () => {
-    const db = await garde();
     const lang = langue(formData);
+    const db = await garde();
 
     const valeurs: Record<string, unknown> = traduits(formData, [
       "hero_eyebrow",
@@ -380,6 +380,7 @@ export async function enregistrerReglages(
       const numero = mot(formData, "whatsapp_number").replace(/\D/g, "");
       if (!numero) throw new Error("Le numéro WhatsApp est requis.");
       Object.assign(valeurs, {
+        locale: isLocale(mot(formData, "locale")) ? mot(formData, "locale") : "fr",
         whatsapp_number: numero,
         min_gros_cartons: Math.max(1, Number(formData.get("min_gros_cartons") ?? 1)),
         min_demi_gros_pieces: Math.max(
@@ -400,6 +401,37 @@ export async function enregistrerReglages(
       .upsert({ id: "settings", ...valeurs });
     if (error) throw new Error(error.message);
     return "Réglages enregistrés.";
+  });
+}
+
+/**
+ * La langue du site vit à part des autres réglages : on doit pouvoir la
+ * changer avant même que Supabase soit branché, sinon impossible de
+ * prévisualiser l'arabe ou l'anglais. Elle s'écrit donc en base quand elle
+ * existe, et dans le repli local sinon.
+ */
+export async function changerLangueSite(
+  _prev: Retour,
+  formData: FormData,
+): Promise<Retour> {
+  if (!(await isAdmin())) return { error: "Session expirée." };
+
+  const cible = mot(formData, "locale");
+  if (!isLocale(cible)) return { error: "Langue inconnue." };
+
+  return tenter(async () => {
+    const db = supabaseAdmin();
+    if (db) {
+      const { error } = await db
+        .from("site_settings")
+        .upsert({ id: "settings", locale: cible });
+      if (error) throw new Error(error.message);
+    } else if (!writeLocalSettings({ locale: cible })) {
+      throw new Error(
+        "Langue non enregistrée : base absente et disque en lecture seule.",
+      );
+    }
+    return "Langue du site mise à jour.";
   });
 }
 

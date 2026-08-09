@@ -90,6 +90,8 @@ export type Video = {
 
 export type SiteSettings = {
   id: string;
+  /** Langue du site, choisie dans l'admin. Vitrine et back-office la suivent. */
+  locale: string;
   whatsapp_number: string;
   min_gros_cartons: number;
   min_demi_gros_pieces: number;
@@ -134,6 +136,8 @@ export type Order = {
   address: string;
   note: string;
   channel: "whatsapp" | "formulaire";
+  /** Étiquette de campagne (`?c=` sur /boutique), vide en direct. */
+  source: string;
   purchase_type: PurchaseType;
   total: number;
   status: OrderStatus;

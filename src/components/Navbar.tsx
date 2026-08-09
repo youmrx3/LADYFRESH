@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { BasculeLangue, BasculeTheme } from "./Bascules";
+import { BasculeTheme } from "./Bascules";
 import { useBoutique } from "./BoutiqueProvider";
 import { useReglages } from "./Reglages";
 
@@ -75,7 +75,6 @@ export function Navbar() {
 
         <div className="ms-auto flex shrink-0 items-center gap-2">
           <div className="hidden sm:flex sm:items-center sm:gap-2">
-            <BasculeLangue compact />
             <BasculeTheme compact />
           </div>
 
@@ -137,8 +136,7 @@ export function Navbar() {
                 </a>
               </li>
             ))}
-            <li className="flex items-center justify-between gap-3 py-5">
-              <BasculeLangue />
+            <li className="flex items-center justify-end py-5">
               <BasculeTheme />
             </li>
             <li className="pb-6">

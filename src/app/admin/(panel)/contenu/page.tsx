@@ -9,6 +9,7 @@ import { ChampImage } from "@/components/admin/ChampImage";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
 import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
 import {
+  changerLangueSite,
   enregistrerReglages,
   enregistrerSlide,
   enregistrerVideo,
@@ -18,7 +19,7 @@ import {
 import { getGammes, getHeroSlides, getSettings, getVideos } from "@/lib/data";
 import { fill } from "@/i18n";
 import { champ } from "@/i18n/contenu";
-import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
+import { DEFAULT_LOCALE, isLocale, LOCALES, LOCALE_LABEL, type Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +70,30 @@ export default async function Contenu({
       </div>
 
       <div className="space-y-10">
+        {/* ------------------------------------------------ langue du site */}
+        <section>
+          <h2 className="display display-m">{a.contenu.langueSite}</h2>
+          <p className="mt-1 max-w-[60ch] text-[13.5px] text-graphite-doux">
+            {a.contenu.langueSiteAide}
+          </p>
+          <FormAction
+            action={changerLangueSite}
+            className="mt-3 flex flex-wrap items-end gap-3 rounded-[10px] border border-trait p-4"
+          >
+            <Liste
+              label={a.contenu.langueSite}
+              name="locale"
+              options={LOCALES.map((code) => ({
+                value: code,
+                label: LOCALE_LABEL[code],
+              }))}
+              defaultValue={settings.locale}
+              className="min-w-[12rem]"
+            />
+            <Envoyer variante="or">{a.contenu.appliquer}</Envoyer>
+          </FormAction>
+        </section>
+
         {/* ------------------------------------------- commande et contact */}
         <section>
           <h2 className="display display-m">{a.contenu.commandeContact}</h2>

@@ -24,7 +24,13 @@ export function RailGammes({
   products: Product[];
   types: ProductType[];
 }) {
-  const [active, setActive] = useState(0);
+  /*
+    `null` = état de repos : les sept colonnes à égalité, rien que les
+    couleurs. La fiche ne s'ouvre que sous le curseur et se referme dès qu'il
+    quitte la bande — sinon la dernière gamme survolée restait ouverte et
+    l'index perdait sa lecture d'ensemble.
+  */
+  const [active, setActive] = useState<number | null>(null);
   const { setColorFilter, setTypeFilter } = useBoutique();
   const { t, locale } = useReglages();
 
@@ -71,7 +77,16 @@ export function RailGammes({
 
       {/* -------------------------------------------------- bande — desktop */}
       <Reveal className="mt-12 hidden px-[var(--gutter)] lg:block">
-        <div className="flex h-[30rem] w-full overflow-hidden rounded-[var(--radius-plaque)] border border-or/25">
+        <div
+          className="flex h-[30rem] w-full overflow-hidden rounded-[var(--radius-plaque)] border border-or/25"
+          onMouseLeave={() => setActive(null)}
+          /* Au clavier : on ne referme que si le focus sort vraiment de la
+             bande, pas en passant d'une colonne à la suivante. */
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+              setActive(null);
+          }}
+        >
           {gammes.map((gamme, i) => {
             const on = i === active;
             const lignes = contenu.get(gamme.id) ?? [];

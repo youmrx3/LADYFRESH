@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { FormulaireConnexion } from "./FormulaireConnexion";
-import { BasculeLangue, BasculeTheme } from "@/components/Bascules";
+import { BasculeTheme } from "@/components/Bascules";
 import { adminPassword, isAdmin } from "@/lib/auth";
 import { getT } from "@/i18n/server";
 
@@ -31,7 +31,6 @@ export default async function Connexion() {
             className="clair-hidden h-[20px] w-auto"
           />
           <div className="flex items-center gap-2">
-            <BasculeLangue compact />
             <BasculeTheme compact />
           </div>
         </div>

@@ -106,10 +106,43 @@ la langue éditée, et seuls les champs de cette langue s'affichent. Le slug, la
 couleur, l'image et l'ordre ne dépendent pas de la langue et ne s'éditent donc
 que depuis le français, qui porte aussi le texte de repli.
 
+## Pages
+
+| Adresse | Rôle |
+|---|---|
+| `/` | La vitrine complète : hero, gammes, boutique, commande, vidéos |
+| `/boutique` | La boutique seule, pour les campagnes publicitaires |
+| `/admin` | Le back-office, accessible par l'URL uniquement |
+
+### La page de campagne
+
+`/boutique` ouvre le catalogue sans le hero ni les gammes : le format, les
+produits, la commande. C'est l'adresse à mettre dans une publicité.
+
+Elle réutilise exactement les mêmes composants que l'accueil, donc les mêmes
+prix, le même panier — partagé par `localStorage`, un client peut commencer
+là et finir sur la vitrine — et le même `/api/orders`. Une commande passée ici
+est une commande comme une autre.
+
+Ajoutez `?c=` pour savoir d'où elle vient :
+
+```
+https://ladyfresh.dz/boutique?c=insta-aout
+https://ladyfresh.dz/boutique?c=facebook-ramadan
+```
+
+L'étiquette tient toute la visite (`sessionStorage`), se retrouve dans
+`orders.source` et s'affiche en pastille dorée à côté de la commande dans le
+suivi. Sans `?c=`, la colonne reste vide : c'est une commande directe.
+
 ## Langues
 
-Français, arabe et anglais, le français par défaut. La langue est gardée dans
-un cookie ; `<html lang dir>` suit, et l'arabe passe la page en RTL.
+Français, arabe et anglais. **La langue est un réglage du site, choisi dans
+« Contenu du site » de l'admin** — la vitrine et le back-office la suivent
+tous les deux. Les visiteurs n'en changent pas : c'est une marque qui
+s'adresse à un marché donné, pas un site multirégional.
+
+L'arabe passe la page en RTL, `<html lang dir>` suit.
 
 Les textes d'interface vivent dans `src/i18n/dictionaries/`. Le français est le
 dictionnaire de référence : une clé oubliée en arabe ou en anglais casse la

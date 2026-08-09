@@ -37,6 +37,8 @@ type Requete = {
   channel: "whatsapp" | "formulaire";
   purchase: PurchaseType;
   locale?: string;
+  /** Étiquette de campagne, transmise par /boutique?c=… */
+  source?: string;
   customer?: {
     name?: string;
     phone?: string;
@@ -161,6 +163,7 @@ export async function POST(request: Request) {
     wilaya: borne(customer.wilaya, 80),
     address: borne(customer.address, 300),
     note: borne(customer.note),
+    source: borne(body.source, 60),
     channel,
     purchase_type: purchase,
     total,

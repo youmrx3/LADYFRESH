@@ -111,13 +111,13 @@ async function getProductsBrut(): Promise<Product[]> {
 
 async function getSettingsBrut(): Promise<SiteSettings> {
   const db = supabaseRead();
-  if (!db) return SETTINGS;
+  if (!db) return { ...SETTINGS, ...readLocalSettings() };
   const { data, error } = await db
     .from("site_settings")
     .select("*")
     .eq("id", "settings")
     .maybeSingle();
-  if (error || !data) return fallback("settings", SETTINGS, error);
+  if (error || !data) return fallback("settings", { ...SETTINGS, ...readLocalSettings() }, error);
   // A freshly-inserted settings row has empty copy; keep the seed wording.
   return { ...SETTINGS, ...stripEmpty(data as Record<string, unknown>) } as SiteSettings;
 }
@@ -181,6 +181,36 @@ function writeLocalOrders(orders: Order[]) {
   }
 }
 
+/**
+ * Réglages en repli local, même principe et mêmes limites que les commandes :
+ * utile pour régler la langue et prévisualiser avant Supabase, inutilisable
+ * en production.
+ */
+const LOCAL_SETTINGS = join(process.cwd(), ".data", "settings.json");
+
+function readLocalSettings(): Partial<SiteSettings> {
+  try {
+    return JSON.parse(readFileSync(LOCAL_SETTINGS, "utf8")) as Partial<SiteSettings>;
+  } catch {
+    return {};
+  }
+}
+
+export function writeLocalSettings(patch: Partial<SiteSettings>) {
+  if (SERVERLESS) return false;
+  try {
+    mkdirSync(dirname(LOCAL_SETTINGS), { recursive: true });
+    writeFileSync(
+      LOCAL_SETTINGS,
+      JSON.stringify({ ...readLocalSettings(), ...patch }, null, 2),
+    );
+    return true;
+  } catch (error) {
+    console.warn("[data] réglages non enregistrés localement —", error);
+    return false;
+  }
+}
+
 export function ordersArePersisted() {
   return Boolean(supabaseAdmin());
 }
@@ -210,6 +240,7 @@ export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
       address: order.address,
       note: order.note,
       channel: order.channel,
+      source: order.source,
       purchase_type: order.purchase_type,
       total: order.total,
       status: order.status,

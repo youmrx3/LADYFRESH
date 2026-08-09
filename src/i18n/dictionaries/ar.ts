@@ -384,6 +384,10 @@ export const ar: Dictionary = {
     },
 
     contenu: {
+      langueSite: "لغة الموقع",
+      langueSiteAide:
+        "الواجهة ولوحة التحكم تتبعان هذا الاختيار. الزوّار لا يمكنهم تغييره.",
+      appliquer: "تطبيق",
       reglages: "الإعدادات",
       titre: "محتوى الموقع",
       commandeContact: "الطلب والاتصال",

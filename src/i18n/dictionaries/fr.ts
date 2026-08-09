@@ -390,6 +390,10 @@ export const fr = {
     },
 
     contenu: {
+      langueSite: "Langue du site",
+      langueSiteAide:
+        "Vitrine et back-office suivent ce choix. Les visiteurs ne peuvent pas en changer.",
+      appliquer: "Appliquer",
       reglages: "Réglages",
       titre: "Contenu du site",
       commandeContact: "Commande et contact",

@@ -1,13 +1,23 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { getSettings } from "@/lib/data";
 import { getDictionary } from "./index";
-import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from "./config";
+import { DEFAULT_LOCALE, isLocale, type Locale } from "./config";
 
-/** Langue choisie par le visiteur, français par défaut. */
+/**
+ * La langue est un réglage du site, pas une préférence de visiteur : elle se
+ * choisit dans l'admin et vaut pour la vitrine comme pour le back-office.
+ * C'est une marque algérienne qui s'adresse à un marché donné — laisser
+ * chaque visiteur basculer n'apportait rien et dupliquait le réglage.
+ */
 export async function getLocale(): Promise<Locale> {
-  const value = (await cookies()).get(LOCALE_COOKIE)?.value;
-  return isLocale(value) ? value : DEFAULT_LOCALE;
+  try {
+    const settings = await getSettings();
+    return isLocale(settings.locale) ? settings.locale : DEFAULT_LOCALE;
+  } catch {
+    // Un réglage illisible ne doit pas empêcher la page de s'afficher.
+    return DEFAULT_LOCALE;
+  }
 }
 
 export async function getT() {

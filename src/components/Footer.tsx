@@ -106,16 +106,12 @@ export function Footer({ settings }: { settings: SiteSettings }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-6">
+        {/* Pas de lien vers l'admin : une porte publique vers le back-office
+            n'apporte rien et le désigne aux robots. On y accède par l'URL. */}
+        <div className="pt-6">
           <p className="data text-[12px] text-craie">
             © {new Date().getFullYear()} Lady Fresh — {t.footer.droits}
           </p>
-          <a
-            href="/admin"
-            className="eyebrow text-[10px] text-craie/60 transition-colors hover:text-or"
-          >
-            {t.footer.gestion}
-          </a>
         </div>
       </div>
     </footer>

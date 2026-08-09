@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBoutique } from "./BoutiqueProvider";
 import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
@@ -41,6 +41,20 @@ export function Commande() {
   const vide = lines.length === 0;
   const devise = t.unites.devise;
 
+  /*
+    Étiquette de campagne posée par /boutique?c=…, mémorisée le temps de la
+    visite : le client peut passer par la vitrine avant de commander, et
+    l'attribution doit survivre à ce détour.
+  */
+  const [campagne, setCampagne] = useState("");
+  useEffect(() => {
+    try {
+      setCampagne(sessionStorage.getItem("ladyfresh.campagne") ?? "");
+    } catch {
+      // Mode privé : pas d'attribution, la commande passe quand même.
+    }
+  }, []);
+
   async function envoyer(canal: "whatsapp" | "formulaire") {
     // Ouvert avant l'await : un onglet ouvert plus tard serait bloqué.
     const onglet = canal === "whatsapp" ? window.open("", "_blank") : null;
@@ -54,6 +68,7 @@ export function Commande() {
           channel: canal,
           purchase,
           locale,
+          source: campagne,
           customer: client,
           items: lines.map((l) => ({
             variantId: l.variantId,
