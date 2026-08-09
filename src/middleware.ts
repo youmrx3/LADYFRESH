@@ -31,6 +31,20 @@ const supabaseHost = (() => {
 
 const DEV = process.env.NODE_ENV !== "production";
 
+/*
+  Le pixel Meta charge son script depuis connect.facebook.net et poste ses
+  événements vers facebook.com. Sans ces trois ouvertures ciblées, la CSP le
+  bloque en silence : la page s'affiche, le pixel ne compte rien. On n'ouvre
+  que ces domaines, et uniquement si un identifiant est configuré.
+*/
+const META = process.env.NEXT_PUBLIC_META_PIXEL_ID
+  ? {
+      script: " https://connect.facebook.net",
+      image: " https://www.facebook.com",
+      connect: " https://www.facebook.com https://connect.facebook.net",
+    }
+  : { script: "", image: "", connect: "" };
+
 /**
  * `unsafe-inline` sur les scripts est imposé par Next : l'hydratation et le
  * script de thème sont en ligne. Une CSP à nonce obligerait à rendre chaque
@@ -53,12 +67,12 @@ function csp() {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    `script-src 'self' 'unsafe-inline'${dev}`,
+    `script-src 'self' 'unsafe-inline'${dev}${META.script}`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
-    `img-src 'self' data: blob:${sb}`,
+    `img-src 'self' data: blob:${sb}${META.image}`,
     `media-src 'self' blob:${sb}`,
-    `connect-src 'self'${sb}${devSocket}`,
+    `connect-src 'self'${sb}${devSocket}${META.connect}`,
     ...(DEV ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
 }

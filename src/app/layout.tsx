@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Instrument_Sans, Jost, Noto_Kufi_Arabic } from "next/font/google";
+import { PixelMeta } from "@/components/PixelMeta";
 import { ReglagesProvider } from "@/components/Reglages";
 import { DIRECTION, HTML_LANG } from "@/i18n/config";
 import { getT } from "@/i18n/server";
@@ -91,6 +92,7 @@ export default async function RootLayout({
           <style>{`.reveal{opacity:1 !important;transform:none !important}`}</style>
         </noscript>
         <ReglagesProvider locale={locale}>{children}</ReglagesProvider>
+        <PixelMeta />
       </body>
     </html>
   );
