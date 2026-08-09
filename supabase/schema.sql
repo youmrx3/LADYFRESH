@@ -184,22 +184,33 @@ end $$;
 drop policy if exists "public insert orders" on orders;
 drop policy if exists "public insert order_items" on order_items;
 
--- Le bucket media est public en lecture seule. L'écriture passe par la
--- service-role key depuis l'action de téléversement.
-drop policy if exists "media public write" on storage.objects;
-
 -- -------------------------------------------------------------- stockage
--- Bucket public pour les images de gammes, les visuels du hero et les vidéos
--- « Pourquoi nous choisir ». L'admin panel y téléverse directement.
+-- Bucket public pour les images de gammes, les visuels du hero et les vidéos.
+-- L'admin panel y téléverse via la service-role key ; personne d'autre n'écrit.
+--
+-- Selon le rôle avec lequel tourne l'éditeur SQL, la création de policies sur
+-- storage.objects peut être refusée. On l'enveloppe donc : un refus ici ne
+-- doit pas faire échouer tout le script. Le bucket peut aussi se créer à la
+-- main dans Storage > New bucket > « media », public.
+do $$
+begin
+  insert into storage.buckets (id, name, public)
+  values ('media', 'media', true)
+  on conflict (id) do nothing;
+exception when others then
+  raise notice 'Bucket media non créé (%). Créez-le à la main dans Storage.', sqlerrm;
+end $$;
 
-insert into storage.buckets (id, name, public)
-values ('media', 'media', true)
-on conflict (id) do nothing;
-
-drop policy if exists "media public read" on storage.objects;
-create policy "media public read" on storage.objects
-  for select using (bucket_id = 'media');
--- Pas de policy d'insert/update/delete : seul le serveur téléverse.
+do $$
+begin
+  drop policy if exists "media public read" on storage.objects;
+  create policy "media public read" on storage.objects
+    for select using (bucket_id = 'media');
+  -- Pas de policy d'insert/update/delete : seul le serveur téléverse.
+  drop policy if exists "media public write" on storage.objects;
+exception when others then
+  raise notice 'Policies storage non posées (%). Réglez la lecture publique depuis l''interface.', sqlerrm;
+end $$;
 
 -- ------------------------------------------------------------- trilingue
 -- Le français reste la colonne de référence ; `_ar` et `_en` sont facultatives
@@ -234,3 +245,12 @@ alter table site_settings add column if not exists hero_title_ar   text;
 alter table site_settings add column if not exists hero_title_en   text;
 alter table site_settings add column if not exists hero_lede_ar    text;
 alter table site_settings add column if not exists hero_lede_en    text;
+
+-- ------------------------------------------------------------ vérification
+-- Doit renvoyer 9 tables. Si le compte est inférieur, relisez les erreurs
+-- au-dessus : le script est idempotent, vous pouvez le relancer.
+select count(*) as tables_creees
+from information_schema.tables
+where table_schema = 'public'
+  and table_name in ('gammes','product_types','products','product_variants',
+                     'orders','order_items','hero_slides','videos','site_settings');
