@@ -29,26 +29,37 @@ const supabaseHost = (() => {
   }
 })();
 
+const DEV = process.env.NODE_ENV !== "production";
+
 /**
  * `unsafe-inline` sur les scripts est imposé par Next : l'hydratation et le
  * script de thème sont en ligne. Une CSP à nonce obligerait à rendre chaque
  * page dynamiquement, ce que la mise en cache du catalogue cherche à éviter.
+ *
+ * En développement il faut en plus `unsafe-eval` et le websocket local : le
+ * bundler évalue ses modules par `eval()` et pousse les mises à jour par
+ * socket. Sans eux, aucun script ne s'exécute — React n'hydrate pas et tout
+ * ce qui est interactif meurt en silence, sans erreur visible sur la page.
+ * En production, rien de tout cela n'est nécessaire.
  */
 function csp() {
   const sb = supabaseHost ? ` https://${supabaseHost} wss://${supabaseHost}` : "";
+  const dev = DEV ? " 'unsafe-eval'" : "";
+  const devSocket = DEV ? " ws: http://localhost:* http://127.0.0.1:*" : "";
+
   return [
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    "script-src 'self' 'unsafe-inline'",
+    `script-src 'self' 'unsafe-inline'${dev}`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     `img-src 'self' data: blob:${sb}`,
     `media-src 'self' blob:${sb}`,
-    `connect-src 'self'${sb}`,
-    "upgrade-insecure-requests",
+    `connect-src 'self'${sb}${devSocket}`,
+    ...(DEV ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
 }
 

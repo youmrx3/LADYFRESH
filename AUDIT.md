@@ -71,6 +71,22 @@ Ajoutés sur la vitrine : CSP, `X-Frame-Options: DENY`, `nosniff`,
 
 ---
 
+### 1.8 La CSP tuait tout le JavaScript en développement · **critique**
+
+`script-src 'self' 'unsafe-inline'` interdit `eval()`. Le bundler de Next s'en
+sert pour évaluer ses modules en développement : aucun script ne s'exécutait,
+React n'hydratait pas, et **toute la vitrine devenait morte** — diaporama figé,
+bande des gammes inerte, filtres et panier sans effet, barre de navigation qui
+ne réagissait plus au défilement. Rien n'apparaissait cassé à l'œil : le HTML
+rendu par le serveur était bien là, seul le comportement manquait.
+
+Corrigé : `unsafe-eval` et le websocket local sont ajoutés **en développement
+seulement**. La CSP de production reste stricte, et l'hydratation y a été
+vérifiée sur un vrai `next build && next start`, pas déduite.
+
+Leçon retenue : une CSP se vérifie dans les deux modes. Elle ne casse pas la
+page, elle casse le comportement — et le rendu serveur masque le symptôme.
+
 ## 2. Un piège Next.js rencontré en chemin
 
 Poser les en-têtes via `headers()` dans `next.config.ts` avec
