@@ -152,6 +152,7 @@ export const en: Dictionary = {
     nom: "Name",
     telephone: "Phone",
     wilaya: "Wilaya",
+    wilayaChoisir: "Choose your wilaya",
     adresse: "Delivery address",
     note: "Note",
     whatsapp: "Order on WhatsApp",

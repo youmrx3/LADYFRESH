@@ -156,6 +156,7 @@ export const ar: Dictionary = {
     nom: "الاسم",
     telephone: "الهاتف",
     wilaya: "الولاية",
+    wilayaChoisir: "اختاري ولايتك",
     adresse: "عنوان التوصيل",
     note: "ملاحظة",
     whatsapp: "اطلبي عبر واتساب",

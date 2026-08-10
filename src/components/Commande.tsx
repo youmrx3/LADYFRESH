@@ -7,6 +7,7 @@ import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { da } from "@/lib/format";
 import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
+import { WILAYAS, libelleWilaya, valeurWilaya } from "@/lib/wilayas";
 import { nomType } from "@/i18n/contenu";
 
 type Etat =
@@ -369,12 +370,26 @@ export function Commande() {
                   <label className="etiquette" htmlFor="cmd-wilaya">
                     {t.commande.wilaya}
                   </label>
-                  <input
+                  {/*
+                    Liste fermée plutôt que saisie libre : sur un téléphone,
+                    taper « Bordj Bou Arréridj » invite la faute de frappe, et
+                    deux orthographes d'une même wilaya se regroupent mal au
+                    moment d'organiser les livraisons.
+                  */}
+                  <select
                     id="cmd-wilaya"
                     className="champ"
+                    dir={locale === "ar" ? "rtl" : "ltr"}
                     value={client.wilaya}
                     onChange={(e) => setClient({ ...client, wilaya: e.target.value })}
-                  />
+                  >
+                    <option value="">{t.commande.wilayaChoisir}</option>
+                    {WILAYAS.map((w) => (
+                      <option key={w.code} value={valeurWilaya(w)}>
+                        {libelleWilaya(w, locale)}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

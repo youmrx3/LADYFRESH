@@ -155,6 +155,7 @@ export const fr = {
     nom: "Nom",
     telephone: "Téléphone",
     wilaya: "Wilaya",
+    wilayaChoisir: "Choisissez votre wilaya",
     adresse: "Adresse de livraison",
     note: "Note",
     whatsapp: "Commander via WhatsApp",
