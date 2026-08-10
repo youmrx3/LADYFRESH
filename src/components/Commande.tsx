@@ -107,7 +107,7 @@ export function Commande() {
 
         Envoyé avant la redirection WhatsApp — après, la page est partie.
       */
-      pixel("Lead", {
+      pixel("Purchase", {
         ...contenus(lignesPixel),
         value: data.total ?? total,
         currency: DEVISE_PIXEL,

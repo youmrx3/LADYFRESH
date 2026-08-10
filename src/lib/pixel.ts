@@ -7,14 +7,17 @@
  * optimiser — on paie pour du trafic, pas pour des clients.
  *
  * Trois jalons, dans l'ordre de l'entonnoir : AddToCart quand un article entre
- * au bon de commande, InitiateCheckout quand l'envoi démarre, Lead quand la
+ * au bon de commande, InitiateCheckout quand l'envoi démarre, Purchase quand la
  * commande est enregistrée.
  *
- * Lead et non Purchase : rien n'est payé sur le site. La commande part sur
- * WhatsApp et se confirme à la main, parfois pas du tout. Déclarer un achat
- * ici gonflerait le chiffre d'affaires vu par Meta d'un montant qui n'a pas
- * été encaissé, et l'optimisation viserait un objectif imaginaire. La valeur
- * accompagne quand même l'événement : Meta sait optimiser un Lead à la valeur.
+ * Purchase et non Lead, alors que rien n'est payé sur le site : c'est le choix
+ * courant en paiement à la livraison, et il se défend — les campagnes Ventes et
+ * Advantage+ optimisent sur Purchase, et l'apprentissage y est bien plus rapide
+ * que sur Lead. Le prix à payer est réel et il faut le savoir : le chiffre
+ * d'affaires et le ROAS affichés par Meta comptent des commandes qui ne seront
+ * pas toutes confirmées. Un taux de confirmation de 60 % veut dire un ROAS
+ * affiché ~1,7 fois trop haut. Ces chiffres servent à comparer des campagnes
+ * entre elles, pas à mesurer la recette réelle : celle-ci se lit en base.
  */
 
 /** Le dinar algérien. Meta refuse un montant sans devise. */
