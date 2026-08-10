@@ -240,10 +240,10 @@ export const en: Dictionary = {
     verification: "Checking…",
     retourSite: "← Back to the site",
     pasDeMotDePasse:
-      "No password is configured. Add ADMIN_PASSWORD to .env.local at the project root, then restart the server.",
+      "No password is configured. Locally: add ADMIN_PASSWORD to .env.local, then restart the server. Hosted: add it to your host's environment variables, then redeploy — a variable added afterwards only applies to the next deployment.",
     baseAbsente: "Database not connected — changes are not saved.",
     baseAbsenteAide:
-      "Run supabase/schema.sql then add your Supabase keys to .env.local. Until then the site shows the reference catalogue.",
+      "Run supabase/schema.sql then add your Supabase keys to .env.local, or to your host's environment variables followed by a redeploy. Until then the site shows the reference catalogue.",
 
     onglets: {
       courts: {

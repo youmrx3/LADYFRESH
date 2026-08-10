@@ -115,7 +115,7 @@ export async function seConnecter(
   if (!attendu) {
     return {
       error:
-        "ADMIN_PASSWORD n'est pas défini. Ajoutez-le dans .env.local puis relancez le serveur.",
+        "ADMIN_PASSWORD n'est pas défini. En local : .env.local puis relancez le serveur. En ligne : variables d'environnement de l'hébergeur, puis redéployez.",
     };
   }
 

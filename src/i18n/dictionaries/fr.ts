@@ -245,11 +245,11 @@ export const fr = {
     verification: "Vérification…",
     retourSite: "← Retour au site",
     pasDeMotDePasse:
-      "Aucun mot de passe n'est configuré. Ajoutez ADMIN_PASSWORD dans .env.local à la racine du projet, puis relancez le serveur.",
+      "Aucun mot de passe n'est configuré. En local : ajoutez ADMIN_PASSWORD dans .env.local, puis relancez le serveur. En ligne : ajoutez-le aux variables d'environnement de l'hébergeur, puis « Redeploy » — une variable ajoutée après coup ne s'applique qu'au déploiement suivant.",
     baseAbsente:
       "Base de données non connectée — les modifications ne sont pas enregistrées.",
     baseAbsenteAide:
-      "Exécutez supabase/schema.sql puis renseignez les clés Supabase dans .env.local. Le site affiche en attendant le catalogue de référence.",
+      "Exécutez supabase/schema.sql puis renseignez les clés Supabase dans .env.local, ou dans les variables d'environnement de l'hébergeur suivies d'un « Redeploy ». Le site affiche en attendant le catalogue de référence.",
 
     onglets: {
       courts: {
