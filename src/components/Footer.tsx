@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useReglages } from "./Reglages";
+import { lienReseau } from "@/lib/reseaux";
 import type { SiteSettings } from "@/lib/types";
 
 export function Footer({ settings }: { settings: SiteSettings }) {
@@ -15,10 +16,10 @@ export function Footer({ settings }: { settings: SiteSettings }) {
   ];
 
   const reseaux = [
-    { href: settings.instagram_url, label: "Instagram" },
-    { href: settings.facebook_url, label: "Facebook" },
-    { href: settings.tiktok_url, label: "TikTok" },
-  ].filter((r) => r.href);
+    { href: lienReseau(settings.instagram_url, "instagram"), label: "Instagram" },
+    { href: lienReseau(settings.facebook_url, "facebook"), label: "Facebook" },
+    { href: lienReseau(settings.tiktok_url, "tiktok"), label: "TikTok" },
+  ].filter((r): r is { href: string; label: string } => Boolean(r.href));
 
   return (
     <footer
