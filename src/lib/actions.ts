@@ -95,13 +95,30 @@ function rafraichir() {
   revalidatePath("/", "layout");
 }
 
+/*
+  « Invalid API key » remonté tel quel n'apprend rien : la phrase vient de
+  Supabase, ne nomme aucune variable, et laisse croire à une panne du site
+  alors que la vitrine s'affiche très bien — elle lit avec la clé publique,
+  seule l'écriture emploie la clé de service. On traduit donc le message en
+  quelque chose d'actionnable.
+*/
+function messageLisible(brut: string) {
+  if (/invalid api key|jw[st]|invalid.*token/i.test(brut)) {
+    return "La base refuse la clé de service. Vérifiez SUPABASE_SERVICE_ROLE_KEY chez l'hébergeur — collée en entier, sans espace ni retour à la ligne — puis redéployez : une variable modifiée ne s'applique qu'au déploiement suivant.";
+  }
+  return brut;
+}
+
 async function tenter(action: () => Promise<string>): Promise<Retour> {
   try {
     const ok = await action();
     rafraichir();
     return { ok };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Échec." };
+    const brut = error instanceof Error ? error.message : "Échec.";
+    // Trace complète côté serveur ; message compréhensible côté écran.
+    console.error("[admin] action refusée —", brut);
+    return { error: messageLisible(brut) };
   }
 }
 

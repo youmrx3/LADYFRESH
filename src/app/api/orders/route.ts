@@ -175,7 +175,22 @@ export async function POST(request: Request) {
   try {
     await createOrder(order);
   } catch (error) {
-    console.error("[orders] enregistrement impossible", error);
+    /*
+      Le client ne voit qu'un message neutre — une erreur de configuration ne
+      se raconte pas à un visiteur. Le journal, lui, doit nommer la cause :
+      « Invalid API key » sur cette route signifie que la clé de service est
+      refusée, et la commande est perdue à chaque tentative pendant ce temps.
+    */
+    const brut = error instanceof Error ? error.message : String(error);
+    if (/invalid api key|jw[st]|invalid.*token/i.test(brut)) {
+      console.error(
+        "[orders] SUPABASE_SERVICE_ROLE_KEY refusée par Supabase — commande",
+        ref,
+        "PERDUE. Vérifier la variable chez l'hébergeur (collage entier, sans espace ni retour à la ligne) puis redéployer.",
+      );
+    } else {
+      console.error("[orders] enregistrement impossible —", ref, brut);
+    }
     return NextResponse.json({ error: t.api.echec }, { status: 500 });
   }
 
