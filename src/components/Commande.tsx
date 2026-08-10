@@ -6,6 +6,7 @@ import { useBoutique } from "./BoutiqueProvider";
 import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { da } from "@/lib/format";
+import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
 import { nomType } from "@/i18n/contenu";
 
 type Etat =
@@ -60,6 +61,17 @@ export function Commande() {
     const onglet = canal === "whatsapp" ? window.open("", "_blank") : null;
     setEtat({ phase: "envoi", canal });
 
+    const lignesPixel = lines.map((l) => ({
+      variantId: l.variantId,
+      quantity: l.quantity,
+    }));
+    pixel("InitiateCheckout", {
+      ...contenus(lignesPixel),
+      num_items: lines.length,
+      value: total,
+      currency: DEVISE_PIXEL,
+    });
+
     try {
       const reponse = await fetch("/api/orders", {
         method: "POST",
@@ -86,6 +98,23 @@ export function Commande() {
         });
         return;
       }
+
+      /*
+        La valeur vient du serveur, jamais du panier local : c'est le total
+        recalculé à partir des prix en base. Un total client se trafique depuis
+        la console, et Meta apprendrait sur des montants inventés.
+
+        Envoyé avant la redirection WhatsApp — après, la page est partie.
+      */
+      pixel("Lead", {
+        ...contenus(lignesPixel),
+        value: data.total ?? total,
+        currency: DEVISE_PIXEL,
+        content_category: purchase === "gros" ? "gros" : "demi_gros",
+        // Permet de comparer les campagnes dans les ventilations Meta.
+        campagne: campagne || "direct",
+        canal,
+      });
 
       if (canal === "whatsapp" && data.whatsappUrl) {
         if (onglet) onglet.location.href = data.whatsappUrl;

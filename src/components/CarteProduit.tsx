@@ -7,6 +7,7 @@ import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { nomType } from "@/i18n/contenu";
 import { da, unitPrice } from "@/lib/format";
+import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
 import type { Gamme, Product } from "@/lib/types";
 
 export function CarteProduit({
@@ -175,7 +176,19 @@ export function CarteProduit({
           ) : (
             <button
               type="button"
-              onClick={() => setQuantity(variant.id, pas)}
+              onClick={() => {
+                setQuantity(variant.id, pas);
+                /*
+                  Ici et pas sur le pas-à-pas : c'est le geste qui fait entrer
+                  l'article. Compter aussi les « + » et « − » enverrait dix
+                  AddToCart pour une seule intention.
+                */
+                pixel("AddToCart", {
+                  ...contenus([{ variantId: variant.id, quantity: pas }]),
+                  value: prix * (purchase === "gros" ? variant.units_per_carton : 1) * pas,
+                  currency: DEVISE_PIXEL,
+                });
+              }}
               className="btn btn-encre w-full !px-3 !py-2.5 !text-[11.5px]"
             >
               {purchase === "gros"
