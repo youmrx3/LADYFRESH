@@ -32,6 +32,20 @@ const supabaseHost = (() => {
 const DEV = process.env.NODE_ENV !== "production";
 
 /*
+  L'outil de configuration d'événements de Meta ouvre le site dans un cadre
+  pour y détecter le pixel. `frame-ancestors 'none'` et `X-Frame-Options: DENY`
+  le lui interdisent : l'outil ne charge rien et conclut « aucun pixel sur ce
+  site » — alors que les événements arrivent bien dans le gestionnaire.
+
+  On n'ouvre donc pas la porte en permanence. Poser META_OUTIL_CONFIGURATION=1
+  le temps de la configuration, puis retirer la variable : le clickjacking
+  redevient impossible. Les conversions personnalisées, elles, se créent sans
+  cet outil et n'ont jamais besoin de cette variable.
+*/
+const OUTIL_META = process.env.META_OUTIL_CONFIGURATION === "1";
+const CADRES_META = "https://*.facebook.com https://*.instagram.com";
+
+/*
   Le pixel Meta charge son script depuis connect.facebook.net et poste ses
   événements vers facebook.com. Sans ces trois ouvertures ciblées, la CSP le
   bloque en silence : la page s'affiche, le pixel ne compte rien. On n'ouvre
@@ -65,7 +79,7 @@ function csp() {
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
-    "frame-ancestors 'none'",
+    OUTIL_META ? `frame-ancestors ${CADRES_META}` : "frame-ancestors 'none'",
     "form-action 'self'",
     `script-src 'self' 'unsafe-inline'${dev}${META.script}`,
     "style-src 'self' 'unsafe-inline'",
@@ -82,7 +96,10 @@ function poserEntetes(reponse: NextResponse, pathname: string) {
   h.set("Content-Security-Policy", csp());
   h.set("X-Content-Type-Options", "nosniff");
   h.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  h.set("X-Frame-Options", "DENY");
+  // X-Frame-Options ne sait pas nommer plusieurs origines et prime sur la CSP
+  // dans les navigateurs anciens : pendant la configuration Meta, on le retire
+  // et on laisse `frame-ancestors` faire le tri.
+  if (!OUTIL_META) h.set("X-Frame-Options", "DENY");
   h.set(
     "Permissions-Policy",
     "camera=(self), microphone=(), geolocation=(), payment=()",
