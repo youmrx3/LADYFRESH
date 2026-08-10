@@ -32,6 +32,16 @@ const nextConfig: NextConfig = {
 
   experimental: {
     optimizePackageImports: ["@supabase/supabase-js"],
+    serverActions: {
+      /*
+        Ne concerne plus que le repli local sans Supabase : avec la base, les
+        fichiers vont directement du navigateur au stockage. La valeur par
+        défaut de Next est 1 Mo, ce qui coupait la connexion sur toute vraie
+        photo. Inutile de viser plus haut : Vercel plafonne de toute façon les
+        corps de requête à 4,5 Mo.
+      */
+      bodySizeLimit: "4mb",
+    },
   },
 
 

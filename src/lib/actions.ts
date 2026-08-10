@@ -542,6 +542,57 @@ export async function supprimerVideo(
 // ------------------------------------------------------------ téléversement
 
 /**
+ * Autorise un téléversement direct navigateur → Supabase.
+ *
+ * Le fichier ne traverse plus le serveur Next. C'est ce qui règle l'échec
+ * observé : une action serveur refuse tout corps au-delà de 1 Mo par défaut et
+ * la connexion se coupe (ERR_CONNECTION_RESET) — donc n'importe quelle vraie
+ * photo produit. Relever la limite n'aurait déplacé le mur que jusqu'à 4,5 Mo,
+ * plafond des fonctions Vercel qu'on ne peut pas lever : ça aurait marché en
+ * local et cassé en production.
+ *
+ * Le serveur ne rend qu'une URL signée, courte et à usage unique. La clé
+ * service-role ne quitte jamais le serveur, et seul un admin connecté peut en
+ * obtenir une.
+ */
+export async function urlDeTeleversement(
+  nom: string,
+  type: string,
+): Promise<{ url?: string; publicUrl?: string; error?: string }> {
+  if (!(await isAdmin())) return { error: "Session expirée." };
+
+  if (!TYPES_AUTORISES.has(type))
+    return {
+      error:
+        "Format refusé. Images JPEG, PNG, WebP, AVIF ou vidéos MP4, WebM uniquement.",
+    };
+
+  const db = supabaseAdmin();
+  if (!db) return { error: "supabase-absent" };
+
+  const chemin = `${Date.now()}-${nomPropre(nom, type)}`;
+  const { data, error } = await db.storage
+    .from("media")
+    .createSignedUploadUrl(chemin);
+  if (error) return { error: error.message };
+
+  const { data: pub } = db.storage.from("media").getPublicUrl(chemin);
+  return { url: data.signedUrl, publicUrl: pub.publicUrl };
+}
+
+/** Nom de fichier assaini ; l'extension vient du type MIME validé. */
+function nomPropre(nom: string, type: string) {
+  const base = nom
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase()
+    .slice(0, 60);
+  return `${base || "fichier"}.${EXTENSIONS[type]}`;
+}
+
+/**
  * Envoie un fichier et renvoie son URL publique.
  *
  * Avec Supabase, le fichier part dans le bucket `media`. Sans Supabase, il
@@ -574,16 +625,7 @@ export async function televerser(
           "Format refusé. Images JPEG, PNG, WebP, AVIF ou vidéos MP4, WebM uniquement.",
       };
 
-    const extension = EXTENSIONS[file.type];
-    const base = file.name
-      .replace(/\.[^.]+$/, "")
-      .replace(/[^a-zA-Z0-9_-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-      .toLowerCase()
-      .slice(0, 60);
-    // L'extension vient du type MIME validé, jamais du nom fourni.
-    const chemin = `${Date.now()}-${base || "fichier"}.${extension}`;
+    const chemin = `${Date.now()}-${nomPropre(file.name, file.type)}`;
 
     const db = supabaseAdmin();
     if (db) {
