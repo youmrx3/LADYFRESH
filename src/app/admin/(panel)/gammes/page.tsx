@@ -12,7 +12,7 @@ import { ChampImage } from "@/components/admin/ChampImage";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
 import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
 import { enregistrerGamme, supprimerGamme } from "@/lib/actions";
-import { getGammes, getProducts } from "@/lib/data";
+import { getGammesAdmin, getProductsAdmin } from "@/lib/data";
 import { fill } from "@/i18n";
 import { champ } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
@@ -30,7 +30,10 @@ export default async function Gammes({
   const { edit } = await searchParams;
   const langue: Locale = isLocale(edit) ? edit : DEFAULT_LOCALE;
 
-  const [gammes, products] = await Promise.all([getGammes(), getProducts()]);
+  const [gammes, products] = await Promise.all([
+    getGammesAdmin(),
+    getProductsAdmin(),
+  ]);
   const a = t.admin;
 
   const labelsImage = {

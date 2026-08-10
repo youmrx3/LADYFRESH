@@ -7,7 +7,7 @@ import {
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
 import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
 import { enregistrerType, supprimerType } from "@/lib/actions";
-import { getProductTypes, getProducts } from "@/lib/data";
+import { getProductTypes, getProductsAdmin } from "@/lib/data";
 import { fill } from "@/i18n";
 import { champ } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
@@ -25,7 +25,10 @@ export default async function Types({
   const { edit } = await searchParams;
   const langue: Locale = isLocale(edit) ? edit : DEFAULT_LOCALE;
 
-  const [types, products] = await Promise.all([getProductTypes(), getProducts()]);
+  const [types, products] = await Promise.all([
+    getProductTypes(),
+    getProductsAdmin(),
+  ]);
   const a = t.admin;
   const compte = (id: string) => products.filter((p) => p.type_id === id).length;
 

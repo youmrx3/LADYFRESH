@@ -9,7 +9,7 @@ import {
 import { ChampImage } from "@/components/admin/ChampImage";
 import { EnTetePage, Volet } from "@/components/admin/Volet";
 import { enregistrerVariante, supprimerVariante } from "@/lib/actions";
-import { getGammes, getProductTypes, getProducts } from "@/lib/data";
+import { getGammesAdmin, getProductTypes, getProductsAdmin } from "@/lib/data";
 import { da } from "@/lib/format";
 import { fill } from "@/i18n";
 import { champ } from "@/i18n/contenu";
@@ -26,9 +26,9 @@ export const dynamic = "force-dynamic";
 export default async function Formats() {
   const { t, locale } = await getT();
   const [gammes, types, products] = await Promise.all([
-    getGammes(),
+    getGammesAdmin(),
     getProductTypes(),
-    getProducts(),
+    getProductsAdmin(),
   ]);
   const a = t.admin;
   const devise = t.unites.devise;

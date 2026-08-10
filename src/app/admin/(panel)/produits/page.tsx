@@ -11,7 +11,12 @@ import {
 import { ChampImage } from "@/components/admin/ChampImage";
 import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
 import { enregistrerProduit, supprimerProduit } from "@/lib/actions";
-import { getGammes, getProductTypes, getProducts, getSettings } from "@/lib/data";
+import {
+  getGammesAdmin,
+  getProductTypes,
+  getProductsAdmin,
+  getSettings,
+} from "@/lib/data";
 import { da } from "@/lib/format";
 import { fill } from "@/i18n";
 import { champ, nomTypeCourt } from "@/i18n/contenu";
@@ -23,9 +28,9 @@ export const dynamic = "force-dynamic";
 export default async function Produits() {
   const { t, locale } = await getT();
   const [gammes, types, products, settings] = await Promise.all([
-    getGammes(),
+    getGammesAdmin(),
     getProductTypes(),
-    getProducts(),
+    getProductsAdmin(),
     getSettings(),
   ]);
   const a = t.admin;

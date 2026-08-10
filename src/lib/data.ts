@@ -66,16 +66,33 @@ function enCache<T>(cle: string, lire: () => Promise<T>): () => Promise<T> {
   };
 }
 
-async function getGammesBrut(): Promise<Gamme[]> {
+/*
+  Vitrine et back-office ne lisent pas la même chose.
+
+  La vitrine ne montre que ce qui est vendable : actif, et pourvu d'au moins un
+  format. Le back-office doit tout voir, y compris ce qui ne l'est pas encore —
+  sinon un produit créé sans format disparaît à la seconde où il est
+  enregistré, ne peut plus être sélectionné pour recevoir un format, et reste
+  bloqué là pour toujours. Même impasse pour tout ce qu'on décoche : masquer
+  une gamme revenait à ne plus jamais pouvoir la réafficher.
+*/
+async function lireGammes(tout: boolean): Promise<Gamme[]> {
   const db = supabaseRead();
   if (!db) return GAMMES;
-  const { data, error } = await db
-    .from("gammes")
-    .select("*")
-    .eq("active", true)
-    .order("sort_order");
+  let requete = db.from("gammes").select("*");
+  if (!tout) requete = requete.eq("active", true);
+  const { data, error } = await requete.order("sort_order");
   if (error || !data?.length) return fallback("gammes", GAMMES, error);
   return data as Gamme[];
+}
+
+async function getGammesBrut(): Promise<Gamme[]> {
+  return lireGammes(false);
+}
+
+/** Lecture back-office : tout, y compris les gammes masquées. */
+export async function getGammesAdmin(): Promise<Gamme[]> {
+  return lireGammes(true);
 }
 
 async function getProductTypesBrut(): Promise<ProductType[]> {
@@ -89,24 +106,34 @@ async function getProductTypesBrut(): Promise<ProductType[]> {
   return data as ProductType[];
 }
 
-async function getProductsBrut(): Promise<Product[]> {
+async function lireProduits(tout: boolean): Promise<Product[]> {
   const db = supabaseRead();
   if (!db) return PRODUCTS;
-  const { data, error } = await db
-    .from("products")
-    .select("*, variants:product_variants(*)")
-    .eq("active", true)
-    .order("sort_order");
+  let requete = db.from("products").select("*, variants:product_variants(*)");
+  if (!tout) requete = requete.eq("active", true);
+  const { data, error } = await requete.order("sort_order");
   if (error || !data?.length) return fallback("products", PRODUCTS, error);
 
-  return (data as Product[])
-    .map((p) => ({
-      ...p,
-      variants: (p.variants ?? [])
-        .filter((v: Variant) => v.active)
-        .sort((a: Variant, b: Variant) => a.size_label.localeCompare(b.size_label)),
-    }))
-    .filter((p) => p.variants.length > 0);
+  const produits = (data as Product[]).map((p) => ({
+    ...p,
+    variants: (p.variants ?? [])
+      .filter((v: Variant) => tout || v.active)
+      .sort((a: Variant, b: Variant) => a.size_label.localeCompare(b.size_label)),
+  }));
+
+  // Un produit sans format n'a pas de prix : invendable, donc absent de la
+  // vitrine — mais bien présent dans le back-office, qui doit pouvoir lui en
+  // ajouter un.
+  return tout ? produits : produits.filter((p) => p.variants.length > 0);
+}
+
+async function getProductsBrut(): Promise<Product[]> {
+  return lireProduits(false);
+}
+
+/** Lecture back-office : tout, formats manquants et éléments masqués compris. */
+export async function getProductsAdmin(): Promise<Product[]> {
+  return lireProduits(true);
 }
 
 async function getSettingsBrut(): Promise<SiteSettings> {

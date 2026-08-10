@@ -16,7 +16,12 @@ import {
   supprimerSlide,
   supprimerVideo,
 } from "@/lib/actions";
-import { getGammes, getHeroSlides, getSettings, getVideos } from "@/lib/data";
+import {
+  getGammesAdmin,
+  getHeroSlides,
+  getSettings,
+  getVideos,
+} from "@/lib/data";
 import { fill } from "@/i18n";
 import { champ } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, LOCALES, LOCALE_LABEL, type Locale } from "@/i18n/config";
@@ -39,7 +44,7 @@ export default async function Contenu({
     getSettings(),
     getHeroSlides(),
     getVideos(),
-    getGammes(),
+    getGammesAdmin(),
   ]);
   const a = t.admin;
   const optionsGammes = gammes.map((g) => ({ value: g.id, label: g.name }));
