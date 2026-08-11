@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Merci } from "@/components/Merci";
-import { getSettings } from "@/lib/data";
 import { getT } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,7 +21,6 @@ export async function generateMetadata(): Promise<Metadata> {
  * avec la redirection WhatsApp, et donner à Meta une URL sur laquelle asseoir
  * une conversion personnalisée. Le détail est dans `Merci`.
  */
-export default async function PageMerci() {
-  const settings = await getSettings();
-  return <Merci settings={settings} />;
+export default function PageMerci() {
+  return <Merci />;
 }

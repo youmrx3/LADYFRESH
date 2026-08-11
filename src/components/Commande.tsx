@@ -129,12 +129,7 @@ export function Commande() {
       */
       let remis = false;
       try {
-        const charge: ChargeMerci = {
-          ref: data.ref,
-          canal,
-          whatsappUrl: data.whatsappUrl,
-          achat,
-        };
+        const charge: ChargeMerci = { ref: data.ref, canal, achat };
         sessionStorage.setItem(CLE_MERCI, JSON.stringify(charge));
         remis = true;
       } catch {
@@ -142,9 +137,14 @@ export function Commande() {
       }
 
       /*
-        L'onglet a été ouvert avant l'attente. S'il a été bloqué, on ne quitte
-        plus la page en cours — c'est ce départ qui pouvait couper l'événement
-        au vol : le bouton de la page de remerciement prend le relais.
+        L'onglet a été ouvert avant l'attente. S'il a été bloqué, on ne part
+        plus vers WhatsApp depuis cette page — c'est ce départ qui coupait
+        l'événement au vol.
+
+        La commande est enregistrée quoi qu'il arrive et le rappel se fait au
+        téléphone : dans ce cas rare, le client ne verra pas la conversation
+        s'ouvrir. La page de remerciement n'offre plus de rattrapage, elle ne
+        propose que de commander à nouveau.
       */
       if (canal === "whatsapp" && data.whatsappUrl && onglet) {
         onglet.location.href = data.whatsappUrl;

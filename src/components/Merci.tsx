@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useReglages } from "./Reglages";
 import { pixelDesQuePret } from "@/lib/pixel";
-import type { SiteSettings } from "@/lib/types";
 
 /**
  * Page de remerciement.
@@ -23,6 +22,10 @@ import type { SiteSettings } from "@/lib/types";
  * La charge de l'événement passe par sessionStorage et non par l'adresse : un
  * montant dans l'URL se réécrit à la main depuis la barre du navigateur, et
  * Meta apprendrait sur des chiffres inventés.
+ *
+ * Une seule sortie, volontairement : repasser une commande. Ni pied de page
+ * ni lien WhatsApp — la conversation est déjà ouverte dans l'autre onglet, et
+ * tout ce qui disperse ici éloigne de la seule action qui compte encore.
  */
 
 /** Clé de la remise déposée par le bon de commande avant de venir ici. */
@@ -31,12 +34,11 @@ export const CLE_MERCI = "ladyfresh.merci";
 export type ChargeMerci = {
   ref: string;
   canal: "whatsapp" | "formulaire";
-  whatsappUrl?: string;
   /** Les paramètres du Purchase, calculés côté serveur. */
   achat: Record<string, unknown>;
 };
 
-export function Merci({ settings }: { settings: SiteSettings }) {
+export function Merci() {
   const { t } = useReglages();
   const router = useRouter();
   const [charge, setCharge] = useState<ChargeMerci | null>(null);
@@ -80,58 +82,23 @@ export function Merci({ settings }: { settings: SiteSettings }) {
   if (!lu || !charge) return null;
 
   return (
-    <>
-      <main className="etage-comptoir saut-ancre py-20">
-        <div className="shell max-w-[38rem] text-center">
-          <p className="eyebrow text-graphite-doux">{t.commande.okEyebrow}</p>
-          <h2 className="display display-l mt-4">
-            {t.commande.okTitre}{" "}
-            <span className="data text-[0.68em]">{charge.ref}</span>
-          </h2>
-          <p className="lede mt-4 text-graphite-doux">
-            {charge.canal === "whatsapp"
-              ? t.commande.okWhatsapp
-              : t.commande.okForm}
-          </p>
+    <main className="etage-comptoir saut-ancre py-20">
+      <div className="shell max-w-[38rem] text-center">
+        <p className="eyebrow text-graphite-doux">{t.commande.okEyebrow}</p>
+        <h2 className="display display-l mt-4">
+          {t.commande.okTitre}{" "}
+          <span className="data text-[0.68em]">{charge.ref}</span>
+        </h2>
+        <p className="lede mt-4 text-graphite-doux">
+          {charge.canal === "whatsapp"
+            ? t.commande.okWhatsapp
+            : t.commande.okForm}
+        </p>
 
-          {/*
-            Filet pour l'onglet bloqué. La commande est déjà enregistrée et
-            l'événement déjà parti : ce bouton ne sert qu'à retrouver la
-            conversation WhatsApp, il ne rejoue rien.
-          */}
-          {charge.whatsappUrl && (
-            <a
-              href={charge.whatsappUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="btn btn-or mt-8 inline-flex"
-            >
-              {t.commande.whatsapp}
-            </a>
-          )}
-
-          <div className="mt-6">
-            <Link href="/boutique" className="btn btn-encre">
-              {t.commande.okCta}
-            </Link>
-          </div>
-        </div>
-      </main>
-
-      <footer className="etage-vitrine border-t border-encre-bord py-10">
-        <div className="shell flex flex-wrap items-center justify-between gap-4">
-          <p className="data text-[12px] text-craie">
-            © {new Date().getFullYear()} Lady Fresh — {t.footer.droits}
-          </p>
-          <a
-            href={`tel:${settings.contact_phone.replace(/\s/g, "")}`}
-            dir="ltr"
-            className="data text-[13px] text-craie transition-colors hover:text-or"
-          >
-            {settings.contact_phone}
-          </a>
-        </div>
-      </footer>
-    </>
+        <Link href="/boutique" className="btn btn-encre mt-8">
+          {t.commande.okCta}
+        </Link>
+      </div>
+    </main>
   );
 }
