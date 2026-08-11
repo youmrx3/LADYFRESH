@@ -41,6 +41,38 @@ export function pixel(nom: string, params?: Params) {
   }
 }
 
+/**
+ * Émet dès que le pixel est là, plutôt que d'abandonner s'il ne l'est pas.
+ *
+ * Sur une page de confirmation, l'événement part au montage du composant —
+ * c'est-à-dire peut-être avant que le script d'amorçage, chargé
+ * `afterInteractive`, n'ait défini `fbq`. `pixel()` ne fait alors strictement
+ * rien et la vente n'est comptée nulle part : constaté en essai local, où
+ * seul le PageView de l'amorçage partait. Sur un geste du client la question
+ * ne se pose pas, le script est chargé depuis longtemps ; au chargement d'une
+ * page, si.
+ *
+ * On n'annule pas cette attente au démontage : elle s'arrête d'elle-même, et
+ * une annulation ferait perdre l'événement au double montage de StrictMode.
+ */
+export function pixelDesQuePret(nom: string, params?: Params, delaiMax = 10_000) {
+  if (typeof window === "undefined") return;
+  if (window.fbq) {
+    pixel(nom, params);
+    return;
+  }
+  const debut = Date.now();
+  const minuteur = setInterval(() => {
+    if (window.fbq) {
+      clearInterval(minuteur);
+      pixel(nom, params);
+    } else if (Date.now() - debut > delaiMax) {
+      // Bloqueur de publicité, script en échec : cesser d'attendre.
+      clearInterval(minuteur);
+    }
+  }, 100);
+}
+
 /** Met en forme les lignes du bon pour les événements catalogue. */
 export function contenus(
   lignes: { variantId: string; quantity: number }[],

@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useBoutique } from "./BoutiqueProvider";
+import { CLE_MERCI, type ChargeMerci } from "./Merci";
 import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { da } from "@/lib/format";
@@ -30,6 +32,7 @@ export function Commande() {
     types,
   } = useBoutique();
   const { t, locale } = useReglages();
+  const router = useRouter();
 
   const [etat, setEtat] = useState<Etat>({ phase: "repos" });
   const [client, setClient] = useState({
@@ -104,10 +107,8 @@ export function Commande() {
         La valeur vient du serveur, jamais du panier local : c'est le total
         recalculé à partir des prix en base. Un total client se trafique depuis
         la console, et Meta apprendrait sur des montants inventés.
-
-        Envoyé avant la redirection WhatsApp — après, la page est partie.
       */
-      pixel("Purchase", {
+      const achat = {
         ...contenus(lignesPixel),
         value: data.total ?? total,
         currency: DEVISE_PIXEL,
@@ -115,15 +116,45 @@ export function Commande() {
         // Permet de comparer les campagnes dans les ventilations Meta.
         campagne: campagne || "direct",
         canal,
-      });
+      };
 
-      if (canal === "whatsapp" && data.whatsappUrl) {
-        if (onglet) onglet.location.href = data.whatsappUrl;
-        else window.location.href = data.whatsappUrl;
+      /*
+        Purchase ne part plus d'ici mais de /merci : sur un chargement de page
+        distinct, rien ne peut couper l'envoi, et l'événement porte une adresse
+        sur laquelle bâtir une conversion personnalisée.
+
+        Si sessionStorage est fermé — navigation privée —, la remise n'arrive
+        pas et la vente ne serait comptée nulle part : on émet alors sur place
+        et on reste sur l'écran de confirmation d'ici.
+      */
+      let remis = false;
+      try {
+        const charge: ChargeMerci = {
+          ref: data.ref,
+          canal,
+          whatsappUrl: data.whatsappUrl,
+          achat,
+        };
+        sessionStorage.setItem(CLE_MERCI, JSON.stringify(charge));
+        remis = true;
+      } catch {
+        pixel("Purchase", achat);
+      }
+
+      /*
+        L'onglet a été ouvert avant l'attente. S'il a été bloqué, on ne quitte
+        plus la page en cours — c'est ce départ qui pouvait couper l'événement
+        au vol : le bouton de la page de remerciement prend le relais.
+      */
+      if (canal === "whatsapp" && data.whatsappUrl && onglet) {
+        onglet.location.href = data.whatsappUrl;
+      } else {
+        onglet?.close();
       }
 
       setEtat({ phase: "envoyee", canal, ref: data.ref });
       clear();
+      if (remis) router.push("/merci");
     } catch {
       onglet?.close();
       setEtat({ phase: "erreur", message: t.commande.reseau });
