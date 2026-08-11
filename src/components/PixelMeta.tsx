@@ -1,8 +1,8 @@
 "use client";
 
-import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { PIXEL_ID } from "@/lib/pixelAmorce";
 
 declare global {
   interface Window {
@@ -11,34 +11,25 @@ declare global {
 }
 
 /**
- * Pixel Meta.
+ * Ce qui reste du pixel côté client, l'amorçage étant passé dans le <head>
+ * (voir `pixelAmorce`) : le suivi des changements d'adresse, et le repli sans
+ * JavaScript.
  *
- * Deux détails qui ne vont pas de soi :
+ * Le site est une application à navigation interne. Le script ne se charge
+ * qu'une fois et son `PageView` ne couvrirait que le premier écran : sans ce
+ * renvoi, un passage de la vitrine vers /boutique ne compterait pas.
  *
- * — Le back-office est exclu. Suivre ses propres allées et venues fausse les
- *   audiences et envoie à Meta le rythme de travail de la maison ; ça n'a
- *   aucune valeur publicitaire.
- *
- * — Le site est une application à navigation interne : le script ne se charge
- *   qu'une fois et `PageView` ne partirait qu'au premier écran. On le renvoie
- *   donc à chaque changement d'adresse, sinon un passage de la vitrine vers
- *   /boutique ne compterait pas.
+ * Le back-office est exclu ici comme il l'est dans l'amorce.
  */
 export function PixelMeta() {
-  /*
-    L'identifiant est lu ici plutôt que passé en propriété : Next remplace les
-    variables NEXT_PUBLIC_ à la compilation, donc rien ne transite par la
-    charge serveur — l'admin ne reçoit même pas la chaîne.
-  */
-  const id = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "";
   const pathname = usePathname();
   const premierRendu = useRef(true);
 
-  const suivi = Boolean(id) && !pathname.startsWith("/admin");
+  const suivi = Boolean(PIXEL_ID) && !pathname.startsWith("/admin");
 
   useEffect(() => {
     if (!suivi) return;
-    // Le PageView initial part avec le script d'amorçage ; on ne double pas.
+    // Le PageView initial part avec l'amorce du <head> ; on ne double pas.
     if (premierRendu.current) {
       premierRendu.current = false;
       return;
@@ -49,30 +40,15 @@ export function PixelMeta() {
   if (!suivi) return null;
 
   return (
-    <>
-      <Script id="meta-pixel" strategy="afterInteractive">
-        {`!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','${id}');
-fbq('track','PageView');`}
-      </Script>
-
-      <noscript>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          height="1"
-          width="1"
-          style={{ display: "none" }}
-          alt=""
-          src={`https://www.facebook.com/tr?id=${id}&ev=PageView&noscript=1`}
-        />
-      </noscript>
-    </>
+    <noscript>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        height="1"
+        width="1"
+        style={{ display: "none" }}
+        alt=""
+        src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
+      />
+    </noscript>
   );
 }

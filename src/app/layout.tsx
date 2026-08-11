@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Instrument_Sans, Jost, Noto_Kufi_Arabic } from "next/font/google";
 import { PixelMeta } from "@/components/PixelMeta";
 import { ReglagesProvider } from "@/components/Reglages";
+import { PIXEL_ID, amorcePixel } from "@/lib/pixelAmorce";
 import { DIRECTION, HTML_LANG } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 import "./globals.css";
@@ -84,6 +85,10 @@ export default async function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: SANS_CLIGNOTEMENT }} />
+        {/* Meta Pixel — avant l'hydratation, voir `pixelAmorce`. */}
+        {PIXEL_ID ? (
+          <script dangerouslySetInnerHTML={{ __html: amorcePixel(PIXEL_ID) }} />
+        ) : null}
       </head>
       <body>
         {/* Les blocs révélés au scroll partent à opacity 0 : sans JS, ils
