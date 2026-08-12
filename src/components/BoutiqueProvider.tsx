@@ -183,14 +183,16 @@ export function BoutiqueProvider({
   const total = lines.reduce((sum, l) => sum + l.total, 0);
 
   /**
-   * Gros counts cartons per line; demi-gros counts pieces across the whole
-   * order, so a customer can reach 5 by mixing products.
+   * Le minimum porte sur chaque référence, dans les deux modes.
+   *
+   * Le demi-gros comptait auparavant sur l'ensemble de la commande : deux
+   * pièces d'une gamme et trois d'une autre suffisaient. Le minimum s'applique
+   * désormais ligne par ligne — cinq pièces d'un même produit — ce qui rend
+   * aussi le pas-à-pas cohérent, une ligne ne pouvant plus descendre sous un
+   * seuil qui n'existait qu'au niveau du total.
    */
   const meetsMinimum =
-    lines.length > 0 &&
-    (purchase === "gros"
-      ? lines.every((l) => l.quantity >= minQuantity)
-      : pieceCount >= minQuantity);
+    lines.length > 0 && lines.every((l) => l.quantity >= minQuantity);
 
   const value: Boutique = {
     products,

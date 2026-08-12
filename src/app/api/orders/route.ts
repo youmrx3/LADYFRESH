@@ -125,7 +125,15 @@ export async function POST(request: Request) {
     return sum + piecesFor(variant, purchase, i.quantity);
   }, 0);
 
-  if (purchase === "demi_gros" && pieces < settings.min_demi_gros_pieces) {
+  /*
+    Le minimum porte sur chaque référence, plus sur le total : cinq pièces d'un
+    même produit. Un total de cinq obtenu en mélangeant — deux d'un côté, trois
+    de l'autre — n'est plus accepté.
+  */
+  if (
+    purchase === "demi_gros" &&
+    items.some((i) => i.quantity < settings.min_demi_gros_pieces)
+  ) {
     return NextResponse.json(
       {
         error: fill(t.api.minDemi, {
@@ -146,11 +154,22 @@ export async function POST(request: Request) {
     );
   }
 
+  /*
+    Nom, téléphone et wilaya sont exigés sur les deux canaux, pas seulement sur
+    le formulaire. Partir vers WhatsApp ne dispense de rien : la commande est
+    écrite en base avant la redirection, et sans numéro ni wilaya elle ne peut
+    ni se rappeler ni se livrer.
+
+    Contrôle refait ici bien qu'il existe à l'écran : cette route est publique,
+    et une requête forgée n'ouvre jamais le formulaire.
+  */
   const customer = body.customer ?? {};
-  if (channel === "formulaire") {
-    if (!customer.name?.trim() || !customer.phone?.trim()) {
-      return NextResponse.json({ error: t.api.nomTel }, { status: 400 });
-    }
+  if (
+    !customer.name?.trim() ||
+    !customer.phone?.trim() ||
+    !customer.wilaya?.trim()
+  ) {
+    return NextResponse.json({ error: t.api.nomTel }, { status: 400 });
   }
 
   const total = items.reduce((sum, i) => sum + i.line_total, 0);

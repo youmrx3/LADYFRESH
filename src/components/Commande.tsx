@@ -35,6 +35,7 @@ export function Commande() {
   const router = useRouter();
 
   const [etat, setEtat] = useState<Etat>({ phase: "repos" });
+  const [formOuvert, setFormOuvert] = useState(false);
   const [client, setClient] = useState({
     name: "",
     phone: "",
@@ -45,6 +46,25 @@ export function Commande() {
 
   const vide = lines.length === 0;
   const devise = t.unites.devise;
+
+  /*
+    Nom, téléphone et wilaya sont exigés sur les deux canaux.
+
+    Le départ vers WhatsApp ne dispensait de rien : la commande est enregistrée
+    avant la redirection, et une commande sans numéro ni wilaya ne se rappelle
+    ni ne se livre — elle occupe une ligne dans le back-office sans pouvoir
+    être honorée.
+  */
+  const manquants = (
+    [
+      ["name", t.commande.nom],
+      ["phone", t.commande.telephone],
+      ["wilaya", t.commande.wilaya],
+    ] as const
+  )
+    .filter(([cle]) => !client[cle].trim())
+    .map(([, label]) => label);
+  const clientComplet = manquants.length === 0;
 
   /*
     Étiquette de campagne posée par /boutique?c=…, mémorisée le temps de la
@@ -304,6 +324,12 @@ export function Commande() {
                                 Math.max(0, Number(e.target.value) || 0),
                               )
                             }
+                            /* Même seuil qu'en boutique : 0 retire, sinon minimum. */
+                            onBlur={(e) => {
+                              const n = Math.max(0, Number(e.target.value) || 0);
+                              if (n > 0 && n < minQuantity)
+                                setQuantity(l.variantId, minQuantity);
+                            }}
                             aria-label={fill(t.commande.quantiteLigne, { nom })}
                             className="data h-9 w-full max-w-[4.75rem] rounded border border-trait bg-transparent text-center text-[13px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                           />
@@ -376,6 +402,7 @@ export function Commande() {
                     </label>
                     <input
                       id="cmd-nom"
+                    required
                       className="champ"
                       value={client.name}
                       onChange={(e) => setClient({ ...client, name: e.target.value })}
@@ -388,6 +415,7 @@ export function Commande() {
                     </label>
                     <input
                       id="cmd-tel"
+                    required
                       className="champ"
                       inputMode="tel"
                       dir="ltr"
@@ -409,6 +437,7 @@ export function Commande() {
                   */}
                   <select
                     id="cmd-wilaya"
+                    required
                     className="champ"
                     dir={locale === "ar" ? "rtl" : "ltr"}
                     value={client.wilaya}
@@ -424,9 +453,26 @@ export function Commande() {
                 </div>
               </div>
 
+              {/*
+                Dire ce qui manque, plutôt que de laisser un bouton éteint sans
+                raison apparente — le client ne devine pas quel champ le bloque.
+              */}
+              {!vide && meetsMinimum && !clientComplet && (
+                <p
+                  role="status"
+                  className="mt-4 text-center text-[12.5px] text-graphite-doux"
+                >
+                  {fill(t.commande.champsRequis, {
+                    champs: manquants.join(", "),
+                  })}
+                </p>
+              )}
+
               <button
                 type="button"
-                disabled={vide || !meetsMinimum || etat.phase === "envoi"}
+                disabled={
+                  vide || !meetsMinimum || !clientComplet || etat.phase === "envoi"
+                }
                 onClick={() => envoyer("whatsapp")}
                 className="btn btn-whatsapp mt-5 w-full"
               >
@@ -439,12 +485,39 @@ export function Commande() {
               </p>
 
               {/* ------------------------------- solution sans WhatsApp */}
-              <details className="mt-6 border-t border-trait pt-5">
-                <summary className="eyebrow cursor-pointer list-none text-graphite-doux transition-colors hover:text-graphite">
-                  {t.commande.sansWhatsapp}
-                </summary>
+              {/*
+                C'était un <summary> en petites capitales grises, replanté sous
+                le bouton vert : rigoureusement invisible. Or tout le monde n'a
+                pas WhatsApp, et cette porte-là était la seule qui restait —
+                une commande perdue faute d'avoir vu le lien est une commande
+                perdue pour de bon.
 
-                <div className="mt-4 space-y-3">
+                Bouton doré plein, pleine largeur, comme le vert. Il reste doré
+                une fois ouvert et sert à refermer : le libellé et le chevron
+                disent déjà l'état, et l'envoi qui apparaît dessous est encre
+                sur fond clair — les deux ne se confondent pas.
+              */}
+              <div className="mt-6 border-t border-trait pt-5">
+                <button
+                  type="button"
+                  onClick={() => setFormOuvert((v) => !v)}
+                  aria-expanded={formOuvert}
+                  aria-controls="cmd-form-sans-whatsapp"
+                  className="btn btn-or w-full !whitespace-normal"
+                >
+                  {formOuvert ? t.commande.fermerForm : t.commande.sansWhatsapp}
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform duration-200"
+                    style={{ transform: formOuvert ? "rotate(180deg)" : "none" }}
+                  >
+                    ▾
+                  </span>
+                </button>
+              </div>
+
+              {formOuvert && (
+                <div id="cmd-form-sans-whatsapp" className="mt-4 space-y-3">
                   <div>
                     <label className="etiquette" htmlFor="cmd-adresse">
                       {t.commande.adresse}
@@ -473,7 +546,9 @@ export function Commande() {
                   </div>
                   <button
                     type="button"
-                    disabled={vide || !meetsMinimum || etat.phase === "envoi"}
+                    disabled={
+                  vide || !meetsMinimum || !clientComplet || etat.phase === "envoi"
+                }
                     onClick={() => envoyer("formulaire")}
                     className="btn btn-encre w-full"
                   >
@@ -485,7 +560,7 @@ export function Commande() {
                     {t.commande.formAide}
                   </p>
                 </div>
-              </details>
+              )}
 
               {etat.phase === "erreur" && (
                 <p

@@ -134,13 +134,23 @@ export function CarteProduit({
                 dessous, et seulement quand elle apprend quelque chose.
               */}
               <div className="flex w-full items-stretch rounded border border-trait">
+                {/*
+                  Au seuil, « − » retire la ligne au lieu de la faire tomber
+                  sous le minimum : descendre à 4 pièces produisait un bon de
+                  commande impossible à envoyer, sans rien qui l'explique.
+                  Le signe change pour que le geste ne surprenne pas.
+                */}
                 <button
                   type="button"
-                  onClick={() => setQuantity(variant.id, quantite - 1)}
-                  aria-label={t.boutique.retirerUne}
+                  onClick={() =>
+                    setQuantity(variant.id, quantite <= pas ? 0 : quantite - 1)
+                  }
+                  aria-label={
+                    quantite <= pas ? t.boutique.retirerLigne : t.boutique.retirerUne
+                  }
                   className="flex h-9 w-9 shrink-0 items-center justify-center text-[18px] text-graphite-doux transition-colors hover:text-graphite"
                 >
-                  −
+                  {quantite <= pas ? "×" : "−"}
                 </button>
                 <input
                   type="number"
@@ -149,6 +159,15 @@ export function CarteProduit({
                   onChange={(e) =>
                     setQuantity(variant.id, Math.max(0, Number(e.target.value) || 0))
                   }
+                  /*
+                    Recadrage à la sortie du champ, pas à la frappe : corriger
+                    pendant la saisie empêcherait de taper « 15 », dont le
+                    premier caractère est un 1.
+                  */
+                  onBlur={(e) => {
+                    const n = Math.max(0, Number(e.target.value) || 0);
+                    if (n > 0 && n < pas) setQuantity(variant.id, pas);
+                  }}
                   aria-label={fill(t.boutique.quantiteAria, {
                     unite:
                       purchase === "gros" ? t.unites.cartons : t.unites.pieces,
