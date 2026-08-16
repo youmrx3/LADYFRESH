@@ -246,11 +246,62 @@ alter table site_settings add column if not exists hero_title_en   text;
 alter table site_settings add column if not exists hero_lede_ar    text;
 alter table site_settings add column if not exists hero_lede_en    text;
 
+-- ------------------------------------------------------------------- pistes
+/*
+  Les paniers laissés en route.
+
+  Le pixel disait qu'une part des visiteurs remplissait le bon de commande sans
+  jamais l'envoyer. Sans trace, ces gens-là sont perdus : ils ont dit ce qu'ils
+  voulaient et comment les joindre, et personne ne les rappelle.
+
+  Une piste s'écrit dès qu'un numéro complet est saisi, puis se met à jour tant
+  que la personne modifie son panier. `piste_id` porte ce numéro sous forme
+  normalisée : c'est lui qui distingue deux clientes, et non le navigateur —
+  deux commandes passées depuis le même téléphone doivent faire deux lignes.
+
+  La table est délibérément séparée des commandes. Une piste n'est pas une
+  vente : elle n'a pas de référence, pas de prix figé, et elle s'efface quand la
+  commande arrive — statut « convertie », gardé pour la mesure.
+*/
+do $$ begin
+  create type prospect_status as enum ('ouverte','rappelee','convertie','perdue');
+exception when duplicate_object then null; end $$;
+
+create table if not exists prospects (
+  id            uuid primary key default gen_random_uuid(),
+  piste_id      text unique not null,
+  customer_name text not null default '',
+  phone         text not null default '',
+  wilaya        text not null default '',
+  address       text not null default '',
+  note          text not null default '',
+  source        text not null default '',
+  locale        text not null default 'fr',
+  purchase_type purchase_type not null default 'demi_gros',
+  total         numeric(12,2) not null default 0,
+  pieces        int not null default 0,
+  -- Le panier tel qu'il était : libellés figés, pas de jointure à refaire.
+  items         jsonb not null default '[]'::jsonb,
+  status        prospect_status not null default 'ouverte',
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+create index if not exists prospects_updated_idx on prospects(updated_at desc);
+create index if not exists prospects_status_idx  on prospects(status);
+
+/*
+  Aucune politique : comme pour les commandes, tout passe par la clé de service
+  côté serveur. Une politique d'insertion publique laisserait n'importe qui
+  écrire — ou lire les numéros de téléphone de toute la clientèle.
+*/
+alter table prospects enable row level security;
+
 -- ------------------------------------------------------------ vérification
--- Doit renvoyer 9 tables. Si le compte est inférieur, relisez les erreurs
+-- Doit renvoyer 10 tables. Si le compte est inférieur, relisez les erreurs
 -- au-dessus : le script est idempotent, vous pouvez le relancer.
 select count(*) as tables_creees
 from information_schema.tables
 where table_schema = 'public'
   and table_name in ('gammes','product_types','products','product_variants',
-                     'orders','order_items','hero_slides','videos','site_settings');
+                     'orders','order_items','hero_slides','videos','site_settings',
+                     'prospects');

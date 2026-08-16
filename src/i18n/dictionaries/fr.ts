@@ -6,7 +6,7 @@ export const fr = {
   meta: {
     title: "Lady Fresh — Brumes, gels intimes et déodorants",
     description:
-      "Sept gammes de brumes parfumées, gels lavants intimes et déodorants. Vente au détail, en demi-gros dès 5 pièces et en gros par carton. Commande par WhatsApp.",
+      "Sept gammes de brumes parfumées, gels lavants intimes et déodorants. Vente au détail, en demi-gros dès 5 pièces et en gros par carton. Commande directe en ligne.",
   },
 
   unites: {
@@ -78,7 +78,7 @@ export const fr = {
       {
         titre: "Envoyez-la",
         texte:
-          "Un bouton ouvre WhatsApp avec votre commande déjà écrite. Pas de WhatsApp ? Le formulaire nous l'envoie directement.",
+          "Remplissez nom, téléphone et wilaya, puis confirmez. Nous vous rappelons pour organiser la livraison.",
       },
     ],
   },
@@ -157,14 +157,12 @@ export const fr = {
     telephone: "Téléphone",
     wilaya: "Wilaya",
     wilayaChoisir: "Choisissez votre wilaya",
+    nomExemple: "Votre nom et prénom",
+    adresseExemple: "Rue, quartier, point de repère",
+    confirmer: "Confirmer la commande — {total}",
     champsRequis: "Renseignez {champs} pour envoyer la commande.",
     adresse: "Adresse de livraison",
     note: "Note",
-    whatsapp: "Commander via WhatsApp",
-    whatsappPrep: "Préparation…",
-    whatsappAide: "Ouvre WhatsApp avec le récapitulatif déjà écrit.",
-    sansWhatsapp: "Pas de WhatsApp ? Envoyer par formulaire",
-    fermerForm: "Revenir à WhatsApp",
     envoyerForm: "Envoyer la commande",
     envoiEnCours: "Envoi…",
     formAide: "Nom et téléphone sont nécessaires pour vous rappeler.",
@@ -172,13 +170,11 @@ export const fr = {
     manqueGrosPluriel: "Chaque référence doit atteindre {n} cartons.",
     manqueDemi: "Le demi-gros démarre à {n} pièces. Il en manque {reste}.",
     piedDePage:
-      "Toutes les commandes, WhatsApp ou formulaire, arrivent dans le même suivi. Une question avant de commander ?",
+      "Toutes les commandes arrivent dans le même suivi. Une question avant de commander ?",
     reseau: "Connexion interrompue. Vérifiez votre réseau et réessayez.",
     envoiImpossible: "Envoi impossible.",
     okEyebrow: "Commande enregistrée",
     okTitre: "C'est noté. Réf.",
-    okWhatsapp:
-      "WhatsApp s'est ouvert avec votre récapitulatif. Envoyez le message pour confirmer — nous vous rappelons pour la livraison.",
     okForm:
       "Nous avons reçu votre commande et nous vous rappelons sur le numéro indiqué pour confirmer la livraison.",
     okCta: "Passer une autre commande",
@@ -196,7 +192,6 @@ export const fr = {
     titre: "Prête à commander ?",
     lede: "Demi-gros dès {min} pièces, gros au carton. Composez votre commande, envoyez-la, on s'occupe du reste.",
     cta: "Composer ma commande",
-    ctaWhatsapp: "Nous écrire sur WhatsApp",
   },
 
   footer: {
@@ -255,9 +250,29 @@ export const fr = {
     baseAbsenteAide:
       "Exécutez supabase/schema.sql puis renseignez les clés Supabase dans .env.local, ou dans les variables d'environnement de l'hébergeur suivies d'un « Redeploy ». Le site affiche en attendant le catalogue de référence.",
 
+    pistes: {
+      eyebrow: "Relance",
+      titre: "Paniers à rappeler",
+      aide: "Des visiteurs ont rempli leur numéro puis n'ont pas confirmé. Leur panier est gardé ici : un appel suffit souvent.",
+      vide: "Aucun panier en attente. Tout ce qui a été rempli a été commandé.",
+      tableManquante: "La table des pistes n'existe pas encore. Exécutez supabase/schema.sql dans Supabase, puis rechargez cette page.",
+      videFiltre: "Rien dans ce filtre.",
+      filtres: {
+        tous: "Tous",
+        ouverte: "À rappeler",
+        rappelee: "Rappelés",
+        convertie: "Ont commandé",
+      },
+      sansNom: "Nom non renseigné",
+      total: "Panier",
+      marquerRappelee: "Marquer rappelé",
+      marquerNonRappelee: "Annuler le rappel",
+      confirmSuppr: "Supprimer cette piste ?",
+    },
     onglets: {
       courts: {
         commandes: "Commandes",
+        pistes: "À rappeler",
         types: "Types",
         gammes: "Gammes",
         produits: "Produits",
@@ -265,6 +280,7 @@ export const fr = {
         contenu: "Contenu",
       },
       commandes: "Commandes",
+      pistes: "Paniers à rappeler",
       gammes: "Gammes",
       produits: "Produits",
       types: "Types de produits",
@@ -276,7 +292,7 @@ export const fr = {
       suivi: "Suivi",
       titre: "Commandes",
       total: "{n} au total",
-      vide: "Aucune commande pour l'instant. Les commandes WhatsApp et formulaire arrivent toutes ici.",
+      vide: "Aucune commande pour l'instant. Tout ce qui est commandé sur le site arrive ici.",
       statut: "Statut",
       supprimer: "Supprimer la commande",
       confirmSuppr: "Supprimer définitivement la commande {ref} ? Cette action est irréversible.",
@@ -403,7 +419,7 @@ export const fr = {
       reglages: "Réglages",
       titre: "Contenu du site",
       commandeContact: "Commande et contact",
-      numeroWhatsapp: "Numéro WhatsApp (indicatif compris)",
+      numeroWhatsapp: "Téléphone de contact (indicatif compris)",
       minGros: "Minimum gros (cartons)",
       minDemi: "Minimum demi-gros (pièces)",
       telephoneAffiche: "Téléphone affiché",

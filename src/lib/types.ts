@@ -135,6 +135,11 @@ export type Order = {
   wilaya: string;
   address: string;
   note: string;
+  /*
+    Seul « formulaire » s'écrit désormais : la commande se passe sur le site.
+    La valeur reste dans le type parce que les commandes déjà en base portent
+    l'autre, et que le back-office doit pouvoir les relire.
+  */
   channel: "whatsapp" | "formulaire";
   /** Étiquette de campagne (`?c=` sur /boutique), vide en direct. */
   source: string;
@@ -143,4 +148,43 @@ export type Order = {
   status: OrderStatus;
   created_at: string;
   items: OrderItem[];
+};
+
+/** Statuts d'une piste de rappel. */
+export type ProspectStatus = "ouverte" | "rappelee" | "convertie" | "perdue";
+
+/**
+ * Un panier laissé en route.
+ *
+ * Quelqu'un a rempli de quoi être rappelé, puis n'a pas envoyé. Ce n'est pas
+ * une commande : ni référence, ni prix figé, ni engagement — juste assez pour
+ * décrocher le téléphone.
+ */
+export type Prospect = {
+  id: string;
+  /** Clé de reprise venue du navigateur : une piste par visite, pas par frappe. */
+  piste_id: string;
+  customer_name: string;
+  phone: string;
+  wilaya: string;
+  address: string;
+  note: string;
+  source: string;
+  locale: string;
+  purchase_type: PurchaseType;
+  total: number;
+  pieces: number;
+  items: ProspectItem[];
+  status: ProspectStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProspectItem = {
+  variant_id: string;
+  product_name: string;
+  size_label: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
 };

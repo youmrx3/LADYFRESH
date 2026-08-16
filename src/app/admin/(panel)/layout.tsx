@@ -25,6 +25,7 @@ export default async function LayoutAdmin({
   const o = t.admin.onglets;
   const liens: LienAdmin[] = [
     { href: "/admin", label: o.commandes, court: o.courts.commandes, icone: "commandes" },
+    { href: "/admin/pistes", label: o.pistes, court: o.courts.pistes, icone: "pistes" },
     { href: "/admin/types", label: o.types, court: o.courts.types, icone: "types" },
     { href: "/admin/gammes", label: o.gammes, court: o.courts.gammes, icone: "gammes" },
     { href: "/admin/produits", label: o.produits, court: o.courts.produits, icone: "produits" },

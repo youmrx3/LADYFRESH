@@ -19,6 +19,8 @@ import type {
   OrderStatus,
   Product,
   ProductType,
+  Prospect,
+  ProspectStatus,
   SiteSettings,
   Variant,
   Video,
@@ -333,6 +335,115 @@ export async function setOrderStatus(id: string, status: OrderStatus) {
     return;
   }
   const { error } = await db.from("orders").update({ status }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// ------------------------------------------------------------------- pistes
+
+/*
+  Les pistes n'ont pas de repli sur fichier local, contrairement aux commandes.
+
+  Une commande perdue est un client perdu : il fallait un filet. Une piste est
+  déjà, par nature, une commande qui n'a pas eu lieu — la perdre parce que la
+  base n'est pas branchée ne coûte rien de plus, et un fichier de numéros de
+  téléphone traînant sur le disque en coûterait, lui, beaucoup.
+*/
+
+/** Vrai si la table `prospects` existe : le SQL a-t-il été passé ? */
+function tableAbsente(error: { message?: string; code?: string } | null) {
+  const m = error?.message ?? "";
+  return error?.code === "42P01" || /could not find the table|does not exist/i.test(m);
+}
+
+export async function enregistrerPiste(
+  piste: Omit<Prospect, "id" | "created_at" | "updated_at" | "status">,
+): Promise<{ ok: boolean; tableManquante?: boolean }> {
+  const db = supabaseAdmin();
+  if (!db) return { ok: false };
+
+  /*
+    Reprise sur `piste_id` : la même visite met à jour sa ligne au lieu d'en
+    créer une par frappe. Le statut n'est pas touché — une piste déjà rappelée
+    ne doit pas repasser « ouverte » parce que la personne revient regarder.
+  */
+  const { error } = await db
+    .from("prospects")
+    .upsert(
+      { ...piste, updated_at: new Date().toISOString() },
+      { onConflict: "piste_id" },
+    );
+
+  if (error) {
+    if (tableAbsente(error)) {
+      console.error(
+        "[pistes] table `prospects` absente — exécutez supabase/schema.sql. Piste non enregistrée.",
+      );
+      return { ok: false, tableManquante: true };
+    }
+    console.error("[pistes] enregistrement impossible —", error.message);
+    return { ok: false };
+  }
+
+  /*
+    Une cliente qui a déjà commandé reste « convertie » pour toujours, et son
+    nouveau panier abandonné n'apparaissait donc jamais dans la liste d'appels :
+    la meilleure cliente était précisément celle qu'on ne rappelait plus.
+
+    Un nouveau panier de sa part rouvre la piste. Seules les converties sont
+    concernées : une piste marquée « rappelée » ne se rouvre pas toute seule
+    pendant que la propriétaire est encore au téléphone.
+  */
+  await db
+    .from("prospects")
+    .update({ status: "ouverte" })
+    .eq("piste_id", piste.piste_id)
+    .eq("status", "convertie");
+
+  return { ok: true };
+}
+
+/** Le client a fini par commander : la piste n'est plus à rappeler. */
+export async function pisteConvertie(pisteId: string) {
+  const db = supabaseAdmin();
+  if (!db || !pisteId) return;
+  const { error } = await db
+    .from("prospects")
+    .update({ status: "convertie", updated_at: new Date().toISOString() })
+    .eq("piste_id", pisteId);
+  // Best-effort : une piste non marquée ne doit jamais faire échouer une vente.
+  if (error && !tableAbsente(error))
+    console.error("[pistes] marquage converti impossible —", error.message);
+}
+
+export async function getProspects(): Promise<{
+  pistes: Prospect[];
+  tableManquante: boolean;
+}> {
+  const db = supabaseAdmin();
+  if (!db) return { pistes: [], tableManquante: false };
+  const { data, error } = await db
+    .from("prospects")
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .limit(300);
+  if (error) return { pistes: [], tableManquante: tableAbsente(error) };
+  return { pistes: (data ?? []) as Prospect[], tableManquante: false };
+}
+
+export async function setProspectStatus(id: string, status: ProspectStatus) {
+  const db = supabaseAdmin();
+  if (!db) throw new Error("Base non connectée.");
+  const { error } = await db
+    .from("prospects")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteProspect(id: string) {
+  const db = supabaseAdmin();
+  if (!db) throw new Error("Base non connectée.");
+  const { error } = await db.from("prospects").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 

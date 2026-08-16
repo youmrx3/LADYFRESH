@@ -11,9 +11,8 @@ import { pixelDesQuePret } from "@/lib/pixel";
  *
  * Deux raisons de la préférer à l'écran de confirmation rendu sur place :
  *
- * — Purchase part sur un chargement de page distinct, et non dans les
- *   dernières millisecondes avant que l'onglet ne file sur WhatsApp. Plus
- *   aucune course entre l'envoi de l'événement et la navigation.
+ * — Purchase part sur un chargement de page distinct : plus aucune course
+ *   entre l'envoi de l'événement et la navigation.
  *
  * — Elle donne une adresse. Une conversion personnalisée se crée alors sur
  *   « l'URL contient /merci », sans l'outil de configuration de Meta et sans
@@ -23,9 +22,8 @@ import { pixelDesQuePret } from "@/lib/pixel";
  * montant dans l'URL se réécrit à la main depuis la barre du navigateur, et
  * Meta apprendrait sur des chiffres inventés.
  *
- * Une seule sortie, volontairement : repasser une commande. Ni pied de page
- * ni lien WhatsApp — la conversation est déjà ouverte dans l'autre onglet, et
- * tout ce qui disperse ici éloigne de la seule action qui compte encore.
+ * Une seule sortie, volontairement : repasser une commande. Tout ce qui
+ * disperse ici éloigne de la seule action qui compte encore.
  */
 
 /** Clé de la remise déposée par le bon de commande avant de venir ici. */
@@ -33,7 +31,6 @@ export const CLE_MERCI = "ladyfresh.merci";
 
 export type ChargeMerci = {
   ref: string;
-  canal: "whatsapp" | "formulaire";
   /** Les paramètres du Purchase, calculés côté serveur. */
   achat: Record<string, unknown>;
 };
@@ -89,11 +86,7 @@ export function Merci() {
           {t.commande.okTitre}{" "}
           <span className="data text-[0.68em]">{charge.ref}</span>
         </h2>
-        <p className="lede mt-4 text-graphite-doux">
-          {charge.canal === "whatsapp"
-            ? t.commande.okWhatsapp
-            : t.commande.okForm}
-        </p>
+        <p className="lede mt-4 text-graphite-doux">{t.commande.okForm}</p>
 
         <Link href="/boutique" className="btn btn-encre mt-8">
           {t.commande.okCta}

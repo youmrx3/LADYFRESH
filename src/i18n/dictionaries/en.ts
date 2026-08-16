@@ -4,7 +4,7 @@ export const en: Dictionary = {
   meta: {
     title: "Lady Fresh — Body mists, intimate gels and deodorants",
     description:
-      "Seven ranges of fragrance mists, intimate washes and deodorants. Retail, half-wholesale from 5 pieces, wholesale by the carton. Order on WhatsApp.",
+      "Seven ranges of fragrance mists, intimate washes and deodorants. Retail, half-wholesale from 5 pieces, wholesale by the carton. Order directly online.",
   },
 
   unites: {
@@ -76,7 +76,7 @@ export const en: Dictionary = {
       {
         titre: "Send it",
         texte:
-          "One button opens WhatsApp with your order already written. No WhatsApp? The form sends it straight to us.",
+          "Fill in your name, phone and wilaya, then confirm. We call you back to arrange delivery.",
       },
     ],
   },
@@ -154,14 +154,12 @@ export const en: Dictionary = {
     telephone: "Phone",
     wilaya: "Wilaya",
     wilayaChoisir: "Choose your wilaya",
+    nomExemple: "Your full name",
+    adresseExemple: "Street, area, landmark",
+    confirmer: "Confirm order — {total}",
     champsRequis: "Fill in {champs} to send your order.",
     adresse: "Delivery address",
     note: "Note",
-    whatsapp: "Order on WhatsApp",
-    whatsappPrep: "Preparing…",
-    whatsappAide: "Opens WhatsApp with the summary already written.",
-    sansWhatsapp: "No WhatsApp? Send by form",
-    fermerForm: "Back to WhatsApp",
     envoyerForm: "Send the order",
     envoiEnCours: "Sending…",
     formAide: "Name and phone are needed so we can call you back.",
@@ -169,13 +167,11 @@ export const en: Dictionary = {
     manqueGrosPluriel: "Each product must reach {n} cartons.",
     manqueDemi: "Half-wholesale starts at {n} pieces. {reste} to go.",
     piedDePage:
-      "Every order, WhatsApp or form, lands in the same queue. A question before you order?",
+      "Every order lands in the same queue. A question before you order?",
     reseau: "Connection dropped. Check your network and try again.",
     envoiImpossible: "Could not send.",
     okEyebrow: "Order recorded",
     okTitre: "Got it. Ref.",
-    okWhatsapp:
-      "WhatsApp opened with your summary. Send the message to confirm — we'll call you about delivery.",
     okForm:
       "We've received your order and we'll call the number you gave us to confirm delivery.",
     okCta: "Place another order",
@@ -192,7 +188,6 @@ export const en: Dictionary = {
     titre: "Ready to order?",
     lede: "Half-wholesale from {min} pieces, wholesale by the carton. Build your order, send it, we handle the rest.",
     cta: "Build my order",
-    ctaWhatsapp: "Message us on WhatsApp",
   },
 
   footer: {
@@ -249,9 +244,29 @@ export const en: Dictionary = {
     baseAbsenteAide:
       "Run supabase/schema.sql then add your Supabase keys to .env.local, or to your host's environment variables followed by a redeploy. Until then the site shows the reference catalogue.",
 
+    pistes: {
+      eyebrow: "Follow-up",
+      titre: "Carts to call back",
+      aide: "These visitors left a phone number but never confirmed. Their cart is kept here — a call is often enough.",
+      vide: "No carts waiting. Everything filled in was ordered.",
+      tableManquante: "The prospects table does not exist yet. Run supabase/schema.sql in Supabase, then reload this page.",
+      videFiltre: "Nothing in this filter.",
+      filtres: {
+        tous: "All",
+        ouverte: "To call back",
+        rappelee: "Called",
+        convertie: "Ordered",
+      },
+      sansNom: "No name given",
+      total: "Cart",
+      marquerRappelee: "Mark as called",
+      marquerNonRappelee: "Undo call",
+      confirmSuppr: "Delete this lead?",
+    },
     onglets: {
       courts: {
         commandes: "Orders",
+        pistes: "Call back",
         types: "Types",
         gammes: "Ranges",
         produits: "Products",
@@ -259,6 +274,7 @@ export const en: Dictionary = {
         contenu: "Content",
       },
       commandes: "Orders",
+      pistes: "Carts to call back",
       gammes: "Ranges",
       produits: "Products",
       types: "Product types",
@@ -270,7 +286,7 @@ export const en: Dictionary = {
       suivi: "Queue",
       titre: "Orders",
       total: "{n} in total",
-      vide: "No orders yet. WhatsApp and form orders both land here.",
+      vide: "No orders yet. Everything ordered on the site lands here.",
       statut: "Status",
       supprimer: "Delete order",
       confirmSuppr: "Permanently delete order {ref}? This cannot be undone.",
@@ -393,7 +409,7 @@ export const en: Dictionary = {
       reglages: "Settings",
       titre: "Site content",
       commandeContact: "Ordering and contact",
-      numeroWhatsapp: "WhatsApp number (with country code)",
+      numeroWhatsapp: "Contact phone (with country code)",
       minGros: "Wholesale minimum (cartons)",
       minDemi: "Half-wholesale minimum (pieces)",
       telephoneAffiche: "Phone shown",

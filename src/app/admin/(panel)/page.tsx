@@ -87,11 +87,16 @@ export default async function Commandes({
                     style={{ background: TEINTE[order.status] }}
                   />
                   <span className="data text-[14px]">{order.ref}</span>
-                  <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
-                    {order.channel === "whatsapp"
-                      ? t.admin.commandes.canalWhatsapp
-                      : t.admin.commandes.canalForm}
-                  </span>
+                  {/*
+                    La pastille ne s'affiche plus que sur les commandes d'avant :
+                    tout arrive maintenant par le site, la mention serait la
+                    même sur chaque ligne.
+                  */}
+                  {order.channel === "whatsapp" && (
+                    <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+                      {t.admin.commandes.canalWhatsapp}
+                    </span>
+                  )}
                   <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
                     {t.achat[order.purchase_type]}
                   </span>

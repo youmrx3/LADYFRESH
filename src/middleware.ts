@@ -117,6 +117,19 @@ function poserEntetes(reponse: NextResponse, pathname: string) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  /*
+    La collecte de pistes est appelée à chaque frappe utile : elle mérite une
+    borne plus large que les commandes, mais une borne quand même — sinon la
+    route sert de robinet pour remplir la table.
+  */
+  if (request.method === "POST" && pathname === "/api/prospects") {
+    const ip = ipDe(request.headers);
+    if (limiteDepassee(`pistes:${ip}`, 120, 60 * 60 * 1000)) {
+      return NextResponse.json({ ok: true }, { status: 200 });
+    }
+    return NextResponse.next();
+  }
+
   if (request.method === "POST" && pathname === "/api/orders") {
     const ip = ipDe(request.headers);
     if (limiteDepassee(`orders:${ip}`, 20, 60 * 60 * 1000)) {
@@ -129,20 +142,37 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  /*
+    Les actions serveur postent sur l'adresse de la page. Les intercepter leur
+    fait perdre leur portée de requête : `cookies()` échoue et tout le
+    back-office rend des 500. Le filtre du matcher les écarte déjà par l'en-tête
+    `next-action` ; cette seconde barrière tient si Next change de convention.
+  */
+  if (request.method !== "GET") return NextResponse.next();
+
   return poserEntetes(NextResponse.next(), pathname);
 }
 
 export const config = {
   matcher: [
-    /*
-      La vitrine et l'API de commande. `/admin` est délibérément absent : dès
-      qu'un middleware intercepte la route où une action serveur poste, cette
-      action perd sa portée de requête et `cookies()` échoue — c'est tout le
-      back-office qui tombe. Le back-office est derrière mot de passe et porte
-      son `noindex` par métadonnée ; la surface exposée, elle, garde ses
-      en-têtes.
-    */
+    // La vitrine, hors fichiers statiques.
     "/((?!_next/|api/|admin|favicon.ico|brand/|products/|gammes/|videos/|uploads/).*)",
     "/api/orders",
+    "/api/prospects",
+    /*
+      Le back-office n'avait aucun en-tête : ni CSP, ni `X-Frame-Options`. Un
+      site tiers pouvait donc l'afficher dans une iframe invisible et faire
+      cliquer « Supprimer » à quelqu'un déjà connecté, sans qu'il voie rien.
+      Le mot de passe ne protège de rien ici — c'est bien la session valide de
+      la propriétaire qui exécute le geste.
+
+      Il restait dehors parce qu'un middleware sur cette route casse les
+      actions serveur. `missing` les écarte sur l'en-tête qu'elles portent
+      toutes : seuls les affichages de page passent par ici.
+    */
+    {
+      source: "/admin/:path*",
+      missing: [{ type: "header", key: "next-action" }],
+    },
   ],
 };

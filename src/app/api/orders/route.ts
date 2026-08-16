@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import {
   createOrder,
+  pisteConvertie,
   getGammes,
   getProductTypes,
   getProducts,
@@ -8,13 +9,14 @@ import {
   ordersArePersisted,
 } from "@/lib/data";
 import {
-  da,
   lineTotal,
   orderRef,
   piecesFor,
   unitPrice,
 } from "@/lib/format";
-import { fill, getDictionary, type Dictionary } from "@/i18n";
+import { fill, getDictionary } from "@/i18n";
+import { avertirCommande } from "@/lib/email";
+import { numeroNormalise } from "@/lib/piste";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { nomType } from "@/i18n/contenu";
 import type { OrderItem, PurchaseType } from "@/lib/types";
@@ -34,7 +36,6 @@ function borne(valeur: string | undefined, max = MAX_TEXTE) {
 }
 
 type Requete = {
-  channel: "whatsapp" | "formulaire";
   purchase: PurchaseType;
   locale?: string;
   /** Étiquette de campagne, transmise par /boutique?c=… */
@@ -68,8 +69,6 @@ export async function POST(request: Request) {
   const t = getDictionary(locale);
 
   const purchase: PurchaseType = body.purchase === "gros" ? "gros" : "demi_gros";
-  const channel: "whatsapp" | "formulaire" =
-    body.channel === "formulaire" ? "formulaire" : "whatsapp";
 
   if (!Array.isArray(body.items) || body.items.length === 0) {
     return NextResponse.json({ error: t.api.vide }, { status: 400 });
@@ -155,10 +154,8 @@ export async function POST(request: Request) {
   }
 
   /*
-    Nom, téléphone et wilaya sont exigés sur les deux canaux, pas seulement sur
-    le formulaire. Partir vers WhatsApp ne dispense de rien : la commande est
-    écrite en base avant la redirection, et sans numéro ni wilaya elle ne peut
-    ni se rappeler ni se livrer.
+    Sans numéro ni wilaya, une commande ne peut ni se rappeler ni se livrer :
+    elle occupe une ligne du back-office sans pouvoir être honorée.
 
     Contrôle refait ici bien qu'il existe à l'écran : cette route est publique,
     et une requête forgée n'ouvre jamais le formulaire.
@@ -183,7 +180,7 @@ export async function POST(request: Request) {
     address: borne(customer.address, 300),
     note: borne(customer.note),
     source: borne(body.source, 60),
-    channel,
+    channel: "formulaire" as const,
     purchase_type: purchase,
     total,
     status: "nouvelle" as const,
@@ -191,8 +188,9 @@ export async function POST(request: Request) {
     items,
   };
 
+  let enregistree;
   try {
-    await createOrder(order);
+    enregistree = await createOrder(order);
   } catch (error) {
     /*
       Le client ne voit qu'un message neutre — une erreur de configuration ne
@@ -213,70 +211,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.api.echec }, { status: 500 });
   }
 
-  const message = messageWhatsApp({
-    t,
-    ref,
-    purchase,
-    items,
-    total,
-    pieces,
-    customer,
-  });
+  /*
+    La piste ouverte pendant la saisie n'a plus à être rappelée : c'est le même
+    numéro qui vient de commander. Marqué ici et non depuis le navigateur —
+    c'est le seul endroit qui sait avec certitude que la commande est écrite.
+    Sans attente : un incident de suivi ne doit pas retarder la confirmation.
+  */
+  const numero = numeroNormalise(order.phone);
+  if (numero) void pisteConvertie(numero);
+
+  /*
+    L'avis part après la réponse, pas avant.
+
+    Attendre Resend ajouterait sa latence — et ses pannes — au temps que la
+    cliente passe devant un bouton qui tourne. `after` laisse la réponse
+    partir tout de suite et exécute l'envoi ensuite, sans que la fonction
+    serverless soit coupée entre-temps.
+  */
+  after(() => avertirCommande(enregistree, t.unites.devise));
 
   return NextResponse.json({
     ref,
     total,
     persisted: ordersArePersisted(),
-    whatsappUrl: `https://wa.me/${settings.whatsapp_number.replace(
-      /\D/g,
-      "",
-    )}?text=${encodeURIComponent(message)}`,
   });
-}
-
-function messageWhatsApp({
-  t,
-  ref,
-  purchase,
-  items,
-  total,
-  pieces,
-  customer,
-}: {
-  t: Dictionary;
-  ref: string;
-  purchase: PurchaseType;
-  items: OrderItem[];
-  total: number;
-  pieces: number;
-  customer: Requete["customer"];
-}) {
-  const devise = t.unites.devise;
-  const unite = purchase === "gros" ? t.unites.cartons : t.unites.pieces;
-
-  const lignes = items.map(
-    (i) =>
-      `• ${i.product_name} ${i.size_label} — ${i.quantity} ${unite} × ${da(
-        i.unit_price,
-        devise,
-      )} = ${da(i.line_total, devise)}`,
-  );
-
-  const corps = [
-    t.api.bonjour,
-    ``,
-    `${t.api.ref} ${ref}`,
-    `${t.api.format}${t.api.sep}${t.achat[purchase]}`,
-    ``,
-    ...lignes,
-    ``,
-    `${t.api.total}${t.api.sep}${pieces} ${t.unites.pieces} — ${da(total, devise)}`,
-  ];
-
-  if (customer?.name) corps.push(``, `${t.api.nom}${t.api.sep}${customer.name}`);
-  if (customer?.phone) corps.push(`${t.api.telephone}${t.api.sep}${customer.phone}`);
-  if (customer?.wilaya) corps.push(`${t.api.wilaya}${t.api.sep}${customer.wilaya}`);
-  if (customer?.note) corps.push(`${t.api.note}${t.api.sep}${customer.note}`);
-
-  return corps.join("\n");
 }

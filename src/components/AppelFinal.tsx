@@ -46,17 +46,10 @@ export function AppelFinal({
           <p className="lede mx-auto mt-4 max-w-[46ch] text-craie">
             {fill(t.appel.lede, { min: settings.min_demi_gros_pieces })}
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {/* Une seule sortie : la commande se passe sur le site. */}
+          <div className="mt-8 flex justify-center">
             <a href="#boutique" className="btn btn-or">
               {t.appel.cta}
-            </a>
-            <a
-              href={`https://wa.me/${settings.whatsapp_number.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="btn btn-fantome"
-            >
-              {t.appel.ctaWhatsapp}
             </a>
           </div>
         </Reveal>

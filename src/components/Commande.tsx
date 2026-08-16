@@ -9,14 +9,24 @@ import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { da } from "@/lib/format";
 import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
+import { numeroNormalise } from "@/lib/piste";
 import { WILAYAS, libelleWilaya, valeurWilaya } from "@/lib/wilayas";
 import { nomType } from "@/i18n/contenu";
 
 type Etat =
   | { phase: "repos" }
-  | { phase: "envoi"; canal: "whatsapp" | "formulaire" }
-  | { phase: "envoyee"; canal: "whatsapp" | "formulaire"; ref: string }
+  | { phase: "envoi" }
+  | { phase: "envoyee"; ref: string }
   | { phase: "erreur"; message: string };
+
+/** Marque discrète des champs sans lesquels la commande ne part pas. */
+function Requis() {
+  return (
+    <span aria-hidden="true" style={{ color: "var(--or-plein)" }}>
+      *
+    </span>
+  );
+}
 
 export function Commande() {
   const {
@@ -35,7 +45,6 @@ export function Commande() {
   const router = useRouter();
 
   const [etat, setEtat] = useState<Etat>({ phase: "repos" });
-  const [formOuvert, setFormOuvert] = useState(false);
   const [client, setClient] = useState({
     name: "",
     phone: "",
@@ -80,10 +89,49 @@ export function Commande() {
     }
   }, []);
 
-  async function envoyer(canal: "whatsapp" | "formulaire") {
-    // Ouvert avant l'await : un onglet ouvert plus tard serait bloqué.
-    const onglet = canal === "whatsapp" ? window.open("", "_blank") : null;
-    setEtat({ phase: "envoi", canal });
+  /*
+    La piste de rappel.
+
+    On envoie ce qui a été saisi dès qu'il y a de quoi rappeler : un numéro
+    utilisable et un panier. Différé d'une seconde et demie après la dernière
+    frappe — à chaque caractère, ce serait un aller-retour par lettre tapée.
+
+    Rien de tout cela ne bloque quoi que ce soit : l'appel part sans être
+    attendu, et son échec est sans conséquence. Le suivi est accessoire, la
+    commande ne l'est pas.
+  */
+  useEffect(() => {
+    if (vide) return;
+    // Numéro incomplet : rien à enregistrer, on ne rappelle pas un brouillon.
+    if (!numeroNormalise(client.phone)) return;
+
+    const minuteur = setTimeout(() => {
+      const corps = JSON.stringify({
+        purchase,
+        locale,
+        source: campagne,
+        customer: client,
+        items: lines.map((l) => ({
+          variantId: l.variantId,
+          quantity: l.quantity,
+        })),
+      });
+      fetch("/api/prospects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: corps,
+        keepalive: true,
+      }).catch(() => {
+        // Sans effet sur le parcours : la commande reste possible.
+      });
+    }, 1500);
+
+    return () => clearTimeout(minuteur);
+    // `lines` change d'identité à chaque rendu : on suit le contenu, pas l'objet.
+  }, [client, vide, purchase, locale, campagne, lines]);
+
+  async function envoyer() {
+    setEtat({ phase: "envoi" });
 
     const lignesPixel = lines.map((l) => ({
       variantId: l.variantId,
@@ -101,21 +149,16 @@ export function Commande() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          channel: canal,
           purchase,
           locale,
           source: campagne,
           customer: client,
-          items: lines.map((l) => ({
-            variantId: l.variantId,
-            quantity: l.quantity,
-          })),
+          items: lignesPixel,
         }),
       });
       const data = await reponse.json();
 
       if (!reponse.ok) {
-        onglet?.close();
         setEtat({
           phase: "erreur",
           message: data.error ?? t.commande.envoiImpossible,
@@ -135,13 +178,12 @@ export function Commande() {
         content_category: purchase === "gros" ? "gros" : "demi_gros",
         // Permet de comparer les campagnes dans les ventilations Meta.
         campagne: campagne || "direct",
-        canal,
       };
 
       /*
-        Purchase ne part plus d'ici mais de /merci : sur un chargement de page
-        distinct, rien ne peut couper l'envoi, et l'événement porte une adresse
-        sur laquelle bâtir une conversion personnalisée.
+        Purchase part de /merci et non d'ici : sur un chargement de page
+        distinct l'événement porte une adresse, sur laquelle Meta peut asseoir
+        une conversion personnalisée.
 
         Si sessionStorage est fermé — navigation privée —, la remise n'arrive
         pas et la vente ne serait comptée nulle part : on émet alors sur place
@@ -149,34 +191,17 @@ export function Commande() {
       */
       let remis = false;
       try {
-        const charge: ChargeMerci = { ref: data.ref, canal, achat };
+        const charge: ChargeMerci = { ref: data.ref, achat };
         sessionStorage.setItem(CLE_MERCI, JSON.stringify(charge));
         remis = true;
       } catch {
         pixel("Purchase", achat);
       }
 
-      /*
-        L'onglet a été ouvert avant l'attente. S'il a été bloqué, on ne part
-        plus vers WhatsApp depuis cette page — c'est ce départ qui coupait
-        l'événement au vol.
-
-        La commande est enregistrée quoi qu'il arrive et le rappel se fait au
-        téléphone : dans ce cas rare, le client ne verra pas la conversation
-        s'ouvrir. La page de remerciement n'offre plus de rattrapage, elle ne
-        propose que de commander à nouveau.
-      */
-      if (canal === "whatsapp" && data.whatsappUrl && onglet) {
-        onglet.location.href = data.whatsappUrl;
-      } else {
-        onglet?.close();
-      }
-
-      setEtat({ phase: "envoyee", canal, ref: data.ref });
+      setEtat({ phase: "envoyee", ref: data.ref });
       clear();
       if (remis) router.push("/merci");
     } catch {
-      onglet?.close();
       setEtat({ phase: "erreur", message: t.commande.reseau });
     }
   }
@@ -193,9 +218,7 @@ export function Commande() {
             {t.commande.okTitre}{" "}
             <span className="data text-[0.68em]">{etat.ref}</span>
           </h2>
-          <p className="lede mt-4 text-graphite-doux">
-            {etat.canal === "whatsapp" ? t.commande.okWhatsapp : t.commande.okForm}
-          </p>
+          <p className="lede mt-4 text-graphite-doux">{t.commande.okForm}</p>
           <button
             type="button"
             onClick={() => setEtat({ phase: "repos" })}
@@ -394,40 +417,55 @@ export function Commande() {
                 </p>
               )}
 
-              <div className="mt-5 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+              {/*
+                Le formulaire est la commande, plus une porte de secours.
+
+                WhatsApp partait de cet écran, le formulaire dormait derrière un
+                volet replié. Le pixel racontait le reste : beaucoup de monde
+                arrivait, ajoutait, et repartait sans finir. Un départ vers une
+                autre application est un abandon de plus à chaque étape, et rien
+                de ce qui s'y passe ne revient — ni le fait que la commande soit
+                confirmée, ni la raison d'un renoncement.
+
+                Tout se passe donc ici : les champs à l'écran, un seul bouton.
+              */}
+              <div className="mt-6 space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="etiquette" htmlFor="cmd-nom">
-                      {t.commande.nom}
+                      {t.commande.nom} <Requis />
                     </label>
                     <input
                       id="cmd-nom"
-                    required
+                      required
                       className="champ"
                       value={client.name}
                       onChange={(e) => setClient({ ...client, name: e.target.value })}
                       autoComplete="name"
+                      placeholder={t.commande.nomExemple}
                     />
                   </div>
                   <div>
                     <label className="etiquette" htmlFor="cmd-tel">
-                      {t.commande.telephone}
+                      {t.commande.telephone} <Requis />
                     </label>
                     <input
                       id="cmd-tel"
-                    required
+                      required
                       className="champ"
                       inputMode="tel"
                       dir="ltr"
                       value={client.phone}
                       onChange={(e) => setClient({ ...client, phone: e.target.value })}
                       autoComplete="tel"
+                      placeholder="06 00 00 00 00"
                     />
                   </div>
                 </div>
+
                 <div>
                   <label className="etiquette" htmlFor="cmd-wilaya">
-                    {t.commande.wilaya}
+                    {t.commande.wilaya} <Requis />
                   </label>
                   {/*
                     Liste fermée plutôt que saisie libre : sur un téléphone,
@@ -451,6 +489,35 @@ export function Commande() {
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  <label className="etiquette" htmlFor="cmd-adresse">
+                    {t.commande.adresse}
+                  </label>
+                  <input
+                    id="cmd-adresse"
+                    className="champ"
+                    value={client.address}
+                    onChange={(e) =>
+                      setClient({ ...client, address: e.target.value })
+                    }
+                    autoComplete="street-address"
+                    placeholder={t.commande.adresseExemple}
+                  />
+                </div>
+
+                <div>
+                  <label className="etiquette" htmlFor="cmd-note">
+                    {t.commande.note}
+                  </label>
+                  <textarea
+                    id="cmd-note"
+                    className="champ resize-y"
+                    rows={2}
+                    value={client.note}
+                    onChange={(e) => setClient({ ...client, note: e.target.value })}
+                  />
+                </div>
               </div>
 
               {/*
@@ -473,94 +540,16 @@ export function Commande() {
                 disabled={
                   vide || !meetsMinimum || !clientComplet || etat.phase === "envoi"
                 }
-                onClick={() => envoyer("whatsapp")}
-                className="btn btn-whatsapp mt-5 w-full"
+                onClick={envoyer}
+                className="btn btn-or mt-5 w-full !py-4 !text-[0.875rem]"
               >
-                {etat.phase === "envoi" && etat.canal === "whatsapp"
-                  ? t.commande.whatsappPrep
-                  : t.commande.whatsapp}
+                {etat.phase === "envoi"
+                  ? t.commande.envoiEnCours
+                  : fill(t.commande.confirmer, { total: da(total, devise) })}
               </button>
               <p className="mt-2 text-center text-[12px] text-graphite-doux">
-                {t.commande.whatsappAide}
+                {t.commande.formAide}
               </p>
-
-              {/* ------------------------------- solution sans WhatsApp */}
-              {/*
-                C'était un <summary> en petites capitales grises, replanté sous
-                le bouton vert : rigoureusement invisible. Or tout le monde n'a
-                pas WhatsApp, et cette porte-là était la seule qui restait —
-                une commande perdue faute d'avoir vu le lien est une commande
-                perdue pour de bon.
-
-                Bouton doré plein, pleine largeur, comme le vert. Il reste doré
-                une fois ouvert et sert à refermer : le libellé et le chevron
-                disent déjà l'état, et l'envoi qui apparaît dessous est encre
-                sur fond clair — les deux ne se confondent pas.
-              */}
-              <div className="mt-6 border-t border-trait pt-5">
-                <button
-                  type="button"
-                  onClick={() => setFormOuvert((v) => !v)}
-                  aria-expanded={formOuvert}
-                  aria-controls="cmd-form-sans-whatsapp"
-                  className="btn btn-or w-full !whitespace-normal"
-                >
-                  {formOuvert ? t.commande.fermerForm : t.commande.sansWhatsapp}
-                  <span
-                    aria-hidden="true"
-                    className="transition-transform duration-200"
-                    style={{ transform: formOuvert ? "rotate(180deg)" : "none" }}
-                  >
-                    ▾
-                  </span>
-                </button>
-              </div>
-
-              {formOuvert && (
-                <div id="cmd-form-sans-whatsapp" className="mt-4 space-y-3">
-                  <div>
-                    <label className="etiquette" htmlFor="cmd-adresse">
-                      {t.commande.adresse}
-                    </label>
-                    <input
-                      id="cmd-adresse"
-                      className="champ"
-                      value={client.address}
-                      onChange={(e) =>
-                        setClient({ ...client, address: e.target.value })
-                      }
-                      autoComplete="street-address"
-                    />
-                  </div>
-                  <div>
-                    <label className="etiquette" htmlFor="cmd-note">
-                      {t.commande.note}
-                    </label>
-                    <textarea
-                      id="cmd-note"
-                      className="champ resize-y"
-                      rows={2}
-                      value={client.note}
-                      onChange={(e) => setClient({ ...client, note: e.target.value })}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    disabled={
-                  vide || !meetsMinimum || !clientComplet || etat.phase === "envoi"
-                }
-                    onClick={() => envoyer("formulaire")}
-                    className="btn btn-encre w-full"
-                  >
-                    {etat.phase === "envoi" && etat.canal === "formulaire"
-                      ? t.commande.envoiEnCours
-                      : t.commande.envoyerForm}
-                  </button>
-                  <p className="text-center text-[12px] text-graphite-doux">
-                    {t.commande.formAide}
-                  </p>
-                </div>
-              )}
 
               {etat.phase === "erreur" && (
                 <p

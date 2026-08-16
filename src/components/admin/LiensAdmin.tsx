@@ -10,7 +10,14 @@ export type LienAdmin = {
   court: string;
   icone: Icone;
 };
-type Icone = "commandes" | "types" | "gammes" | "produits" | "formats" | "contenu";
+type Icone =
+  | "commandes"
+  | "pistes"
+  | "types"
+  | "gammes"
+  | "produits"
+  | "formats"
+  | "contenu";
 
 function estActif(path: string, href: string) {
   return href === "/admin" ? path === "/admin" : path.startsWith(href);
@@ -114,6 +121,13 @@ function Glyphe({ nom }: { nom: Icone }) {
       return (
         <svg {...commun}>
           <path d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+      );
+    case "pistes":
+      // Un combiné : ces lignes-là se rappellent au téléphone.
+      return (
+        <svg {...commun}>
+          <path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z" />
         </svg>
       );
     case "types":

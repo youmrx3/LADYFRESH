@@ -24,8 +24,10 @@ import {
 } from "./catalog";
 import {
   deleteOrder,
+  deleteProspect,
   ETIQUETTE_CATALOGUE,
   setOrderStatus,
+  setProspectStatus,
   writeLocalSettings,
 } from "./data";
 import { supabaseAdmin } from "./supabase";
@@ -195,6 +197,47 @@ export async function supprimerCommande(
     await deleteOrder(id);
     return "Commande supprimée.";
   });
+}
+
+// -------------------------------------------------------- pistes de rappel
+
+/*
+  Les pistes ne touchent pas au catalogue : pas de `rafraichir()` ici, seulement
+  le chemin de la page. Vider l'étiquette du catalogue à chaque appel passé
+  ferait relire les produits pour rien.
+*/
+export async function changerStatutPiste(
+  _prev: Retour,
+  formData: FormData,
+): Promise<Retour> {
+  if (!(await isAdmin())) return { error: "Session expirée." };
+  const id = mot(formData, "id");
+  const statut = mot(formData, "status");
+  const permis = ["ouverte", "rappelee", "convertie"] as const;
+  if (!permis.includes(statut as (typeof permis)[number]))
+    return { error: "Statut inconnu." };
+
+  try {
+    await setProspectStatus(id, statut as (typeof permis)[number]);
+    revalidatePath("/admin/pistes");
+    return { ok: "Statut enregistré." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Échec." };
+  }
+}
+
+export async function supprimerPiste(
+  _prev: Retour,
+  formData: FormData,
+): Promise<Retour> {
+  if (!(await isAdmin())) return { error: "Session expirée." };
+  try {
+    await deleteProspect(mot(formData, "id"));
+    revalidatePath("/admin/pistes");
+    return { ok: "Piste supprimée." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Échec." };
+  }
 }
 
 // -------------------------------------------------------- types de produits
