@@ -239,12 +239,13 @@ export const fr = {
     seDeconnecter: "Se déconnecter",
     connexion: "Connexion",
     espaceGestion: "Espace gestion",
+    email: "Adresse email",
     motDePasse: "Mot de passe",
     entrer: "Entrer",
     verification: "Vérification…",
     retourSite: "← Retour au site",
     pasDeMotDePasse:
-      "Aucun mot de passe n'est configuré. En local : ajoutez ADMIN_PASSWORD dans .env.local, puis relancez le serveur. En ligne : ajoutez-le aux variables d'environnement de l'hébergeur, puis « Redeploy » — une variable ajoutée après coup ne s'applique qu'au déploiement suivant.",
+      "La connexion passe par Supabase, qui n'est pas configuré. Renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY chez l'hébergeur, puis redéployez — une variable ajoutée après coup ne s'applique qu'au déploiement suivant.",
     baseAbsente:
       "Base de données non connectée — les modifications ne sont pas enregistrées.",
     baseAbsenteAide:
@@ -267,6 +268,8 @@ export const fr = {
       total: "Panier",
       marquerRappelee: "Marquer rappelé",
       marquerNonRappelee: "Annuler le rappel",
+      marquerCommande: "A commandé",
+      annulerCommande: "Remettre à rappeler",
       confirmSuppr: "Supprimer cette piste ?",
     },
     onglets: {

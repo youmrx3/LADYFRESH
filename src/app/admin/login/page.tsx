@@ -2,7 +2,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { FormulaireConnexion } from "./FormulaireConnexion";
 import { BasculeTheme } from "@/components/Bascules";
-import { adminPassword, isAdmin } from "@/lib/auth";
+import { authConfiguree, isAdmin } from "@/lib/auth";
 import { getT } from "@/i18n/server";
 
 export const metadata = { title: "Connexion", robots: { index: false, follow: false } };
@@ -10,7 +10,7 @@ export const metadata = { title: "Connexion", robots: { index: false, follow: fa
 export default async function Connexion() {
   if (await isAdmin()) redirect("/admin");
   const { t } = await getT();
-  const configure = Boolean(adminPassword());
+  const configure = authConfiguree;
 
   return (
     <main className="etage-vitrine flex min-h-screen items-center justify-center px-6 py-16">
@@ -41,6 +41,7 @@ export default async function Connexion() {
         {configure ? (
           <FormulaireConnexion
             labels={{
+              email: t.admin.email,
               motDePasse: t.admin.motDePasse,
               entrer: t.admin.entrer,
               verification: t.admin.verification,

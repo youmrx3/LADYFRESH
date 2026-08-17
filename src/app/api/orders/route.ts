@@ -1,4 +1,4 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import {
   createOrder,
   pisteConvertie,
@@ -222,14 +222,17 @@ export async function POST(request: Request) {
   if (clePiste) void pisteConvertie(clePiste);
 
   /*
-    L'avis part après la réponse, pas avant.
+    L'avis est attendu, et non renvoyé à après la réponse.
 
-    Attendre Resend ajouterait sa latence — et ses pannes — au temps que la
-    cliente passe devant un bouton qui tourne. `after` laisse la réponse
-    partir tout de suite et exécute l'envoi ensuite, sans que la fonction
-    serverless soit coupée entre-temps.
+    Il partait auparavant dans `after()`, pour ne pas ajouter la latence de
+    Resend au temps d'attente de la cliente. Sauf qu'un envoi qui ne part pas
+    dans ce cadre ne laisse aucune trace exploitable : pas d'email, et un
+    journal qu'il faut aller chercher. Trois cents millisecondes de plus sur la
+    confirmation coûtent moins cher qu'une commande dont personne n'est
+    prévenu. L'échec reste sans conséquence sur la vente : elle est déjà
+    enregistrée au-dessus.
   */
-  after(() => avertirCommande(enregistree, t.unites.devise));
+  await avertirCommande(enregistree, t.unites.devise);
 
   return NextResponse.json({
     ref,

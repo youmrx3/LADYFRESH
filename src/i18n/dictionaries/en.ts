@@ -234,12 +234,13 @@ export const en: Dictionary = {
     seDeconnecter: "Sign out",
     connexion: "Sign in",
     espaceGestion: "Admin area",
+    email: "Email address",
     motDePasse: "Password",
     entrer: "Enter",
     verification: "Checking…",
     retourSite: "← Back to the site",
     pasDeMotDePasse:
-      "No password is configured. Locally: add ADMIN_PASSWORD to .env.local, then restart the server. Hosted: add it to your host's environment variables, then redeploy — a variable added afterwards only applies to the next deployment.",
+      "Sign-in runs through Supabase, which is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY on your host, then redeploy — a variable added afterwards only applies to the next deployment.",
     baseAbsente: "Database not connected — changes are not saved.",
     baseAbsenteAide:
       "Run supabase/schema.sql then add your Supabase keys to .env.local, or to your host's environment variables followed by a redeploy. Until then the site shows the reference catalogue.",
@@ -261,6 +262,8 @@ export const en: Dictionary = {
       total: "Cart",
       marquerRappelee: "Mark as called",
       marquerNonRappelee: "Undo call",
+      marquerCommande: "Ordered",
+      annulerCommande: "Back to call list",
       confirmSuppr: "Delete this lead?",
     },
     onglets: {

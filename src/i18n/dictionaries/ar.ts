@@ -238,12 +238,13 @@ export const ar: Dictionary = {
     seDeconnecter: "تسجيل الخروج",
     connexion: "تسجيل الدخول",
     espaceGestion: "فضاء الإدارة",
+    email: "البريد الإلكتروني",
     motDePasse: "كلمة المرور",
     entrer: "دخول",
     verification: "جارٍ التحقق…",
     retourSite: "← العودة إلى الموقع",
     pasDeMotDePasse:
-      "لم تُضبط أي كلمة مرور. محليًا: أضيفي ADMIN_PASSWORD في ملف ‎.env.local ثم أعيدي تشغيل الخادم. على الإنترنت: أضيفيها إلى متغيّرات بيئة الاستضافة ثم أعيدي النشر — المتغيّر المُضاف لاحقًا لا يسري إلا على النشر التالي.",
+      "تسجيل الدخول يمرّ عبر Supabase الذي لم يُضبط بعد. أضيفي NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_ANON_KEY لدى الاستضافة ثم أعيدي النشر.",
     baseAbsente: "قاعدة البيانات غير موصولة — التعديلات لا تُحفظ.",
     baseAbsenteAide:
       "شغّلي supabase/schema.sql ثم أضيفي مفاتيح Supabase في ‎.env.local، أو في متغيّرات بيئة الاستضافة مع إعادة النشر. حتى ذلك الحين يعرض الموقع الكتالوج المرجعي.",
@@ -265,6 +266,8 @@ export const ar: Dictionary = {
       total: "السلة",
       marquerRappelee: "تعليم كمتصل بها",
       marquerNonRappelee: "إلغاء الاتصال",
+      marquerCommande: "طلبت",
+      annulerCommande: "إعادة للاتصال",
       confirmSuppr: "حذف هذه السلة؟",
     },
     onglets: {

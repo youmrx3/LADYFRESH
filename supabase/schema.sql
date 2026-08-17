@@ -296,12 +296,34 @@ create index if not exists prospects_status_idx  on prospects(status);
 */
 alter table prospects enable row level security;
 
+-- --------------------------------------------------------------- gestionnaires
+/*
+  Qui peut ouvrir le back-office.
+
+  Une session Supabase valide ne suffit pas : si les inscriptions publiques sont
+  ouvertes sur le projet — réglage par défaut — n'importe qui peut se créer un
+  compte. Cette table dit lesquelles de ces adresses gèrent la boutique.
+
+  Lue uniquement avec la clé de service, jamais depuis un navigateur. Aucune
+  politique n'est posée : RLS active et sans politique ferme la table à la clé
+  publique, ce qui est exactement le but.
+
+  Pour ajouter une gestionnaire :
+    1. Authentication → Users → Add user, avec son adresse et un mot de passe ;
+    2. insert into admins (email) values ('adresse@exemple.dz');
+*/
+create table if not exists admins (
+  email      text primary key,
+  created_at timestamptz not null default now()
+);
+alter table admins enable row level security;
+
 -- ------------------------------------------------------------ vérification
--- Doit renvoyer 10 tables. Si le compte est inférieur, relisez les erreurs
+-- Doit renvoyer 11 tables. Si le compte est inférieur, relisez les erreurs
 -- au-dessus : le script est idempotent, vous pouvez le relancer.
 select count(*) as tables_creees
 from information_schema.tables
 where table_schema = 'public'
   and table_name in ('gammes','product_types','products','product_variants',
                      'orders','order_items','hero_slides','videos','site_settings',
-                     'prospects');
+                     'prospects','admins');

@@ -4,7 +4,12 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { seConnecter } from "@/lib/actions";
 
-type Labels = { motDePasse: string; entrer: string; verification: string };
+type Labels = {
+  email: string;
+  motDePasse: string;
+  entrer: string;
+  verification: string;
+};
 
 export function FormulaireConnexion({ labels }: { labels: Labels }) {
   const [etat, action] = useActionState(seConnecter, {});
@@ -13,13 +18,27 @@ export function FormulaireConnexion({ labels }: { labels: Labels }) {
     <form action={action} className="mt-8">
       <label className="block">
         <span className="etiquette" style={{ color: "var(--vitrine-muted)" }}>
+          {labels.email}
+        </span>
+        <input
+          name="email"
+          type="email"
+          required
+          autoFocus
+          dir="ltr"
+          autoComplete="username"
+          className="champ"
+        />
+      </label>
+
+      <label className="mt-3 block">
+        <span className="etiquette" style={{ color: "var(--vitrine-muted)" }}>
           {labels.motDePasse}
         </span>
         <input
           name="password"
           type="password"
           required
-          autoFocus
           autoComplete="current-password"
           className="champ"
         />

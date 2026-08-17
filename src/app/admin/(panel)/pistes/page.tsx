@@ -190,8 +190,12 @@ function LignePiste({
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {/*
-          Un seul interrupteur : appelée, ou pas encore. Une piste convertie a
-          commandé — plus rien à cocher, la question ne se pose plus.
+          Deux gestes distincts, et c'est voulu.
+
+          « Rappelé » dit qu'on a téléphoné. « A commandé » dit que l'appel a
+          donné une vente — une commande prise au téléphone n'entre pas par le
+          site, donc rien ne peut la marquer automatiquement. Sans ce second
+          bouton, une piste conclue restait indéfiniment dans la liste d'appels.
         */}
         {piste.status !== "convertie" && (
           <Statut
@@ -201,6 +205,11 @@ function LignePiste({
               piste.status === "rappelee" ? a.marquerNonRappelee : a.marquerRappelee
             }
           />
+        )}
+        {piste.status !== "convertie" ? (
+          <Statut id={piste.id} valeur="convertie" libelle={a.marquerCommande} variante="or" />
+        ) : (
+          <Statut id={piste.id} valeur="ouverte" libelle={a.annulerCommande} />
         )}
         <FormAction action={supprimerPiste}>
           <input type="hidden" name="id" value={piste.id} />
@@ -217,16 +226,18 @@ function Statut({
   id,
   valeur,
   libelle,
+  variante,
 }: {
   id: string;
   valeur: ProspectStatus;
   libelle: string;
+  variante?: "encre" | "or";
 }) {
   return (
     <FormAction action={changerStatutPiste}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="status" value={valeur} />
-      <Envoyer>{libelle}</Envoyer>
+      <Envoyer variante={variante}>{libelle}</Envoyer>
     </FormAction>
   );
 }
