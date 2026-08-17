@@ -551,7 +551,14 @@ export function Commande() {
                   vide || !meetsMinimum || !clientComplet || etat.phase === "envoi"
                 }
                 onClick={envoyer}
-                className="btn btn-or mt-5 w-full !py-4 !text-[0.875rem]"
+                /*
+                  `.btn` impose `nowrap` avec un interlettrage large en
+                  majuscules : « Confirmer la commande — 2 200 DA » débordait de
+                  son cadre sur un téléphone. Le libellé passe donc à la ligne,
+                  l'interlettrage se resserre, et le texte revient à la taille
+                  des autres boutons.
+                */
+                className="btn btn-or mt-5 w-full !whitespace-normal !px-4 !py-3.5 !leading-snug !tracking-[0.1em]"
               >
                 {etat.phase === "envoi"
                   ? t.commande.envoiEnCours
