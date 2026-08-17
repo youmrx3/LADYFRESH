@@ -9,7 +9,7 @@ import { useReglages } from "./Reglages";
 import { fill } from "@/i18n";
 import { da } from "@/lib/format";
 import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
-import { numeroNormalise } from "@/lib/piste";
+import { clePiste, terminerSession } from "@/lib/piste";
 import { WILAYAS, libelleWilaya, valeurWilaya } from "@/lib/wilayas";
 import { nomType } from "@/i18n/contenu";
 
@@ -103,10 +103,12 @@ export function Commande() {
   useEffect(() => {
     if (vide) return;
     // Numéro incomplet : rien à enregistrer, on ne rappelle pas un brouillon.
-    if (!numeroNormalise(client.phone)) return;
+    const cle = clePiste(client.phone);
+    if (!cle) return;
 
     const minuteur = setTimeout(() => {
       const corps = JSON.stringify({
+        pisteId: cle,
         purchase,
         locale,
         source: campagne,
@@ -149,6 +151,7 @@ export function Commande() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          pisteId: clePiste(client.phone),
           purchase,
           locale,
           source: campagne,
@@ -197,6 +200,13 @@ export function Commande() {
       } catch {
         pixel("Purchase", achat);
       }
+
+      /*
+        La session se termine ici. La commande suivante — pour quelqu'un
+        d'autre, depuis le même écran — ouvrira sa propre piste au lieu
+        d'écraser celle-ci.
+      */
+      terminerSession();
 
       setEtat({ phase: "envoyee", ref: data.ref });
       clear();

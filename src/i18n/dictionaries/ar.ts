@@ -299,6 +299,7 @@ export const ar: Dictionary = {
       adresse: "العنوان",
       note: "ملاحظة",
       canalWhatsapp: "واتساب",
+      testerEmail: "اختبار البريد",
       canalForm: "استمارة",
       filtreTous: "الكل",
     },

@@ -30,6 +30,7 @@ import {
   setProspectStatus,
   writeLocalSettings,
 } from "./data";
+import { envoyerEmailTest } from "./email";
 import { supabaseAdmin } from "./supabase";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { OrderStatus } from "./types";
@@ -197,6 +198,21 @@ export async function supprimerCommande(
     await deleteOrder(id);
     return "Commande supprimée.";
   });
+}
+
+// ------------------------------------------------------------ avis email
+
+/**
+ * Envoie un message d'essai et rend le résultat à l'écran.
+ *
+ * Sans ça, un avis qui ne part pas ne se voit nulle part : il faut ouvrir les
+ * journaux de l'hébergeur, ce qui n'est pas un geste de tous les jours. Le
+ * diagnostic nomme la variable en cause ou recopie le refus du service.
+ */
+export async function testerEmail(_prev: Retour, _formData: FormData): Promise<Retour> {
+  if (!(await isAdmin())) return { error: "Session expirée." };
+  const { ok, detail } = await envoyerEmailTest();
+  return ok ? { ok: detail } : { error: detail };
 }
 
 // -------------------------------------------------------- pistes de rappel

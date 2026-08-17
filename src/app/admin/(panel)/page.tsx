@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Envoyer, FormAction } from "@/components/admin/Champs";
 import { EnTetePage } from "@/components/admin/Volet";
-import { changerStatutCommande, supprimerCommande } from "@/lib/actions";
+import {
+  changerStatutCommande,
+  supprimerCommande,
+  testerEmail,
+} from "@/lib/actions";
 import { getOrders } from "@/lib/data";
 import { da, formatDate } from "@/lib/format";
 import { fill } from "@/i18n";
@@ -41,9 +45,19 @@ export default async function Commandes({
         eyebrow={t.admin.commandes.suivi}
         titre={t.admin.commandes.titre}
         action={
-          <p className="data text-[13px] text-graphite-doux">
-            {fill(t.admin.commandes.total, { n: orders.length })}
-          </p>
+          <div className="flex flex-col items-end gap-1.5">
+            <p className="data text-[13px] text-graphite-doux">
+              {fill(t.admin.commandes.total, { n: orders.length })}
+            </p>
+            {/*
+              Un avis qui ne part pas ne se voit nulle part : il faudrait
+              ouvrir les journaux de l'hébergeur. Ce bouton tente un envoi et
+              écrit ici même ce qui a échoué, ou vers où c'est parti.
+            */}
+            <FormAction action={testerEmail}>
+              <Envoyer variante="fantome">{t.admin.commandes.testerEmail}</Envoyer>
+            </FormAction>
+          </div>
         }
       />
 

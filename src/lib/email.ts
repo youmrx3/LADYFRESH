@@ -113,24 +113,33 @@ function corpsHtml(order: Order, devise: string, base: string) {
 }
 
 /**
- * Prévient la boutique qu'une commande est arrivée.
+ * Envoie, et dit précisément ce qui s'est passé.
  *
- * Ne lève jamais. Une commande est enregistrée avant qu'on arrive ici : la
- * perdre parce qu'un service d'emails répond mal serait absurde. En cas
- * d'échec, le journal garde la référence pour qu'on puisse la retrouver.
+ * Un envoi qui échoue en silence est le pire des cas : la propriétaire attend
+ * un email qui ne viendra pas, sans rien pour comprendre. Le détail remonte
+ * donc jusqu'à l'écran de gestion, où il est lisible sans ouvrir les journaux
+ * de l'hébergeur.
  */
-export async function avertirCommande(order: Order, devise = "DA") {
+export async function envoyer(
+  sujet: string,
+  texte: string,
+  html: string,
+): Promise<{ ok: boolean; detail: string }> {
   const cle = propre(process.env.RESEND_API_KEY);
   const vers = propre(process.env.ORDER_NOTIFICATION_EMAIL);
 
-  if (!cle || !vers) {
-    console.warn(
-      `[email] avis non envoyé pour ${order.ref} — RESEND_API_KEY et ORDER_NOTIFICATION_EMAIL doivent être renseignés chez l'hébergeur.`,
-    );
-    return;
+  const manque: string[] = [];
+  if (!cle) manque.push("RESEND_API_KEY");
+  if (!vers) manque.push("ORDER_NOTIFICATION_EMAIL");
+  if (manque.length) {
+    return {
+      ok: false,
+      detail: `${manque.join(" et ")} ${manque.length > 1 ? "sont absentes" : "est absente"} du déploiement en cours. Ajoutez-les chez l'hébergeur — environnement Production — puis redéployez : une variable ajoutée après coup ne s'applique qu'au déploiement suivant.`,
+    };
   }
 
-  const base = propre(process.env.NEXT_PUBLIC_SITE_URL) || "https://ladyfresh.vercel.app";
+  const destinataires = vers.split(",").map((a) => a.trim()).filter(Boolean);
+  const expediteur = propre(process.env.RESEND_FROM) || EXPEDITEUR_PAR_DEFAUT;
 
   try {
     const reponse = await fetch(API, {
@@ -140,25 +149,84 @@ export async function avertirCommande(order: Order, devise = "DA") {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: propre(process.env.RESEND_FROM) || EXPEDITEUR_PAR_DEFAUT,
-        // Plusieurs destinataires possibles : « a@x.dz, b@x.dz ».
-        to: vers.split(",").map((a) => a.trim()).filter(Boolean),
-        // Le téléphone dans le sujet : de quoi rappeler sans ouvrir le message.
-        subject: ligneUnique(
-          `Commande ${order.ref} — ${order.total} ${devise} — ${propre(order.phone)}`,
-        ),
-        text: corpsTexte(order, devise, base),
-        html: corpsHtml(order, devise, base),
+        from: expediteur,
+        to: destinataires,
+        subject: ligneUnique(sujet),
+        text: texte,
+        html,
       }),
     });
 
-    if (!reponse.ok) {
-      const detail = await reponse.text().catch(() => "");
-      console.error(
-        `[email] Resend a refusé l'avis pour ${order.ref} — ${reponse.status} ${detail.slice(0, 300)}`,
-      );
+    if (reponse.ok) {
+      return {
+        ok: true,
+        detail: `Envoyé à ${destinataires.join(", ")} depuis ${expediteur}. Si rien n'arrive, regardez les indésirables.`,
+      };
     }
+
+    const brut = await reponse.text().catch(() => "");
+    return { ok: false, detail: expliquer(reponse.status, brut, expediteur) };
   } catch (error) {
-    console.error(`[email] envoi impossible pour ${order.ref} —`, error);
+    return {
+      ok: false,
+      detail: `Le service d'envoi est injoignable — ${error instanceof Error ? error.message : String(error)}`,
+    };
   }
+}
+
+/** Traduit la réponse de Resend en quelque chose d'actionnable. */
+function expliquer(statut: number, brut: string, expediteur: string) {
+  const detail = brut.slice(0, 300);
+  if (statut === 401 || statut === 403) {
+    if (/domain|from/i.test(brut)) {
+      return `Resend refuse l'expéditeur « ${expediteur} » : ce domaine n'est pas vérifié chez lui. Videz RESEND_FROM pour revenir à l'adresse d'essai, ou terminez la vérification du domaine. (${statut})`;
+    }
+    return `Resend refuse la clé. Elle est tronquée, entourée de guillemets, ou supprimée depuis. Recréez-en une et recollez-la sans guillemets. (${statut}) ${detail}`;
+  }
+  if (statut === 422) {
+    return `Resend refuse le message : adresse destinataire invalide ? Vérifiez ORDER_NOTIFICATION_EMAIL. (422) ${detail}`;
+  }
+  if (statut === 429) {
+    return `Quota Resend atteint pour l'instant. Réessayez plus tard. (429)`;
+  }
+  return `Resend a répondu ${statut} — ${detail}`;
+}
+
+/**
+ * Prévient la boutique qu'une commande est arrivée.
+ *
+ * Ne lève jamais. Une commande est enregistrée avant qu'on arrive ici : la
+ * perdre parce qu'un service d'emails répond mal serait absurde. En cas
+ * d'échec, le journal garde la référence pour qu'on puisse la retrouver.
+ */
+export async function avertirCommande(order: Order, devise = "DA") {
+  const base =
+    propre(process.env.NEXT_PUBLIC_SITE_URL) || "https://ladyfresh.vercel.app";
+
+  const { ok, detail } = await envoyer(
+    // Le téléphone dans le sujet : de quoi rappeler sans ouvrir le message.
+    `Commande ${order.ref} — ${order.total} ${devise} — ${propre(order.phone)}`,
+    corpsTexte(order, devise, base),
+    corpsHtml(order, devise, base),
+  );
+
+  if (!ok) console.error(`[email] avis non parti pour ${order.ref} — ${detail}`);
+}
+
+/** Message d'essai déclenché depuis l'écran de gestion. */
+export async function envoyerEmailTest() {
+  const base =
+    propre(process.env.NEXT_PUBLIC_SITE_URL) || "https://ladyfresh.vercel.app";
+  return envoyer(
+    "Lady Fresh — essai d'envoi",
+    `Si vous lisez ceci, les avis de commande fonctionnent.
+
+Back-office : ${base}/admin`,
+    `<div style="font-family:system-ui,sans-serif;font-size:15px;color:#141719">
+  <p style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#6b6b6b;margin:0 0 6px">Lady Fresh</p>
+  <h1 style="font-size:19px;margin:0 0 10px">Essai d'envoi réussi</h1>
+  <p style="margin:0">Si vous lisez ceci, les avis de commande fonctionnent : la prochaine commande arrivera ici.</p>
+  <p style="margin:18px 0 0"><a href="${base}/admin" style="color:#c9a227">Ouvrir le back-office →</a></p>
+</div>`,
+  );
 }

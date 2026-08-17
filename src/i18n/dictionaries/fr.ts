@@ -301,6 +301,7 @@ export const fr = {
       adresse: "Adresse",
       note: "Note",
       canalWhatsapp: "WhatsApp",
+      testerEmail: "Tester l'email",
       canalForm: "Formulaire",
       filtreTous: "Toutes",
     },

@@ -16,7 +16,6 @@ import {
 } from "@/lib/format";
 import { fill, getDictionary } from "@/i18n";
 import { avertirCommande } from "@/lib/email";
-import { numeroNormalise } from "@/lib/piste";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { nomType } from "@/i18n/contenu";
 import type { OrderItem, PurchaseType } from "@/lib/types";
@@ -36,6 +35,8 @@ function borne(valeur: string | undefined, max = MAX_TEXTE) {
 }
 
 type Requete = {
+  /** Clé de la piste ouverte pendant la saisie, s'il y en a une. */
+  pisteId?: string;
   purchase: PurchaseType;
   locale?: string;
   /** Étiquette de campagne, transmise par /boutique?c=… */
@@ -217,8 +218,8 @@ export async function POST(request: Request) {
     c'est le seul endroit qui sait avec certitude que la commande est écrite.
     Sans attente : un incident de suivi ne doit pas retarder la confirmation.
   */
-  const numero = numeroNormalise(order.phone);
-  if (numero) void pisteConvertie(numero);
+  const clePiste = borne(body.pisteId, 80);
+  if (clePiste) void pisteConvertie(clePiste);
 
   /*
     L'avis part après la réponse, pas avant.

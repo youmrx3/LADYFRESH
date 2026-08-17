@@ -295,6 +295,7 @@ export const en: Dictionary = {
       adresse: "Address",
       note: "Note",
       canalWhatsapp: "WhatsApp",
+      testerEmail: "Test the email",
       canalForm: "Form",
       filtreTous: "All",
     },

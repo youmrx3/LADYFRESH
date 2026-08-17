@@ -26,6 +26,8 @@ function borne(valeur: unknown, max = MAX_TEXTE) {
 }
 
 type Requete = {
+  /** Clé de piste calculée par le navigateur : session + numéro. */
+  pisteId?: string;
   purchase?: PurchaseType;
   locale?: string;
   source?: string;
@@ -46,12 +48,21 @@ export async function POST(request: Request) {
   }
 
   /*
-    Le numéro fait la clé. Refusé s'il est incomplet : chaque état intermédiaire
-    de frappe deviendrait sinon une piste à part, et la liste se remplirait de
-    brouillons impossibles à rappeler.
+    Le numéro doit être entier : chaque état intermédiaire de frappe
+    deviendrait sinon une piste à part, et la liste se remplirait de brouillons
+    impossibles à rappeler.
   */
   const phone = numeroNormalise(borne(body.customer?.phone, 40));
   if (!phone) return recu;
+
+  /*
+    La clé vient du navigateur, qui seul sait où commence et finit une session
+    de comptoir. Elle est bornée et doit contenir le numéro : sans ce contrôle,
+    une requête forgée écraserait la piste de quelqu'un d'autre en devinant sa
+    clé. À défaut, le numéro seul — une piste groupée vaut mieux qu'aucune.
+  */
+  const fournie = borne(body.pisteId, 80);
+  const pisteId = fournie.endsWith(`:${phone}`) ? fournie : phone;
 
   if (!Array.isArray(body.items) || body.items.length === 0) return recu;
   if (body.items.length > MAX_LIGNES) return recu;
@@ -90,7 +101,7 @@ export async function POST(request: Request) {
   if (items.length === 0) return recu;
 
   await enregistrerPiste({
-    piste_id: phone,
+    piste_id: pisteId,
     customer_name: borne(body.customer?.name, 120),
     phone,
     wilaya: borne(body.customer?.wilaya, 80),
