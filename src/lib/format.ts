@@ -1,4 +1,4 @@
-import type { PurchaseType, Variant } from "./types";
+import type { Variant } from "./types";
 
 /**
  * Prix en dinars entiers, milliers séparés par une espace fine insécable.
@@ -12,25 +12,21 @@ export function da(amount: number, devise = "DA") {
   return `${n} ${devise}`;
 }
 
-export function unitPrice(variant: Variant, purchase: PurchaseType) {
-  return purchase === "gros" ? variant.price_gros : variant.price_demi_gros;
+/**
+ * Le prix de vente d'un format.
+ *
+ * La boutique ne vend plus qu'au détail. La colonne s'appelle encore
+ * `price_demi_gros` pour une raison prosaïque : la renommer imposerait une
+ * migration et un remplissage, avec le risque qu'un oubli affiche des produits
+ * à zéro dinar. Le nom vit en base, jamais à l'écran — le back-office parle
+ * simplement de « prix ».
+ */
+export function unitPrice(variant: Variant) {
+  return variant.price_demi_gros;
 }
 
-/** Le gros se compte en cartons, le demi-gros à la pièce. */
-export function piecesFor(
-  variant: Variant,
-  purchase: PurchaseType,
-  quantity: number,
-) {
-  return purchase === "gros" ? quantity * variant.units_per_carton : quantity;
-}
-
-export function lineTotal(
-  variant: Variant,
-  purchase: PurchaseType,
-  quantity: number,
-) {
-  return unitPrice(variant, purchase) * piecesFor(variant, purchase, quantity);
+export function lineTotal(variant: Variant, quantity: number) {
+  return unitPrice(variant) * quantity;
 }
 
 /** LF-YYMMDD-XXXX — assez court pour se dicter au téléphone. */

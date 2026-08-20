@@ -7,17 +7,17 @@ import { useBoutique } from "./BoutiqueProvider";
 import { useReglages } from "./Reglages";
 
 export function Navbar() {
-  const { pieceCount, cartonCount, purchase } = useBoutique();
+  const { nombreArticles } = useBoutique();
   const { t } = useReglages();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
+  /* La page n'a plus que trois étages : les ancres suivent, sinon un lien
+     renverrait vers une section supprimée. */
   const liens = [
     { href: "#accueil", label: t.nav.accueil },
-    { href: "#commander", label: t.nav.commander },
-    { href: "#gammes", label: t.nav.gammes },
     { href: "#boutique", label: t.nav.boutique },
-    { href: "#contact", label: t.nav.contact },
+    { href: "#commande", label: t.nav.commander },
   ];
 
   useEffect(() => {
@@ -36,14 +36,6 @@ export function Navbar() {
 
   const pose = scrolled || open;
 
-  /*
-    Le compteur affiche le nombre réel, dans l'unité que le client manipule :
-    des cartons en gros, des pièces en demi-gros. Il montrait le total en
-    pièces avec l'étiquette « ct », donc « 24 ct » pour un seul carton.
-  */
-  const gros = purchase === "gros";
-  const compte = gros ? cartonCount : pieceCount;
-  const unite = gros ? t.unites.cartonCourt : t.unites.pieceCourt;
 
   return (
     <header
@@ -88,12 +80,12 @@ export function Navbar() {
             className="btn btn-or hidden !px-4 !py-2.5 !text-[11.5px] lg:inline-flex"
           >
             {t.nav.cta}
-            {pieceCount > 0 && (
+            {nombreArticles > 0 && (
               <span
                 className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                 style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
               >
-                {compte} {unite}
+                {nombreArticles}
               </span>
             )}
           </a>
@@ -113,7 +105,7 @@ export function Navbar() {
               className="block h-px w-[18px] bg-porcelaine transition-transform duration-300"
               style={{ transform: open ? "translateY(-3px) rotate(-45deg)" : "none" }}
             />
-            {pieceCount > 0 && !open && (
+            {nombreArticles > 0 && !open && (
               <span
                 className="absolute -end-1 -top-1 h-2.5 w-2.5 rounded-full"
                 style={{ background: "var(--or-plein)" }}
@@ -151,12 +143,12 @@ export function Navbar() {
                 className="btn btn-or w-full"
               >
                 {t.nav.cta}
-                {pieceCount > 0 && (
+                {nombreArticles > 0 && (
                   <span
                     className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                     style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
                   >
-                    {compte} {unite}
+                    {nombreArticles}
                   </span>
                 )}
               </a>

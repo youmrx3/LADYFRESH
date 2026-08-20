@@ -318,12 +318,86 @@ create table if not exists admins (
 );
 alter table admins enable row level security;
 
+-- ---------------------------------------------------------------------- packs
+/*
+  Les coffrets.
+
+  La boutique vend maintenant au détail, à des particulières. Un coffret est
+  une offre à part entière : sa photo, son prix, et ce qu'il contient — pris
+  dans le catalogue plutôt que ressaisi à la main, pour qu'un format renommé ne
+  laisse pas un coffret mentir sur son contenu.
+
+  `prix_barre` est facultatif : renseigné, la boutique affiche l'ancien prix
+  rayé à côté du prix courant. C'est le seul argument de remise du site, et il
+  reste sous contrôle de la gérante.
+*/
+create table if not exists packs (
+  id             uuid primary key default gen_random_uuid(),
+  slug           text unique not null,
+  name           text not null,
+  name_ar        text,
+  name_en        text,
+  tagline        text not null default '',
+  tagline_ar     text,
+  tagline_en     text,
+  description    text not null default '',
+  description_ar text,
+  description_en text,
+  image          text not null default '',
+  price          numeric(12,2) not null default 0,
+  /* Prix rayé affiché à côté. Zéro = pas de remise affichée. */
+  prix_barre     numeric(12,2) not null default 0,
+  sort_order     int not null default 0,
+  active         boolean not null default true,
+  created_at     timestamptz not null default now()
+);
+create index if not exists packs_ordre_idx on packs(sort_order);
+
+/*
+  Ce qu'il y a dans le coffret. `on delete cascade` côté coffret : supprimer un
+  coffret emporte sa composition. Côté format, `on delete restrict` aurait
+  bloqué la suppression d'un format encore utilisé ; on préfère `set null`, et
+  la ligne garde alors son libellé figé.
+*/
+create table if not exists pack_items (
+  id         uuid primary key default gen_random_uuid(),
+  pack_id    uuid not null references packs(id) on delete cascade,
+  variant_id uuid references product_variants(id) on delete set null,
+  label      text not null default '',
+  quantity   int not null default 1,
+  sort_order int not null default 0
+);
+create index if not exists pack_items_pack_idx on pack_items(pack_id);
+
+alter table packs      enable row level security;
+alter table pack_items enable row level security;
+
+do $$ declare t text;
+begin
+  foreach t in array array['packs','pack_items'] loop
+    begin
+      execute format('create policy "public read %1$s" on %1$I for select using (true)', t);
+    exception when duplicate_object then null; end;
+  end loop;
+end $$;
+
+/*
+  Réglages de la boutique.
+
+  `mode_boutique` décide ce que la vitrine met en avant : 'packs' ou 'produits'.
+  `min_produit` est le minimum de pièces par référence à l'unité — un pour de la
+  vente au détail ordinaire, davantage si l'on veut décourager la commande
+  isolée.
+*/
+alter table site_settings add column if not exists mode_boutique text not null default 'packs';
+alter table site_settings add column if not exists min_produit   int  not null default 1;
+
 -- ------------------------------------------------------------ vérification
--- Doit renvoyer 11 tables. Si le compte est inférieur, relisez les erreurs
+-- Doit renvoyer 13 tables. Si le compte est inférieur, relisez les erreurs
 -- au-dessus : le script est idempotent, vous pouvez le relancer.
 select count(*) as tables_creees
 from information_schema.tables
 where table_schema = 'public'
   and table_name in ('gammes','product_types','products','product_variants',
                      'orders','order_items','hero_slides','videos','site_settings',
-                     'prospects','admins');
+                     'prospects','admins','packs','pack_items');

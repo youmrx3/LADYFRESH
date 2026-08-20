@@ -17,6 +17,7 @@ import type {
   HeroSlide,
   Order,
   OrderStatus,
+  Pack,
   Product,
   ProductType,
   Prospect,
@@ -447,6 +448,39 @@ export async function deleteProspect(id: string) {
   if (error) throw new Error(error.message);
 }
 
+// -------------------------------------------------------------------- packs
+
+/*
+  Un coffret sans composition reste vendable : le prix et la photo suffisent à
+  l'acheter. C'est la différence avec un produit, qui n'a pas de prix tant qu'il
+  n'a pas de format — d'où l'absence ici du filtre qui masque les produits nus.
+*/
+async function lirePacks(tout: boolean): Promise<Pack[]> {
+  const db = supabaseRead();
+  if (!db) return [];
+  let requete = db.from("packs").select("*, items:pack_items(*)");
+  if (!tout) requete = requete.eq("active", true);
+  const { data, error } = await requete.order("sort_order");
+  if (error) return fallback("packs", [] as Pack[], error);
+
+  return (data as Pack[]).map((p) => ({
+    ...p,
+    items: (p.items ?? []).sort(
+      (a: { sort_order: number }, b: { sort_order: number }) =>
+        a.sort_order - b.sort_order,
+    ),
+  }));
+}
+
+async function getPacksBrut(): Promise<Pack[]> {
+  return lirePacks(false);
+}
+
+/** Lecture back-office : coffrets masqués compris. */
+export async function getPacksAdmin(): Promise<Pack[]> {
+  return lirePacks(true);
+}
+
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
@@ -456,6 +490,8 @@ export const getGammes = enCache("getGammes", getGammesBrut);
 export const getProductTypes = enCache("getProductTypes", getProductTypesBrut);
 
 export const getProducts = enCache("getProducts", getProductsBrut);
+
+export const getPacks = enCache("getPacks", getPacksBrut);
 
 export const getSettings = enCache("getSettings", getSettingsBrut);
 

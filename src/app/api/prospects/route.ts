@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { enregistrerPiste, getProducts } from "@/lib/data";
-import { lineTotal, piecesFor, unitPrice } from "@/lib/format";
+import { enregistrerPiste, getSettings } from "@/lib/data";
+import { composer, type LigneDemandee } from "@/lib/panier";
 import { numeroNormalise } from "@/lib/piste";
 import { DEFAULT_LOCALE, isLocale } from "@/i18n/config";
-import type { ProspectItem, PurchaseType } from "@/lib/types";
+import type { ProspectItem } from "@/lib/types";
 
 /**
  * Les paniers laissés en route.
@@ -17,7 +17,6 @@ import type { ProspectItem, PurchaseType } from "@/lib/types";
  * un incident de suivi serait une vente perdue.
  */
 
-const MAX_LIGNES = 100;
 const MAX_CORPS = 32 * 1024;
 const MAX_TEXTE = 500;
 
@@ -26,13 +25,11 @@ function borne(valeur: unknown, max = MAX_TEXTE) {
 }
 
 type Requete = {
-  /** Clé de piste calculée par le navigateur : session + numéro. */
   pisteId?: string;
-  purchase?: PurchaseType;
   locale?: string;
   source?: string;
   customer?: Record<string, unknown>;
-  items?: { variantId: string; quantity: number }[];
+  lignes?: LigneDemandee[];
 };
 
 export async function POST(request: Request) {
@@ -48,57 +45,37 @@ export async function POST(request: Request) {
   }
 
   /*
-    Le numéro doit être entier : chaque état intermédiaire de frappe
-    deviendrait sinon une piste à part, et la liste se remplirait de brouillons
-    impossibles à rappeler.
+    Le numéro doit être entier : chaque état intermédiaire de frappe deviendrait
+    sinon une piste à part, et la liste se remplirait de brouillons impossibles
+    à rappeler.
   */
   const phone = numeroNormalise(borne(body.customer?.phone, 40));
   if (!phone) return recu;
 
   /*
     La clé vient du navigateur, qui seul sait où commence et finit une session
-    de comptoir. Elle est bornée et doit contenir le numéro : sans ce contrôle,
-    une requête forgée écraserait la piste de quelqu'un d'autre en devinant sa
-    clé. À défaut, le numéro seul — une piste groupée vaut mieux qu'aucune.
+    de comptoir. Elle doit contenir le numéro : sans ce contrôle, une requête
+    forgée écraserait la piste de quelqu'un d'autre en devinant sa clé. À
+    défaut, le numéro seul — une piste groupée vaut mieux qu'aucune.
   */
   const fournie = borne(body.pisteId, 80);
   const pisteId = fournie.endsWith(`:${phone}`) ? fournie : phone;
 
-  if (!Array.isArray(body.items) || body.items.length === 0) return recu;
-  if (body.items.length > MAX_LIGNES) return recu;
+  if (!Array.isArray(body.lignes) || body.lignes.length === 0) return recu;
 
-  const purchase: PurchaseType =
-    body.purchase === "gros" ? "gros" : "demi_gros";
-  const locale = isLocale(body.locale) ? body.locale : DEFAULT_LOCALE;
+  const settings = await getSettings();
+  // Le minimum ne filtre pas ici : une piste sous le minimum reste à rappeler.
+  const { panier } = await composer(body.lignes, 1);
+  if (panier.items.length === 0) return recu;
 
-  const products = await getProducts();
-
-  const index = new Map(
-    products.flatMap((p) =>
-      p.variants.map((v) => [v.id, { product: p, variant: v }] as const),
-    ),
-  );
-
-  // Mêmes règles que pour une commande : le prix vient de la base, jamais du
-  // navigateur. Une piste avec un total inventé fausserait la relance.
-  const items: ProspectItem[] = [];
-  let pieces = 0;
-  for (const ligne of body.items) {
-    const entree = index.get(ligne.variantId);
-    const quantity = Math.floor(Number(ligne.quantity));
-    if (!entree || !Number.isFinite(quantity) || quantity <= 0) continue;
-    const { product, variant } = entree;
-    items.push({
-      variant_id: variant.id,
-      product_name: `${product.name || product.slug}`.trim(),
-      size_label: variant.size_label,
-      quantity,
-      unit_price: unitPrice(variant, purchase),
-      line_total: lineTotal(variant, purchase, quantity),
-    });
-    pieces += piecesFor(variant, purchase, quantity);
-  }
-  if (items.length === 0) return recu;
+  const items: ProspectItem[] = panier.items.map((i) => ({
+    variant_id: i.variant_id ?? "",
+    product_name: i.product_name,
+    size_label: i.size_label,
+    quantity: i.quantity,
+    unit_price: i.unit_price,
+    line_total: i.line_total,
+  }));
 
   await enregistrerPiste({
     piste_id: pisteId,
@@ -108,12 +85,14 @@ export async function POST(request: Request) {
     address: borne(body.customer?.address, 300),
     note: borne(body.customer?.note),
     source: borne(body.source, 60),
-    locale,
-    purchase_type: purchase,
-    total: items.reduce((s, i) => s + i.line_total, 0),
-    pieces,
+    locale: isLocale(body.locale) ? body.locale : DEFAULT_LOCALE,
+    /* Colonne héritée du temps du gros ; la vente est au détail. */
+    purchase_type: "demi_gros",
+    total: panier.total,
+    pieces: panier.articles,
     items,
   });
 
+  void settings;
   return recu;
 }

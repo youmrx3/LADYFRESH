@@ -229,6 +229,96 @@ export async function testerEmail(_prev: Retour, _formData: FormData): Promise<R
   return ok ? { ok: detail } : { error: detail };
 }
 
+// -------------------------------------------------------------------- packs
+
+export async function enregistrerPack(
+  _prev: Retour,
+  formData: FormData,
+): Promise<Retour> {
+  return tenter(async () => {
+    const db = await garde();
+    const id = mot(formData, "id");
+    const lang = langue(formData);
+
+    /*
+      Le prix, la photo et le slug ne dépendent pas de la langue : ils ne
+      s'écrivent que depuis le français, sinon une visite dans l'onglet arabe
+      les remettrait à zéro.
+    */
+    const valeurs: Record<string, unknown> = traduits(formData, [
+      "name",
+      "tagline",
+      "description",
+    ]);
+
+    if (lang === "fr") {
+      const prix = Number(formData.get("price") ?? 0);
+      const barre = Number(formData.get("prix_barre") ?? 0);
+      if (!mot(formData, "slug")) throw new Error("Le slug est requis.");
+      if (!(prix > 0)) throw new Error("Le prix du coffret doit être supérieur à zéro.");
+      if (barre && barre <= prix)
+        throw new Error("Le prix barré doit être supérieur au prix de vente.");
+      Object.assign(valeurs, {
+        slug: mot(formData, "slug"),
+        image: mot(formData, "image"),
+        price: prix,
+        prix_barre: barre,
+        sort_order: Number(formData.get("sort_order") ?? 0),
+        active: formData.get("active") === "on",
+      });
+    }
+
+    const { data, error } = id
+      ? await db.from("packs").update(valeurs).eq("id", id).select("id").single()
+      : await db.from("packs").insert(valeurs).select("id").single();
+    if (error) throw new Error(error.message);
+
+    /*
+      La composition est réécrite en entier plutôt que rapprochée ligne à ligne :
+      un coffret compte quatre ou cinq entrées, la comparaison coûterait plus
+      cher en code qu'en base. Seulement depuis le français, comme le reste de
+      ce qui ne se traduit pas.
+    */
+    if (lang === "fr") {
+      const variantes = formData.getAll("item_variant").map(String);
+      const quantites = formData.getAll("item_quantity").map((q) => Number(q) || 1);
+      const libelles = formData.getAll("item_label").map(String);
+
+      await db.from("pack_items").delete().eq("pack_id", data.id);
+
+      const lignes = variantes
+        .map((variant_id, i) => ({
+          pack_id: data.id as string,
+          variant_id: variant_id || null,
+          label: (libelles[i] ?? "").trim(),
+          quantity: Math.max(1, quantites[i] ?? 1),
+          sort_order: i,
+        }))
+        .filter((l) => l.variant_id || l.label);
+
+      if (lignes.length) {
+        const { error: e2 } = await db.from("pack_items").insert(lignes);
+        if (e2) throw new Error(e2.message);
+      }
+    }
+
+    return id ? "Coffret enregistré." : "Coffret créé.";
+  });
+}
+
+export async function supprimerPack(
+  _prev: Retour,
+  formData: FormData,
+): Promise<Retour> {
+  return tenter(async () => {
+    const db = await garde();
+    // `pack_items` porte un `on delete cascade` : la composition part avec.
+    const { error } = await db.from("packs").delete().eq("id", mot(formData, "id"));
+    if (error) throw new Error(error.message);
+    return "Coffret supprimé.";
+  });
+}
+
 // -------------------------------------------------------- pistes de rappel
 
 /*
@@ -485,15 +575,13 @@ export async function enregistrerReglages(
     ]);
     if (lang === "fr") {
       const numero = mot(formData, "whatsapp_number").replace(/\D/g, "");
-      if (!numero) throw new Error("Le numéro WhatsApp est requis.");
+      if (!numero) throw new Error("Le téléphone de contact est requis.");
       Object.assign(valeurs, {
         locale: isLocale(mot(formData, "locale")) ? mot(formData, "locale") : "fr",
         whatsapp_number: numero,
-        min_gros_cartons: Math.max(1, Number(formData.get("min_gros_cartons") ?? 1)),
-        min_demi_gros_pieces: Math.max(
-          1,
-          Number(formData.get("min_demi_gros_pieces") ?? 5),
-        ),
+        mode_boutique:
+          mot(formData, "mode_boutique") === "produits" ? "produits" : "packs",
+        min_produit: Math.max(1, Number(formData.get("min_produit") ?? 1)),
         contact_email: mot(formData, "contact_email"),
         contact_phone: mot(formData, "contact_phone"),
         contact_address: mot(formData, "contact_address"),

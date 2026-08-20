@@ -8,214 +8,214 @@ import {
   useMemo,
   useState,
 } from "react";
-import { lineTotal, piecesFor, unitPrice } from "@/lib/format";
+import { lineTotal, unitPrice } from "@/lib/format";
 import type {
   Gamme,
+  ModeBoutique,
+  Pack,
   Product,
   ProductType,
-  PurchaseType,
   SiteSettings,
   Variant,
 } from "@/lib/types";
 
-export type DocketLine = {
-  variantId: string;
+/**
+ * Le bon de commande.
+ *
+ * Il porte deux natures d'article — un format de produit, ou un coffret — et
+ * les traite pareil une fois dans le bon : un nom, une photo, un prix unitaire,
+ * une quantité. C'est ce qui permet au récapitulatif et à l'email de n'avoir
+ * qu'un seul rendu, et à la commande de n'avoir qu'un seul format d'envoi.
+ *
+ * La vente est au détail : plus de gros ni de demi-gros, plus de sélecteur
+ * avant de voir un prix. Le minimum par référence reste réglable — un pour de
+ * la vente ordinaire, davantage pour décourager la commande isolée.
+ */
+
+/** Clé d'une ligne : l'identifiant du format, ou `pack:<id>` pour un coffret. */
+export type CleLigne = string;
+
+export type LigneBon = {
+  cle: CleLigne;
+  kind: "produit" | "pack";
+  /** Identifiant côté serveur : format ou coffret. */
+  id: string;
   quantity: number;
-  product: Product;
-  variant: Variant;
-  gamme: Gamme | undefined;
-  /** Cartons or pieces, depending on the purchase type. */
-  pieces: number;
+  nom: string;
+  /** Le format pour un produit, l'accroche pour un coffret. */
+  detail: string;
+  image: string;
+  couleur: string;
   unit: number;
   total: number;
 };
 
 type Boutique = {
+  mode: ModeBoutique;
+  packs: Pack[];
   products: Product[];
   gammes: Gamme[];
   types: ProductType[];
   settings: SiteSettings;
-  purchase: PurchaseType;
-  setPurchase: (value: PurchaseType) => void;
-  /** null until the visitor has chosen; the shop stays locked meanwhile. */
-  purchaseChosen: boolean;
-  lines: DocketLine[];
-  quantityOf: (variantId: string) => number;
-  setQuantity: (variantId: string, quantity: number) => void;
-  add: (variantId: string, quantity: number) => void;
-  clear: () => void;
-  pieceCount: number;
-  /** Total en cartons ; n'a de sens qu'en gros. */
-  cartonCount: number;
+  lignes: LigneBon[];
+  quantiteDe: (cle: CleLigne) => number;
+  poser: (cle: CleLigne, quantity: number) => void;
+  vider: () => void;
+  /** Minimum d'une ligne : réglable pour un produit, toujours 1 pour un coffret. */
+  minimumDe: (cle: CleLigne) => number;
+  nombreArticles: number;
   total: number;
-  /** Minimum quantity for one line, in the unit currently in play. */
-  minQuantity: number;
-  meetsMinimum: boolean;
-  /** Les filtres vivent ici pour que la bande des gammes puisse les piloter. */
-  typeFilter: string;
-  setTypeFilter: (value: string) => void;
-  colorFilter: string;
-  setColorFilter: (value: string) => void;
+  /** Les filtres vivent ici : la grille et les puces de gamme les partagent. */
+  filtreType: string;
+  setFiltreType: (v: string) => void;
+  filtreCouleur: string;
+  setFiltreCouleur: (v: string) => void;
 };
 
 const Ctx = createContext<Boutique | null>(null);
 
-const STORAGE_KEY = "ladyfresh.docket.v1";
+const STOCKAGE = "ladyfresh.bon.v2";
+
+export const clePack = (id: string) => `pack:${id}`;
+export const estPack = (cle: CleLigne) => cle.startsWith("pack:");
 
 export function BoutiqueProvider({
+  mode,
+  packs,
   products,
   gammes,
   types,
   settings,
   children,
 }: {
+  mode: ModeBoutique;
+  packs: Pack[];
   products: Product[];
   gammes: Gamme[];
   types: ProductType[];
   settings: SiteSettings;
   children: React.ReactNode;
 }) {
-  const [purchase, setPurchaseState] = useState<PurchaseType>("demi_gros");
-  const [purchaseChosen, setPurchaseChosen] = useState(false);
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [hydrated, setHydrated] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<string>("tous");
-  const [colorFilter, setColorFilter] = useState("tous");
+  const [quantites, setQuantites] = useState<Record<string, number>>({});
+  const [hydrate, setHydrate] = useState(false);
+  const [filtreType, setFiltreType] = useState("tous");
+  const [filtreCouleur, setFiltreCouleur] = useState("tous");
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as {
-          purchase?: PurchaseType;
-          chosen?: boolean;
-          quantities?: Record<string, number>;
-        };
-        if (saved.purchase) setPurchaseState(saved.purchase);
-        if (saved.chosen) setPurchaseChosen(true);
-        if (saved.quantities) setQuantities(saved.quantities);
-      }
+      const brut = localStorage.getItem(STOCKAGE);
+      if (brut) setQuantites(JSON.parse(brut) as Record<string, number>);
     } catch {
-      // A corrupt docket is not worth blocking the shop over.
+      // Un bon illisible ne vaut pas de fermer la boutique.
     }
-    setHydrated(true);
+    setHydrate(true);
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ purchase, chosen: purchaseChosen, quantities }),
-    );
-  }, [purchase, purchaseChosen, quantities, hydrated]);
-
-  const variantIndex = useMemo(() => {
-    const map = new Map<string, { product: Product; variant: Variant }>();
-    for (const product of products) {
-      for (const variant of product.variants) {
-        map.set(variant.id, { product, variant });
-      }
+    if (!hydrate) return;
+    try {
+      localStorage.setItem(STOCKAGE, JSON.stringify(quantites));
+    } catch {
+      // Navigation privée : le bon vit le temps de la visite.
     }
+  }, [quantites, hydrate]);
+
+  const indexVariantes = useMemo(() => {
+    const map = new Map<string, { product: Product; variant: Variant }>();
+    for (const product of products)
+      for (const variant of product.variants)
+        map.set(variant.id, { product, variant });
     return map;
   }, [products]);
 
-  const gammeIndex = useMemo(
+  const indexPacks = useMemo(
+    () => new Map(packs.map((p) => [p.id, p])),
+    [packs],
+  );
+
+  const indexGammes = useMemo(
     () => new Map(gammes.map((g) => [g.id, g])),
     [gammes],
   );
 
-  const minQuantity =
-    purchase === "gros"
-      ? Math.max(1, settings.min_gros_cartons)
-      : Math.max(1, settings.min_demi_gros_pieces);
+  const minProduit = Math.max(1, settings.min_produit || 1);
 
-  /** Switching unit invalidates every quantity — cartons are not pieces. */
-  const setPurchase = useCallback((value: PurchaseType) => {
-    setPurchaseState((current) => {
-      if (current !== value) setQuantities({});
-      return value;
-    });
-    setPurchaseChosen(true);
-  }, []);
+  const minimumDe = useCallback(
+    (cle: CleLigne) => (estPack(cle) ? 1 : minProduit),
+    [minProduit],
+  );
 
-  const setQuantity = useCallback((variantId: string, quantity: number) => {
-    setQuantities((current) => {
-      const next = { ...current };
-      if (quantity <= 0) delete next[variantId];
-      else next[variantId] = quantity;
-      return next;
+  const poser = useCallback((cle: CleLigne, quantity: number) => {
+    setQuantites((actuel) => {
+      const suite = { ...actuel };
+      if (quantity <= 0) delete suite[cle];
+      else suite[cle] = quantity;
+      return suite;
     });
   }, []);
 
-  const add = useCallback((variantId: string, quantity: number) => {
-    setQuantities((current) => ({
-      ...current,
-      [variantId]: (current[variantId] ?? 0) + quantity,
-    }));
-  }, []);
+  const vider = useCallback(() => setQuantites({}), []);
 
-  const clear = useCallback(() => setQuantities({}), []);
+  const lignes = useMemo<LigneBon[]>(() => {
+    return Object.entries(quantites)
+      .map(([cle, quantity]) => {
+        if (estPack(cle)) {
+          const pack = indexPacks.get(cle.slice(5));
+          if (!pack) return null;
+          return {
+            cle,
+            kind: "pack" as const,
+            id: pack.id,
+            quantity,
+            nom: pack.name,
+            detail: pack.tagline,
+            image: pack.image,
+            couleur: "var(--or-plein)",
+            unit: pack.price,
+            total: pack.price * quantity,
+          };
+        }
 
-  const lines = useMemo<DocketLine[]>(() => {
-    return Object.entries(quantities)
-      .map(([variantId, quantity]) => {
-        const entry = variantIndex.get(variantId);
-        if (!entry) return null;
-        const { product, variant } = entry;
+        const entree = indexVariantes.get(cle);
+        if (!entree) return null;
+        const { product, variant } = entree;
         return {
-          variantId,
+          cle,
+          kind: "produit" as const,
+          id: variant.id,
           quantity,
-          product,
-          variant,
-          gamme: gammeIndex.get(product.gamme_id),
-          pieces: piecesFor(variant, purchase, quantity),
-          unit: unitPrice(variant, purchase),
-          total: lineTotal(variant, purchase, quantity),
+          nom: product.name || product.slug,
+          detail: variant.size_label,
+          image: variant.image || product.image,
+          couleur: indexGammes.get(product.gamme_id)?.color_hex ?? "var(--or-plein)",
+          unit: unitPrice(variant),
+          total: lineTotal(variant, quantity),
         };
       })
-      .filter((l): l is DocketLine => l !== null)
-      .sort((a, b) => a.product.sort_order - b.product.sort_order);
-  }, [quantities, variantIndex, gammeIndex, purchase]);
+      .filter((l): l is LigneBon => l !== null);
+  }, [quantites, indexVariantes, indexPacks, indexGammes]);
 
-  const pieceCount = lines.reduce((sum, l) => sum + l.pieces, 0);
-  // En gros, la quantité saisie est un nombre de cartons.
-  const cartonCount = lines.reduce((sum, l) => sum + l.quantity, 0);
-  const total = lines.reduce((sum, l) => sum + l.total, 0);
-
-  /**
-   * Le minimum porte sur chaque référence, dans les deux modes.
-   *
-   * Le demi-gros comptait auparavant sur l'ensemble de la commande : deux
-   * pièces d'une gamme et trois d'une autre suffisaient. Le minimum s'applique
-   * désormais ligne par ligne — cinq pièces d'un même produit — ce qui rend
-   * aussi le pas-à-pas cohérent, une ligne ne pouvant plus descendre sous un
-   * seuil qui n'existait qu'au niveau du total.
-   */
-  const meetsMinimum =
-    lines.length > 0 && lines.every((l) => l.quantity >= minQuantity);
+  const nombreArticles = lignes.reduce((s, l) => s + l.quantity, 0);
+  const total = lignes.reduce((s, l) => s + l.total, 0);
 
   const value: Boutique = {
+    mode,
+    packs,
     products,
     gammes,
     types,
     settings,
-    purchase,
-    setPurchase,
-    purchaseChosen,
-    lines,
-    quantityOf: (variantId) => quantities[variantId] ?? 0,
-    setQuantity,
-    add,
-    clear,
-    pieceCount,
-    cartonCount,
+    lignes,
+    quantiteDe: (cle) => quantites[cle] ?? 0,
+    poser,
+    vider,
+    minimumDe,
+    nombreArticles,
     total,
-    minQuantity,
-    meetsMinimum,
-    typeFilter,
-    setTypeFilter,
-    colorFilter,
-    setColorFilter,
+    filtreType,
+    setFiltreType,
+    filtreCouleur,
+    setFiltreCouleur,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
@@ -223,6 +223,6 @@ export function BoutiqueProvider({
 
 export function useBoutique() {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useBoutique must be used inside BoutiqueProvider");
+  if (!ctx) throw new Error("useBoutique doit être utilisé dans BoutiqueProvider");
   return ctx;
 }

@@ -11,7 +11,6 @@ import { da } from "@/lib/format";
 import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
 import { clePiste, terminerSession } from "@/lib/piste";
 import { WILAYAS, libelleWilaya, valeurWilaya } from "@/lib/wilayas";
-import { nomType } from "@/i18n/contenu";
 
 type Etat =
   | { phase: "repos" }
@@ -28,19 +27,15 @@ function Requis() {
   );
 }
 
+/**
+ * Le bon de commande et son formulaire.
+ *
+ * Tout est à l'écran d'un coup : le récapitulatif, les coordonnées, le bouton.
+ * Sur une page de campagne, chaque volet à déplier est une occasion de partir —
+ * et le pixel avait montré exactement cela.
+ */
 export function Commande() {
-  const {
-    lines,
-    total,
-    pieceCount,
-    purchase,
-    setQuantity,
-    clear,
-    minQuantity,
-    meetsMinimum,
-    settings,
-    types,
-  } = useBoutique();
+  const { lignes, total, nombreArticles, poser, vider } = useBoutique();
   const { t, locale } = useReglages();
   const router = useRouter();
 
@@ -53,17 +48,22 @@ export function Commande() {
     note: "",
   });
 
-  const vide = lines.length === 0;
+  const vide = lignes.length === 0;
   const devise = t.unites.devise;
 
   /*
-    Nom, téléphone et wilaya sont exigés sur les deux canaux.
-
-    Le départ vers WhatsApp ne dispensait de rien : la commande est enregistrée
-    avant la redirection, et une commande sans numéro ni wilaya ne se rappelle
-    ni ne se livre — elle occupe une ligne dans le back-office sans pouvoir
-    être honorée.
+    Étiquette de campagne posée par ?c=…, mémorisée le temps de la visite : la
+    cliente peut défiler, revenir, et l'attribution doit survivre au détour.
   */
+  const [campagne, setCampagne] = useState("");
+  useEffect(() => {
+    try {
+      setCampagne(sessionStorage.getItem("ladyfresh.campagne") ?? "");
+    } catch {
+      // Mode privé : pas d'attribution, la commande passe quand même.
+    }
+  }, []);
+
   const manquants = (
     [
       ["name", t.commande.nom],
@@ -75,53 +75,36 @@ export function Commande() {
     .map(([, label]) => label);
   const clientComplet = manquants.length === 0;
 
-  /*
-    Étiquette de campagne posée par /boutique?c=…, mémorisée le temps de la
-    visite : le client peut passer par la vitrine avant de commander, et
-    l'attribution doit survivre à ce détour.
-  */
-  const [campagne, setCampagne] = useState("");
-  useEffect(() => {
-    try {
-      setCampagne(sessionStorage.getItem("ladyfresh.campagne") ?? "");
-    } catch {
-      // Mode privé : pas d'attribution, la commande passe quand même.
-    }
-  }, []);
+  /* Ce qui part au serveur : des identifiants et des quantités, jamais un prix. */
+  const pourEnvoi = lignes.map((l) => ({
+    kind: l.kind,
+    id: l.id,
+    quantity: l.quantity,
+  }));
+  const empreinte = JSON.stringify(pourEnvoi);
 
   /*
-    La piste de rappel.
-
-    On envoie ce qui a été saisi dès qu'il y a de quoi rappeler : un numéro
-    utilisable et un panier. Différé d'une seconde et demie après la dernière
-    frappe — à chaque caractère, ce serait un aller-retour par lettre tapée.
-
-    Rien de tout cela ne bloque quoi que ce soit : l'appel part sans être
-    attendu, et son échec est sans conséquence. Le suivi est accessoire, la
-    commande ne l'est pas.
+    La piste de rappel : ce qui a été saisi part dès qu'il y a de quoi rappeler,
+    une seconde et demie après la dernière frappe. L'appel n'est jamais attendu
+    et son échec est sans conséquence — le suivi est accessoire, la commande ne
+    l'est pas.
   */
   useEffect(() => {
     if (vide) return;
-    // Numéro incomplet : rien à enregistrer, on ne rappelle pas un brouillon.
     const cle = clePiste(client.phone);
     if (!cle) return;
 
     const minuteur = setTimeout(() => {
-      const corps = JSON.stringify({
-        pisteId: cle,
-        purchase,
-        locale,
-        source: campagne,
-        customer: client,
-        items: lines.map((l) => ({
-          variantId: l.variantId,
-          quantity: l.quantity,
-        })),
-      });
       fetch("/api/prospects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: corps,
+        body: JSON.stringify({
+          pisteId: cle,
+          locale,
+          source: campagne,
+          customer: client,
+          lignes: JSON.parse(empreinte),
+        }),
         keepalive: true,
       }).catch(() => {
         // Sans effet sur le parcours : la commande reste possible.
@@ -129,19 +112,18 @@ export function Commande() {
     }, 1500);
 
     return () => clearTimeout(minuteur);
-    // `lines` change d'identité à chaque rendu : on suit le contenu, pas l'objet.
-  }, [client, vide, purchase, locale, campagne, lines]);
+  }, [client, vide, locale, campagne, empreinte]);
 
   async function envoyer() {
     setEtat({ phase: "envoi" });
 
-    const lignesPixel = lines.map((l) => ({
-      variantId: l.variantId,
+    const pourPixel = lignes.map((l) => ({
+      variantId: l.id,
       quantity: l.quantity,
     }));
     pixel("InitiateCheckout", {
-      ...contenus(lignesPixel),
-      num_items: lines.length,
+      ...contenus(pourPixel),
+      num_items: lignes.length,
       value: total,
       currency: DEVISE_PIXEL,
     });
@@ -152,11 +134,10 @@ export function Commande() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pisteId: clePiste(client.phone),
-          purchase,
           locale,
           source: campagne,
           customer: client,
-          items: lignesPixel,
+          lignes: pourEnvoi,
         }),
       });
       const data = await reponse.json();
@@ -170,28 +151,17 @@ export function Commande() {
       }
 
       /*
-        La valeur vient du serveur, jamais du panier local : c'est le total
-        recalculé à partir des prix en base. Un total client se trafique depuis
-        la console, et Meta apprendrait sur des montants inventés.
+        La valeur vient du serveur, jamais du bon local : c'est le total
+        recalculé sur les prix en base. Un total client se trafique depuis la
+        console, et Meta apprendrait sur des montants inventés.
       */
       const achat = {
-        ...contenus(lignesPixel),
+        ...contenus(pourPixel),
         value: data.total ?? total,
         currency: DEVISE_PIXEL,
-        content_category: purchase === "gros" ? "gros" : "demi_gros",
-        // Permet de comparer les campagnes dans les ventilations Meta.
         campagne: campagne || "direct",
       };
 
-      /*
-        Purchase part de /merci et non d'ici : sur un chargement de page
-        distinct l'événement porte une adresse, sur laquelle Meta peut asseoir
-        une conversion personnalisée.
-
-        Si sessionStorage est fermé — navigation privée —, la remise n'arrive
-        pas et la vente ne serait comptée nulle part : on émet alors sur place
-        et on reste sur l'écran de confirmation d'ici.
-      */
       let remis = false;
       try {
         const charge: ChargeMerci = { ref: data.ref, achat };
@@ -201,15 +171,9 @@ export function Commande() {
         pixel("Purchase", achat);
       }
 
-      /*
-        La session se termine ici. La commande suivante — pour quelqu'un
-        d'autre, depuis le même écran — ouvrira sa propre piste au lieu
-        d'écraser celle-ci.
-      */
       terminerSession();
-
       setEtat({ phase: "envoyee", ref: data.ref });
-      clear();
+      vider();
       if (remis) router.push("/merci");
     } catch {
       setEtat({ phase: "erreur", message: t.commande.reseau });
@@ -220,11 +184,11 @@ export function Commande() {
     return (
       <section
         id="commande"
-        className="etage-comptoir saut-ancre border-t border-trait py-20"
+        className="etage-comptoir saut-ancre border-t border-trait py-16"
       >
-        <div className="shell max-w-[38rem] text-center">
+        <div className="shell max-w-[36rem] text-center">
           <p className="eyebrow text-graphite-doux">{t.commande.okEyebrow}</p>
-          <h2 className="display display-l mt-4">
+          <h2 className="display display-l mt-3">
             {t.commande.okTitre}{" "}
             <span className="data text-[0.68em]">{etat.ref}</span>
           </h2>
@@ -244,357 +208,219 @@ export function Commande() {
   return (
     <section
       id="commande"
-      className="etage-comptoir saut-ancre border-t border-trait py-16 sm:py-20"
+      className="etage-comptoir saut-ancre border-t border-trait py-14 sm:py-20"
     >
-      <div className="shell">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow text-graphite-doux">{t.commande.eyebrow}</p>
-            <h2 className="display display-l mt-3">{t.commande.titre}</h2>
+      <div className="shell max-w-[42rem]">
+        <p className="eyebrow text-graphite-doux">{t.commande.eyebrow}</p>
+        <h2 className="display display-l mt-2.5">{t.commande.titre}</h2>
+
+        {vide ? (
+          <div className="mt-7 rounded-[12px] border border-dashed border-trait px-5 py-12 text-center">
+            <p className="text-[15px]">{t.commande.videTitre}</p>
+            <a
+              href="#boutique"
+              className="eyebrow mt-4 inline-block text-or underline underline-offset-4"
+            >
+              {t.commande.videCta}
+            </a>
           </div>
-          {!vide && (
+        ) : (
+          <>
+            {/* --------------------------------------------- récapitulatif */}
+            <ul className="mt-7 space-y-2.5">
+              {lignes.map((l) => (
+                <li
+                  key={l.cle}
+                  className="flex items-center gap-3 rounded-[10px] border border-trait p-2.5"
+                  style={{ background: "var(--comptoir-surface)" }}
+                >
+                  <span
+                    className="relative block h-14 w-14 shrink-0 overflow-hidden rounded"
+                    style={{
+                      background: `color-mix(in srgb, ${l.couleur} 10%, transparent)`,
+                    }}
+                  >
+                    {l.image && (
+                      <Image
+                        src={l.image}
+                        alt=""
+                        fill
+                        sizes="56px"
+                        className={
+                          l.kind === "pack" ? "object-cover" : "object-contain p-1"
+                        }
+                      />
+                    )}
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[14px]">{l.nom}</span>
+                    {l.detail && (
+                      <span className="data block truncate text-[12px] text-graphite-doux">
+                        {l.detail}
+                      </span>
+                    )}
+                    <span className="data block text-[12.5px] text-graphite-doux">
+                      {da(l.unit, devise)} × {l.quantity}
+                    </span>
+                  </span>
+
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <span className="data text-[14px]">{da(l.total, devise)}</span>
+                    <button
+                      type="button"
+                      onClick={() => poser(l.cle, 0)}
+                      aria-label={fill(t.commande.retirer, { nom: l.nom })}
+                      className="flex h-9 w-9 items-center justify-center text-[18px] leading-none text-graphite-doux transition-colors hover:text-graphite"
+                    >
+                      ×
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-4 flex items-center justify-between border-t border-trait pt-4">
+              <span className="eyebrow text-graphite-doux">
+                {fill(
+                  nombreArticles > 1
+                    ? t.commande.articlesPluriel
+                    : t.commande.articles,
+                  { n: nombreArticles },
+                )}
+              </span>
+              <span className="data text-[1.35rem]">{da(total, devise)}</span>
+            </div>
+
             <button
               type="button"
-              onClick={clear}
-              className="eyebrow text-graphite-doux underline underline-offset-4 hover:text-graphite"
+              onClick={vider}
+              className="eyebrow mt-2 text-graphite-doux underline underline-offset-4 hover:text-graphite"
             >
               {t.commande.toutVider}
             </button>
-          )}
-        </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-8">
-          {/* ------------------------------------------------- le bordereau */}
-          <div
-            className="overflow-hidden rounded-[var(--radius-plaque)] border border-trait"
-            style={{ background: "var(--comptoir-surface)" }}
-          >
-            {vide ? (
-              <div className="px-6 py-20 text-center">
-                <p className="display display-m">{t.commande.videTitre}</p>
-                <p className="mt-2 text-[15px] text-graphite-doux">
-                  {t.commande.videTexte}
-                </p>
-                <a href="#boutique" className="btn btn-encre mt-6">
-                  {t.commande.videCta}
-                </a>
-              </div>
-            ) : (
-              <>
-                <div className="hidden border-b border-trait bg-comptoir px-5 py-2.5 sm:grid sm:grid-cols-[1fr_5.5rem_6rem_6.5rem_2rem] sm:gap-3">
-                  {[
-                    t.commande.colRef,
-                    t.commande.colQte,
-                    t.commande.colPu,
-                    t.commande.colTotal,
-                    "",
-                  ].map((h, i) => (
-                    <span
-                      key={h || i}
-                      className="eyebrow text-[10px] text-graphite-doux"
-                      style={{ textAlign: i === 0 ? "start" : "end" }}
-                    >
-                      {h}
-                    </span>
-                  ))}
-                </div>
-
-                <ul className="divide-y divide-trait">
-                  {lines.map((l) => {
-                    const nom = `${nomType(l.product, types, locale)} ${l.gamme?.name ?? ""}`;
-                    return (
-                      <li
-                        key={l.variantId}
-                        className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[3.25rem_1fr_5.5rem_6rem_6.5rem_2rem] sm:px-5"
-                      >
-                        <div
-                          className="relative h-14 w-full overflow-hidden rounded"
-                          style={{
-                            background: `color-mix(in srgb, ${l.product.color_hex} 8%, var(--comptoir-surface))`,
-                          }}
-                        >
-                          <Image
-                            src={l.variant.image}
-                            alt=""
-                            fill
-                            sizes="52px"
-                            className="object-contain p-1"
-                          />
-                        </div>
-
-                        <div className="min-w-0">
-                          <p className="truncate text-[14.5px] leading-tight">
-                            {nomType(l.product, types, locale)}{" "}
-                            <span className="text-graphite-doux">
-                              {l.gamme?.name}
-                            </span>
-                          </p>
-                          <p className="data mt-0.5 text-[11.5px] text-graphite-doux">
-                            {l.variant.size_label}
-                            {purchase === "gros" &&
-                              ` · ${fill(t.commande.parCarton, {
-                                n: l.variant.units_per_carton,
-                              })}`}
-                          </p>
-                          <p className="data mt-1 text-[12px] text-graphite-doux sm:hidden">
-                            {l.quantity}{" "}
-                            {purchase === "gros"
-                              ? t.unites.cartons
-                              : t.unites.pieces}{" "}
-                            × {da(l.unit, devise)} ={" "}
-                            <strong>{da(l.total, devise)}</strong>
-                          </p>
-                        </div>
-
-                        <div className="hidden items-center justify-end sm:flex">
-                          <input
-                            type="number"
-                            min={1}
-                            value={l.quantity}
-                            onChange={(e) =>
-                              setQuantity(
-                                l.variantId,
-                                Math.max(0, Number(e.target.value) || 0),
-                              )
-                            }
-                            /* Même seuil qu'en boutique : 0 retire, sinon minimum. */
-                            onBlur={(e) => {
-                              const n = Math.max(0, Number(e.target.value) || 0);
-                              if (n > 0 && n < minQuantity)
-                                setQuantity(l.variantId, minQuantity);
-                            }}
-                            aria-label={fill(t.commande.quantiteLigne, { nom })}
-                            className="data h-9 w-full max-w-[4.75rem] rounded border border-trait bg-transparent text-center text-[13px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                        </div>
-                        <span className="data hidden text-end text-[13px] text-graphite-doux sm:block">
-                          {da(l.unit, devise)}
-                        </span>
-                        <span className="data hidden text-end text-[14px] sm:block">
-                          {da(l.total, devise)}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() => setQuantity(l.variantId, 0)}
-                          aria-label={fill(t.commande.retirer, { nom })}
-                          className="justify-self-end text-[18px] leading-none text-graphite-doux transition-colors hover:text-graphite"
-                        >
-                          ×
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-
-                <div className="flex flex-wrap items-baseline justify-between gap-4 border-t border-trait bg-comptoir px-5 py-4">
-                  <span className="eyebrow text-graphite-doux">
-                    {t.achat[purchase]} · {pieceCount} {t.unites.pieces}
-                  </span>
-                  <span className="data text-[1.4rem]">{da(total, devise)}</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* ------------------------------------------------- l'expédition */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <div
-              className="rounded-[var(--radius-plaque)] border border-trait p-5 sm:p-6"
-              style={{ background: "var(--comptoir-surface)" }}
-            >
-              <h3 className="display display-m">{t.commande.envoyer}</h3>
-
-              {!vide && !meetsMinimum && (
-                <p
-                  className="mt-4 rounded border px-3 py-2.5 text-[13px] leading-snug"
-                  style={{
-                    borderColor: "color-mix(in srgb, var(--or-trait) 40%, transparent)",
-                    background: "color-mix(in srgb, var(--or-trait) 8%, transparent)",
-                  }}
-                >
-                  {purchase === "gros"
-                    ? fill(
-                        minQuantity > 1
-                          ? t.commande.manqueGrosPluriel
-                          : t.commande.manqueGros,
-                        { n: minQuantity },
-                      )
-                    : fill(t.commande.manqueDemi, {
-                        n: minQuantity,
-                        reste: minQuantity - pieceCount,
-                      })}
-                </p>
-              )}
-
-              {/*
-                Le formulaire est la commande, plus une porte de secours.
-
-                WhatsApp partait de cet écran, le formulaire dormait derrière un
-                volet replié. Le pixel racontait le reste : beaucoup de monde
-                arrivait, ajoutait, et repartait sans finir. Un départ vers une
-                autre application est un abandon de plus à chaque étape, et rien
-                de ce qui s'y passe ne revient — ni le fait que la commande soit
-                confirmée, ni la raison d'un renoncement.
-
-                Tout se passe donc ici : les champs à l'écran, un seul bouton.
-              */}
-              <div className="mt-6 space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="etiquette" htmlFor="cmd-nom">
-                      {t.commande.nom} <Requis />
-                    </label>
-                    <input
-                      id="cmd-nom"
-                      required
-                      className="champ"
-                      value={client.name}
-                      onChange={(e) => setClient({ ...client, name: e.target.value })}
-                      autoComplete="name"
-                      placeholder={t.commande.nomExemple}
-                    />
-                  </div>
-                  <div>
-                    <label className="etiquette" htmlFor="cmd-tel">
-                      {t.commande.telephone} <Requis />
-                    </label>
-                    <input
-                      id="cmd-tel"
-                      required
-                      className="champ"
-                      inputMode="tel"
-                      dir="ltr"
-                      value={client.phone}
-                      onChange={(e) => setClient({ ...client, phone: e.target.value })}
-                      autoComplete="tel"
-                      placeholder="06 00 00 00 00"
-                    />
-                  </div>
-                </div>
-
+            {/* ----------------------------------------------- coordonnées */}
+            <div className="mt-8 space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="etiquette" htmlFor="cmd-wilaya">
-                    {t.commande.wilaya} <Requis />
-                  </label>
-                  {/*
-                    Liste fermée plutôt que saisie libre : sur un téléphone,
-                    taper « Bordj Bou Arréridj » invite la faute de frappe, et
-                    deux orthographes d'une même wilaya se regroupent mal au
-                    moment d'organiser les livraisons.
-                  */}
-                  <select
-                    id="cmd-wilaya"
-                    required
-                    className="champ"
-                    dir={locale === "ar" ? "rtl" : "ltr"}
-                    value={client.wilaya}
-                    onChange={(e) => setClient({ ...client, wilaya: e.target.value })}
-                  >
-                    <option value="">{t.commande.wilayaChoisir}</option>
-                    {WILAYAS.map((w) => (
-                      <option key={w.code} value={valeurWilaya(w)}>
-                        {libelleWilaya(w, locale)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="etiquette" htmlFor="cmd-adresse">
-                    {t.commande.adresse}
+                  <label className="etiquette" htmlFor="cmd-nom">
+                    {t.commande.nom} <Requis />
                   </label>
                   <input
-                    id="cmd-adresse"
+                    id="cmd-nom"
+                    required
                     className="champ"
-                    value={client.address}
-                    onChange={(e) =>
-                      setClient({ ...client, address: e.target.value })
-                    }
-                    autoComplete="street-address"
-                    placeholder={t.commande.adresseExemple}
+                    value={client.name}
+                    onChange={(e) => setClient({ ...client, name: e.target.value })}
+                    autoComplete="name"
+                    placeholder={t.commande.nomExemple}
                   />
                 </div>
-
                 <div>
-                  <label className="etiquette" htmlFor="cmd-note">
-                    {t.commande.note}
+                  <label className="etiquette" htmlFor="cmd-tel">
+                    {t.commande.telephone} <Requis />
                   </label>
-                  <textarea
-                    id="cmd-note"
-                    className="champ resize-y"
-                    rows={2}
-                    value={client.note}
-                    onChange={(e) => setClient({ ...client, note: e.target.value })}
+                  <input
+                    id="cmd-tel"
+                    required
+                    className="champ"
+                    inputMode="tel"
+                    dir="ltr"
+                    value={client.phone}
+                    onChange={(e) => setClient({ ...client, phone: e.target.value })}
+                    autoComplete="tel"
+                    placeholder="06 00 00 00 00"
                   />
                 </div>
               </div>
 
-              {/*
-                Dire ce qui manque, plutôt que de laisser un bouton éteint sans
-                raison apparente — le client ne devine pas quel champ le bloque.
-              */}
-              {!vide && meetsMinimum && !clientComplet && (
-                <p
-                  role="status"
-                  className="mt-4 text-center text-[12.5px] text-graphite-doux"
+              <div>
+                <label className="etiquette" htmlFor="cmd-wilaya">
+                  {t.commande.wilaya} <Requis />
+                </label>
+                <select
+                  id="cmd-wilaya"
+                  required
+                  className="champ"
+                  dir={locale === "ar" ? "rtl" : "ltr"}
+                  value={client.wilaya}
+                  onChange={(e) => setClient({ ...client, wilaya: e.target.value })}
                 >
-                  {fill(t.commande.champsRequis, {
-                    champs: manquants.join(", "),
-                  })}
-                </p>
-              )}
+                  <option value="">{t.commande.wilayaChoisir}</option>
+                  {WILAYAS.map((w) => (
+                    <option key={w.code} value={valeurWilaya(w)}>
+                      {libelleWilaya(w, locale)}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <button
-                type="button"
-                disabled={
-                  vide || !meetsMinimum || !clientComplet || etat.phase === "envoi"
-                }
-                onClick={envoyer}
-                /*
-                  `.btn` impose `nowrap` avec un interlettrage large en
-                  majuscules : « Confirmer la commande — 2 200 DA » débordait de
-                  son cadre sur un téléphone. Le libellé passe donc à la ligne,
-                  l'interlettrage se resserre, et le texte revient à la taille
-                  des autres boutons.
-                */
-                className="btn btn-or mt-5 w-full !whitespace-normal !px-4 !py-3.5 !leading-snug !tracking-[0.1em]"
-              >
-                {etat.phase === "envoi"
-                  ? t.commande.envoiEnCours
-                  : fill(t.commande.confirmer, { total: da(total, devise) })}
-              </button>
-              <p className="mt-2 text-center text-[12px] text-graphite-doux">
-                {t.commande.formAide}
-              </p>
+              <div>
+                <label className="etiquette" htmlFor="cmd-adresse">
+                  {t.commande.adresse}
+                </label>
+                <input
+                  id="cmd-adresse"
+                  className="champ"
+                  value={client.address}
+                  onChange={(e) => setClient({ ...client, address: e.target.value })}
+                  autoComplete="street-address"
+                  placeholder={t.commande.adresseExemple}
+                />
+              </div>
 
-              {etat.phase === "erreur" && (
-                <p
-                  role="alert"
-                  className="mt-4 rounded border px-3 py-2.5 text-[13px] leading-snug"
-                  style={{
-                    borderColor: "color-mix(in srgb, var(--danger) 40%, transparent)",
-                    background: "color-mix(in srgb, var(--danger) 7%, transparent)",
-                    color: "var(--danger)",
-                  }}
-                >
-                  {etat.message}
-                </p>
-              )}
+              <div>
+                <label className="etiquette" htmlFor="cmd-note">
+                  {t.commande.note}
+                </label>
+                <textarea
+                  id="cmd-note"
+                  className="champ resize-y"
+                  rows={2}
+                  value={client.note}
+                  onChange={(e) => setClient({ ...client, note: e.target.value })}
+                />
+              </div>
             </div>
 
-            <p className="mt-4 px-1 text-[12.5px] leading-relaxed text-graphite-doux">
-              {t.commande.piedDePage}{" "}
-              <a
-                href={`tel:${settings.contact_phone.replace(/\s/g, "")}`}
-                dir="ltr"
-                className="underline underline-offset-2"
+            {/* Dire ce qui manque : un bouton éteint sans raison apparente ne se
+                répare pas tout seul. */}
+            {!clientComplet && (
+              <p
+                role="status"
+                className="mt-4 text-center text-[12.5px] text-graphite-doux"
               >
-                {settings.contact_phone}
-              </a>
+                {fill(t.commande.champsRequis, { champs: manquants.join(", ") })}
+              </p>
+            )}
+
+            <button
+              type="button"
+              disabled={!clientComplet || etat.phase === "envoi"}
+              onClick={envoyer}
+              className="btn btn-or mt-5 w-full !whitespace-normal !px-4 !py-4 !leading-snug !tracking-[0.1em]"
+            >
+              {etat.phase === "envoi"
+                ? t.commande.envoiEnCours
+                : fill(t.commande.confirmer, { total: da(total, devise) })}
+            </button>
+
+            <p className="mt-2.5 text-center text-[12px] text-graphite-doux">
+              {t.commande.formAide}
             </p>
-          </div>
-        </div>
+
+            {etat.phase === "erreur" && (
+              <p
+                role="alert"
+                className="mt-3 text-center text-[13px]"
+                style={{ color: "var(--danger)" }}
+              >
+                {etat.message}
+              </p>
+            )}
+          </>
+        )}
       </div>
     </section>
   );

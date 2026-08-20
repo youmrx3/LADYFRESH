@@ -1,38 +1,45 @@
-import { AppelFinal } from "@/components/AppelFinal";
 import { Boutique } from "@/components/Boutique";
 import { BoutiqueProvider } from "@/components/BoutiqueProvider";
 import { Commande } from "@/components/Commande";
-import { CommentCommander } from "@/components/CommentCommander";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { Navbar } from "@/components/Navbar";
-import { RailGammes } from "@/components/RailGammes";
-import { SelecteurAchat } from "@/components/SelecteurAchat";
-import { Videos } from "@/components/Videos";
 import {
   getGammes,
-  getHeroSlides,
+  getPacks,
   getProductTypes,
   getProducts,
   getSettings,
-  getVideos,
 } from "@/lib/data";
+import type { ModeBoutique } from "@/lib/types";
 
+/**
+ * La page.
+ *
+ * Trois sections, dans l'ordre où l'on décide d'acheter : ce que c'est, ce
+ * qu'on peut prendre, comment le commander. Plus de gammes à parcourir, plus de
+ * vidéos, plus d'appel final — chacun de ces étages était un étage de plus
+ * entre une publicité et un bon de commande.
+ *
+ * Ce qu'elle vend dépend d'un seul réglage, `mode_boutique` : les coffrets, ou
+ * le catalogue à l'unité.
+ */
 export default async function Accueil() {
-  const [gammes, products, types, settings, slides, videos] = await Promise.all([
+  const [gammes, packs, products, types, settings] = await Promise.all([
     getGammes(),
+    getPacks(),
     getProducts(),
     getProductTypes(),
     getSettings(),
-    getHeroSlides(),
-    getVideos(),
   ]);
 
-  // Une référence = un format en vente, pas un produit.
-  const referenceCount = products.reduce((n, p) => n + p.variants.length, 0);
+  const mode: ModeBoutique =
+    settings.mode_boutique === "produits" ? "produits" : "packs";
 
   return (
     <BoutiqueProvider
+      mode={mode}
+      packs={packs}
       products={products}
       gammes={gammes}
       types={types}
@@ -40,19 +47,9 @@ export default async function Accueil() {
     >
       <Navbar />
       <main>
-        <Hero
-          slides={slides}
-          gammes={gammes}
-          settings={settings}
-          referenceCount={referenceCount}
-        />
-        <CommentCommander settings={settings} />
-        <RailGammes gammes={gammes} products={products} types={types} />
-        <SelecteurAchat />
+        <Hero settings={settings} packs={packs} />
         <Boutique />
         <Commande />
-        <Videos videos={videos} />
-        <AppelFinal gammes={gammes} settings={settings} />
       </main>
       <Footer settings={settings} />
     </BoutiqueProvider>

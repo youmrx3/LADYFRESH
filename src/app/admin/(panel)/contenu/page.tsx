@@ -119,19 +119,26 @@ export default async function Contenu({
                     placeholder="213555123456"
                     required
                   />
-                  <Champ
-                    label={a.contenu.minGros}
-                    name="min_gros_cartons"
-                    type="number"
-                    min={1}
-                    defaultValue={settings.min_gros_cartons}
+                  {/*
+                    Le réglage qui décide de ce que la vitrine met en avant.
+                    Un seul choix, ici, plutôt qu'une question posée à chaque
+                    visiteuse avant qu'elle ne voie un prix.
+                  */}
+                  <Liste
+                    label={a.contenu.modeBoutique}
+                    name="mode_boutique"
+                    options={[
+                      { value: "packs", label: a.contenu.modePacks },
+                      { value: "produits", label: a.contenu.modeProduits },
+                    ]}
+                    defaultValue={settings.mode_boutique}
                   />
                   <Champ
-                    label={a.contenu.minDemi}
-                    name="min_demi_gros_pieces"
+                    label={a.contenu.minProduit}
+                    name="min_produit"
                     type="number"
                     min={1}
-                    defaultValue={settings.min_demi_gros_pieces}
+                    defaultValue={settings.min_produit}
                   />
                   <Champ
                     label={a.contenu.telephoneAffiche}

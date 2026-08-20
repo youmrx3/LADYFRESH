@@ -13,6 +13,7 @@ export type LienAdmin = {
 type Icone =
   | "commandes"
   | "pistes"
+  | "packs"
   | "types"
   | "gammes"
   | "produits"
@@ -128,6 +129,13 @@ function Glyphe({ nom }: { nom: Icone }) {
       return (
         <svg {...commun}>
           <path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z" />
+        </svg>
+      );
+    case "packs":
+      // Un coffret : une boîte refermée.
+      return (
+        <svg {...commun}>
+          <path d="M3 8h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM3 8l2-4h14l2 4M12 4v16" />
         </svg>
       );
     case "types":

@@ -95,6 +95,10 @@ export type SiteSettings = {
   whatsapp_number: string;
   min_gros_cartons: number;
   min_demi_gros_pieces: number;
+  /** Ce que la vitrine met en avant : coffrets ou produits à l'unité. */
+  mode_boutique: ModeBoutique;
+  /** Minimum de pièces par référence, à l'unité. */
+  min_produit: number;
   hero_eyebrow: string;
   hero_eyebrow_ar?: string | null;
   hero_eyebrow_en?: string | null;
@@ -187,4 +191,44 @@ export type ProspectItem = {
   quantity: number;
   unit_price: number;
   line_total: number;
+};
+
+export type ModeBoutique = "packs" | "produits";
+
+/**
+ * Un coffret.
+ *
+ * Vendu comme un tout : une photo, un prix, et une composition. Le prix ne se
+ * déduit pas de son contenu — c'est une offre, pas une addition, et c'est bien
+ * l'intérêt d'un coffret.
+ */
+export type Pack = {
+  id: string;
+  slug: string;
+  name: string;
+  name_ar?: string | null;
+  name_en?: string | null;
+  tagline: string;
+  tagline_ar?: string | null;
+  tagline_en?: string | null;
+  description: string;
+  description_ar?: string | null;
+  description_en?: string | null;
+  image: string;
+  price: number;
+  /** Prix rayé affiché à côté. Zéro : aucune remise affichée. */
+  prix_barre: number;
+  sort_order: number;
+  active: boolean;
+  items: PackItem[];
+};
+
+export type PackItem = {
+  id: string;
+  pack_id: string;
+  variant_id: string | null;
+  /** Libellé figé au moment du choix : survit au renommage d'un format. */
+  label: string;
+  quantity: number;
+  sort_order: number;
 };

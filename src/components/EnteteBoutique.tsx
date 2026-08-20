@@ -13,7 +13,7 @@ import { useReglages } from "./Reglages";
  * marque, le total en cours et le bouton de commande.
  */
 export function EnteteBoutique({ campagne }: { campagne: string }) {
-  const { pieceCount, cartonCount, purchase } = useBoutique();
+  const { nombreArticles } = useBoutique();
   const { t } = useReglages();
 
   /*
@@ -30,10 +30,6 @@ export function EnteteBoutique({ campagne }: { campagne: string }) {
     }
   }, [campagne]);
 
-  // Même unité que celle saisie dans la boutique : cartons en gros.
-  const gros = purchase === "gros";
-  const compte = gros ? cartonCount : pieceCount;
-  const unite = gros ? t.unites.cartonCourt : t.unites.pieceCourt;
 
   return (
     <header
@@ -64,12 +60,12 @@ export function EnteteBoutique({ campagne }: { campagne: string }) {
           <BasculeTheme compact />
           <a href="#commande" className="btn btn-or !px-4 !py-2.5 !text-[11.5px]">
             {t.nav.cta}
-            {pieceCount > 0 && (
+            {nombreArticles > 0 && (
               <span
                 className="data rounded-full px-1.5 py-0.5 text-[10.5px]"
                 style={{ background: "var(--or-fg)", color: "var(--or-plein)" }}
               >
-                {compte} {unite}
+                {nombreArticles}
               </span>
             )}
           </a>

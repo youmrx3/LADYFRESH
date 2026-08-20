@@ -4,7 +4,7 @@ export const en: Dictionary = {
   meta: {
     title: "Lady Fresh — Body mists, intimate gels and deodorants",
     description:
-      "Seven ranges of fragrance mists, intimate washes and deodorants. Retail, half-wholesale from 5 pieces, wholesale by the carton. Order directly online.",
+      "Seven ranges of fragrance mists, intimate washes and deodorants. Bundles and single products. Delivery across Algeria, pay on arrival.",
   },
 
   unites: {
@@ -51,7 +51,11 @@ export const en: Dictionary = {
   },
 
   hero: {
-    ctaBoutique: "Browse the shop",
+    ctaBoutique: "Order now",
+    aPartirDe: "From",
+    gageLivraison: "Delivery to 58 wilayas",
+    gagePaiement: "Pay on delivery",
+    gageRappel: "We call you to confirm",
     ctaCommander: "How to order",
     statGammes: "Ranges",
     statReferences: "Products",
@@ -109,6 +113,13 @@ export const en: Dictionary = {
       "Prices shown are half-wholesale. Choose “Wholesale” to see carton rates.",
   },
 
+  packs: {
+    eyebrow: "Our bundles",
+    titre: "Pick your bundle.",
+    lede: "Four matched products at a price built for the set. Delivery across Algeria, pay on arrival.",
+    vide: "Bundles are coming very soon.",
+    contient: "This bundle contains",
+  },
   boutique: {
     eyebrow: "Shop",
     titre: "The full catalogue.",
@@ -126,6 +137,8 @@ export const en: Dictionary = {
     cartonDe: "Carton of {n} = {prix}",
     ajouterCarton: "+ 1 carton",
     ajouterPieces: "+ {n} pieces",
+    ajouter: "Add",
+    quantiteLigne: "Quantity",
     formatAria: "Size",
     quantiteAria: "Quantity in {unite}",
     retirerLigne: "Remove this product",
@@ -154,6 +167,8 @@ export const en: Dictionary = {
     telephone: "Phone",
     wilaya: "Wilaya",
     wilayaChoisir: "Choose your wilaya",
+    articles: "{n} item",
+    articlesPluriel: "{n} items",
     nomExemple: "Your full name",
     adresseExemple: "Street, area, landmark",
     confirmer: "Confirm order — {total}",
@@ -211,6 +226,7 @@ export const en: Dictionary = {
     minDemi: "Half-wholesale starts at {min} pieces per product.",
     minGros: "Wholesale starts at {min} carton per product.",
     nomTel: "Please give your name, phone number and wilaya.",
+    minProduit: "The minimum is {min} per product.",
     echec: "The order could not be saved. Try again.",
     bonjour: "Hello Lady Fresh, I'd like to place an order.",
     ref: "Ref.",
@@ -245,6 +261,26 @@ export const en: Dictionary = {
     baseAbsenteAide:
       "Run supabase/schema.sql then add your Supabase keys to .env.local, or to your host's environment variables followed by a redeploy. Until then the site shows the reference catalogue.",
 
+    packs: {
+      eyebrow: "Catalogue",
+      titre: "Bundles",
+      aide: "What the shop puts forward. Each bundle has its photo, its price, and contents taken from the catalogue.",
+      nouveau: "New bundle",
+      accroche: "Tagline",
+      prix: "Selling price",
+      prixBarre: "Struck-through price (optional)",
+      photo: "Bundle photo",
+      composition: "Contents",
+      compositionAide: "The sizes included. Their label is frozen: renaming a size later will not change bundles already sold.",
+      ajouterLigne: "Add a line",
+      produit: "Size",
+      quantite: "Quantity",
+      choisirFormat: "Choose a size",
+      contenu: "{n} product",
+      contenuPluriel: "{n} products",
+      confirmSuppr: "Delete the bundle “{nom}”?",
+    },
+
     pistes: {
       eyebrow: "Follow-up",
       titre: "Carts to call back",
@@ -270,6 +306,7 @@ export const en: Dictionary = {
       courts: {
         commandes: "Orders",
         pistes: "Call back",
+        packs: "Bundles",
         types: "Types",
         gammes: "Ranges",
         produits: "Products",
@@ -278,6 +315,7 @@ export const en: Dictionary = {
       },
       commandes: "Orders",
       pistes: "Carts to call back",
+      packs: "Bundles",
       gammes: "Ranges",
       produits: "Products",
       types: "Product types",
@@ -415,6 +453,10 @@ export const en: Dictionary = {
       commandeContact: "Ordering and contact",
       numeroWhatsapp: "Contact phone (with country code)",
       minGros: "Wholesale minimum (cartons)",
+      modeBoutique: "What the shop sells",
+      modePacks: "Bundles",
+      modeProduits: "Single products",
+      minProduit: "Minimum per product",
       minDemi: "Half-wholesale minimum (pieces)",
       telephoneAffiche: "Phone shown",
       email: "Email",

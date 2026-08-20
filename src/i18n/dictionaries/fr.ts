@@ -6,7 +6,7 @@ export const fr = {
   meta: {
     title: "Lady Fresh — Brumes, gels intimes et déodorants",
     description:
-      "Sept gammes de brumes parfumées, gels lavants intimes et déodorants. Vente au détail, en demi-gros dès 5 pièces et en gros par carton. Commande directe en ligne.",
+      "Sept gammes de brumes parfumées, gels lavants intimes et déodorants. Coffrets et produits à l'unité. Livraison partout en Algérie, paiement à la réception.",
   },
 
   unites: {
@@ -53,7 +53,11 @@ export const fr = {
   },
 
   hero: {
-    ctaBoutique: "Voir la boutique",
+    ctaBoutique: "Je commande",
+    aPartirDe: "À partir de",
+    gageLivraison: "Livraison 58 wilayas",
+    gagePaiement: "Paiement à la réception",
+    gageRappel: "On vous rappelle pour confirmer",
     ctaCommander: "Comment commander",
     statGammes: "Gammes",
     statReferences: "Références",
@@ -111,6 +115,13 @@ export const fr = {
       "Les prix affichés sont ceux du demi-gros. Choisissez « Gros » pour voir les tarifs par carton.",
   },
 
+  packs: {
+    eyebrow: "Nos coffrets",
+    titre: "Choisissez votre coffret.",
+    lede: "Quatre produits assortis, à un prix pensé pour l'ensemble. Livraison partout en Algérie, paiement à la réception.",
+    vide: "Les coffrets arrivent très bientôt.",
+    contient: "Ce coffret contient",
+  },
   boutique: {
     eyebrow: "Boutique",
     titre: "Le catalogue complet.",
@@ -128,6 +139,8 @@ export const fr = {
     cartonDe: "Carton de {n} = {prix}",
     ajouterCarton: "+ 1 carton",
     ajouterPieces: "+ {n} pièces",
+    ajouter: "Ajouter",
+    quantiteLigne: "Quantité",
     formatAria: "Format",
     quantiteAria: "Quantité en {unite}",
     retirerLigne: "Retirer ce produit",
@@ -157,6 +170,8 @@ export const fr = {
     telephone: "Téléphone",
     wilaya: "Wilaya",
     wilayaChoisir: "Choisissez votre wilaya",
+    articles: "{n} article",
+    articlesPluriel: "{n} articles",
     nomExemple: "Votre nom et prénom",
     adresseExemple: "Rue, quartier, point de repère",
     confirmer: "Confirmer la commande — {total}",
@@ -216,6 +231,7 @@ export const fr = {
       "Le demi-gros démarre à {min} pièces par référence.",
     minGros: "Le gros démarre à {min} carton par référence.",
     nomTel: "Indiquez votre nom, votre téléphone et votre wilaya.",
+    minProduit: "Le minimum est de {min} par référence.",
     echec: "La commande n'a pas pu être enregistrée. Réessayez.",
     bonjour: "Bonjour Lady Fresh, je souhaite passer commande.",
     ref: "Réf.",
@@ -251,6 +267,26 @@ export const fr = {
     baseAbsenteAide:
       "Exécutez supabase/schema.sql puis renseignez les clés Supabase dans .env.local, ou dans les variables d'environnement de l'hébergeur suivies d'un « Redeploy ». Le site affiche en attendant le catalogue de référence.",
 
+    packs: {
+      eyebrow: "Catalogue",
+      titre: "Coffrets",
+      aide: "Ce que la boutique met en avant. Chaque coffret a sa photo, son prix, et une composition prise dans le catalogue.",
+      nouveau: "Nouveau coffret",
+      accroche: "Accroche",
+      prix: "Prix de vente",
+      prixBarre: "Prix barré (facultatif)",
+      photo: "Photo du coffret",
+      composition: "Composition",
+      compositionAide: "Les formats inclus. Leur libellé est figé : renommer un format plus tard ne modifiera pas les coffrets déjà vendus.",
+      ajouterLigne: "Ajouter une ligne",
+      produit: "Format",
+      quantite: "Quantité",
+      choisirFormat: "Choisissez un format",
+      contenu: "{n} produit",
+      contenuPluriel: "{n} produits",
+      confirmSuppr: "Supprimer le coffret « {nom} » ?",
+    },
+
     pistes: {
       eyebrow: "Relance",
       titre: "Paniers à rappeler",
@@ -276,6 +312,7 @@ export const fr = {
       courts: {
         commandes: "Commandes",
         pistes: "À rappeler",
+        packs: "Coffrets",
         types: "Types",
         gammes: "Gammes",
         produits: "Produits",
@@ -284,6 +321,7 @@ export const fr = {
       },
       commandes: "Commandes",
       pistes: "Paniers à rappeler",
+      packs: "Coffrets",
       gammes: "Gammes",
       produits: "Produits",
       types: "Types de produits",
@@ -425,6 +463,10 @@ export const fr = {
       commandeContact: "Commande et contact",
       numeroWhatsapp: "Téléphone de contact (indicatif compris)",
       minGros: "Minimum gros (cartons)",
+      modeBoutique: "Ce que vend la boutique",
+      modePacks: "Les coffrets",
+      modeProduits: "Les produits à l'unité",
+      minProduit: "Minimum par référence",
       minDemi: "Minimum demi-gros (pièces)",
       telephoneAffiche: "Téléphone affiché",
       email: "E-mail",

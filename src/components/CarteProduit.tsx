@@ -3,13 +3,21 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useBoutique } from "./BoutiqueProvider";
+import { Quantite } from "./Quantite";
 import { useReglages } from "./Reglages";
-import { fill } from "@/i18n";
 import { nomType } from "@/i18n/contenu";
 import { da, unitPrice } from "@/lib/format";
 import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
 import type { Gamme, Product } from "@/lib/types";
 
+/**
+ * La carte d'un produit vendu à l'unité.
+ *
+ * Plus de sélecteur gros/demi-gros : un prix, une quantité. Quand un produit
+ * existe en plusieurs formats, ils s'affichent en boutons — c'est le seul choix
+ * qui subsiste, et il porte sur ce que la cliente reçoit, pas sur son statut
+ * d'acheteuse.
+ */
 export function CarteProduit({
   product,
   gamme,
@@ -17,82 +25,74 @@ export function CarteProduit({
   product: Product;
   gamme: Gamme | undefined;
 }) {
-  const { purchase, quantityOf, setQuantity, minQuantity, types } = useBoutique();
+  const { quantiteDe, types } = useBoutique();
   const { t, locale } = useReglages();
   const [taille, setTaille] = useState(0);
 
   const variant = product.variants[taille] ?? product.variants[0];
-  const quantite = quantityOf(variant.id);
-  const prix = unitPrice(variant, purchase);
-  const accent = gamme?.color_hex ?? "var(--or-plein)";
-  const enCommande = quantite > 0;
+  if (!variant) return null;
 
-  const pas = purchase === "gros" ? 1 : minQuantity;
+  const cle = variant.id;
+  const dansLeBon = quantiteDe(cle) > 0;
+  const prix = unitPrice(variant);
+  const accent = gamme?.color_hex ?? "var(--or-plein)";
+  const nom = nomType(product, types, locale);
 
   return (
     <article
-      className="group flex flex-col overflow-hidden rounded-[10px] border transition-all duration-300"
+      className="flex flex-col overflow-hidden rounded-[14px] border transition-all duration-300"
       style={{
         background: "var(--comptoir-surface)",
-        borderColor: enCommande ? accent : "var(--comptoir-line)",
-        boxShadow: enCommande
+        borderColor: dansLeBon ? accent : "var(--comptoir-line)",
+        boxShadow: dansLeBon
           ? `0 0 0 1px ${accent}, var(--ombre-carte)`
           : "var(--ombre-carte)",
       }}
     >
-      {/* ------------------------------------------------------------ visuel */}
       <div
-        className="relative aspect-[4/5] overflow-hidden"
-        style={{
-          background: `color-mix(in srgb, ${accent} 7%, var(--comptoir-surface))`,
-        }}
+        className="relative aspect-square overflow-hidden"
+        style={{ background: `color-mix(in srgb, ${accent} 7%, var(--comptoir-surface))` }}
       >
         <Image
-          src={variant.image}
-          alt={`${nomType(product, types, locale)} ${gamme?.name ?? ""} ${variant.size_label}`}
+          src={variant.image || product.image}
+          alt={`${nom} ${gamme?.name ?? ""} ${variant.size_label}`}
           fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 22vw"
-          className="object-contain p-4 transition-transform duration-500 group-hover:scale-[1.04]"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-contain p-3"
         />
-        <span
-          className="eyebrow absolute start-3 top-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] backdrop-blur-sm"
-          style={{
-            background: "color-mix(in srgb, var(--comptoir-surface) 85%, transparent)",
-            color: "var(--comptoir-fg)",
-          }}
-        >
+        {gamme && (
           <span
-            className="inline-block h-2 w-2 shrink-0 rounded-full"
-            style={{ background: accent }}
-          />
-          {gamme?.name}
-        </span>
+            className="eyebrow absolute start-2.5 top-2.5 flex items-center gap-1.5 rounded-full px-2 py-1 text-[9.5px] backdrop-blur-sm"
+            style={{
+              background: "color-mix(in srgb, var(--comptoir-surface) 85%, transparent)",
+              color: "var(--comptoir-fg)",
+            }}
+          >
+            <span
+              className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ background: accent }}
+            />
+            {gamme.name}
+          </span>
+        )}
       </div>
 
-      {/* ------------------------------------------------------------- infos */}
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="display text-[1.0625rem] leading-tight">
-          {nomType(product, types, locale)}
-        </h3>
+      <div className="flex flex-1 flex-col p-3.5">
+        <h3 className="display text-[1rem] leading-tight">{nom}</h3>
 
-        {/* Chaque format a son prix et sa photo. */}
         {product.variants.length > 1 ? (
-          <div className="mt-3 flex gap-1.5" role="group" aria-label={t.boutique.formatAria}>
+          <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label={t.boutique.formatAria}>
             {product.variants.map((v, i) => (
               <button
                 key={v.id}
                 type="button"
                 onClick={() => setTaille(i)}
                 aria-pressed={i === taille}
-                className="data rounded border px-2.5 py-1 text-[12px] transition-colors"
+                className="data rounded border px-2 py-1 text-[11.5px] transition-colors"
                 style={{
-                  borderColor:
-                    i === taille ? "var(--comptoir-fg)" : "var(--comptoir-line)",
+                  borderColor: i === taille ? "var(--comptoir-fg)" : "var(--comptoir-line)",
                   background: i === taille ? "var(--comptoir-fg)" : "transparent",
-                  color:
-                    i === taille
-                      ? "var(--comptoir-surface)"
-                      : "var(--comptoir-muted)",
+                  color: i === taille ? "var(--comptoir-surface)" : "var(--comptoir-muted)",
                 }}
               >
                 {v.size_label}
@@ -100,121 +100,28 @@ export function CarteProduit({
             ))}
           </div>
         ) : (
-          <p className="data mt-3 text-[12px] text-graphite-doux">
+          <p className="data mt-2.5 text-[11.5px] text-graphite-doux">
             {variant.size_label}
           </p>
         )}
 
-        <div className="mt-4 flex flex-wrap items-baseline gap-x-1.5 border-t border-trait pt-3">
-          <span className="data text-[1.25rem] leading-none">
+        <div className="mt-auto pt-3.5">
+          <span className="data block text-[1.2rem] leading-none">
             {da(prix, t.unites.devise)}
           </span>
-          <span className="text-[12px] text-graphite-doux">
-            {t.boutique.parPiece}
-          </span>
-        </div>
-
-        {purchase === "gros" && (
-          <p className="data mt-1.5 text-[11.5px] text-graphite-doux">
-            {fill(t.boutique.cartonDe, {
-              n: variant.units_per_carton,
-              prix: da(prix * variant.units_per_carton, t.unites.devise),
-            })}
-          </p>
-        )}
-
-        {/* ------------------------------------------------------ quantité */}
-        <div className="mt-auto pt-4">
-          {enCommande ? (
-            <div>
-              {/*
-                Le pas-à-pas occupe toute la largeur. L'échelle « N pc » vivait
-                à côté et rétrécissait le champ à mesure que le nombre
-                grandissait, jusqu'à écraser le chiffre : elle est passée
-                dessous, et seulement quand elle apprend quelque chose.
-              */}
-              <div className="flex w-full items-stretch rounded border border-trait">
-                {/*
-                  Au seuil, « − » retire la ligne au lieu de la faire tomber
-                  sous le minimum : descendre à 4 pièces produisait un bon de
-                  commande impossible à envoyer, sans rien qui l'explique.
-                  Le signe change pour que le geste ne surprenne pas.
-                */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuantity(variant.id, quantite <= pas ? 0 : quantite - 1)
-                  }
-                  aria-label={
-                    quantite <= pas ? t.boutique.retirerLigne : t.boutique.retirerUne
-                  }
-                  className="flex h-9 w-9 shrink-0 items-center justify-center text-[18px] text-graphite-doux transition-colors hover:text-graphite"
-                >
-                  {quantite <= pas ? "×" : "−"}
-                </button>
-                <input
-                  type="number"
-                  min={0}
-                  value={quantite}
-                  onChange={(e) =>
-                    setQuantity(variant.id, Math.max(0, Number(e.target.value) || 0))
-                  }
-                  /*
-                    Recadrage à la sortie du champ, pas à la frappe : corriger
-                    pendant la saisie empêcherait de taper « 15 », dont le
-                    premier caractère est un 1.
-                  */
-                  onBlur={(e) => {
-                    const n = Math.max(0, Number(e.target.value) || 0);
-                    if (n > 0 && n < pas) setQuantity(variant.id, pas);
-                  }}
-                  aria-label={fill(t.boutique.quantiteAria, {
-                    unite:
-                      purchase === "gros" ? t.unites.cartons : t.unites.pieces,
-                  })}
-                  className="data h-9 min-w-0 flex-1 border-x border-trait bg-transparent text-center text-[14px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setQuantity(variant.id, quantite + 1)}
-                  aria-label={t.boutique.ajouterUne}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center text-[18px] text-graphite-doux transition-colors hover:text-graphite"
-                >
-                  +
-                </button>
-              </div>
-
-              {purchase === "gros" && (
-                <p className="data mt-1.5 text-center text-[11px] text-graphite-doux">
-                  {fill(t.boutique.egale, {
-                    n: quantite * variant.units_per_carton,
-                  })}
-                </p>
-              )}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setQuantity(variant.id, pas);
-                /*
-                  Ici et pas sur le pas-à-pas : c'est le geste qui fait entrer
-                  l'article. Compter aussi les « + » et « − » enverrait dix
-                  AddToCart pour une seule intention.
-                */
+          <div
+            className="mt-2.5"
+            onClickCapture={() => {
+              if (!dansLeBon)
                 pixel("AddToCart", {
-                  ...contenus([{ variantId: variant.id, quantity: pas }]),
-                  value: prix * (purchase === "gros" ? variant.units_per_carton : 1) * pas,
+                  ...contenus([{ variantId: variant.id, quantity: 1 }]),
+                  value: prix,
                   currency: DEVISE_PIXEL,
                 });
-              }}
-              className="btn btn-encre w-full !px-3 !py-2.5 !text-[11.5px]"
-            >
-              {purchase === "gros"
-                ? t.boutique.ajouterCarton
-                : fill(t.boutique.ajouterPieces, { n: pas })}
-            </button>
-          )}
+            }}
+          >
+            <Quantite cle={cle} nom={`${nom} ${variant.size_label}`} />
+          </div>
         </div>
       </div>
     </article>

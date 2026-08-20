@@ -498,6 +498,8 @@ export const SETTINGS: SiteSettings = {
   whatsapp_number: "213000000000",
   min_gros_cartons: 1,
   min_demi_gros_pieces: 5,
+  mode_boutique: "packs" as const,
+  min_produit: 1,
   hero_eyebrow: "Cosmétiques — Algérie",
   hero_eyebrow_ar: "مستحضرات تجميل — الجزائر",
   hero_eyebrow_en: "Cosmetics — Algeria",
@@ -505,7 +507,7 @@ export const SETTINGS: SiteSettings = {
   hero_title_ar: "سبع مجموعات.\nانتعاش واحد.",
   hero_title_en: "Seven ranges.\nOne freshness.",
   hero_lede:
-    "Brumes parfumées, gels lavants intimes et déodorants Lady Fresh. Au détail, en demi-gros dès 5 pièces, ou en gros par carton.",
+    "Brumes parfumées, gels lavants intimes et déodorants. Livrés partout en Algérie, payés à la réception.",
   hero_lede_ar:
     "بخاخات معطرة، جل منظف حميمي ومزيلات روائح ليدي فريش. بالتجزئة، بنصف الجملة ابتداءً من 5 قطع، أو بالجملة بالكرتون.",
   hero_lede_en:
