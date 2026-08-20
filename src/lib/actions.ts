@@ -229,6 +229,48 @@ export async function testerEmail(_prev: Retour, _formData: FormData): Promise<R
   return ok ? { ok: detail } : { error: detail };
 }
 
+// ------------------------------------------------------------ page campagne
+
+/**
+ * Les réglages de /boutique.
+ *
+ * Séparés de ceux du site : une campagne se retouche entre deux publicités,
+ * et mêler ces champs aux coordonnées de la maison obligerait à traverser un
+ * formulaire de quinze entrées pour changer un titre.
+ */
+export async function enregistrerCampagne(
+  _prev: Retour,
+  formData: FormData,
+): Promise<Retour> {
+  return tenter(async () => {
+    const db = await garde();
+    const lang = langue(formData);
+
+    const valeurs: Record<string, unknown> = traduits(formData, [
+      "camp_bandeau",
+      "camp_eyebrow",
+      "camp_titre",
+      "camp_lede",
+      "camp_cta",
+      "camp_gages",
+    ]);
+
+    // Photo et interrupteur ne se traduisent pas : édités depuis le français.
+    if (lang === "fr") {
+      Object.assign(valeurs, {
+        camp_image: mot(formData, "camp_image"),
+        camp_bandeau_actif: formData.get("camp_bandeau_actif") === "on",
+      });
+    }
+
+    const { error } = await db
+      .from("site_settings")
+      .upsert({ id: "settings", ...valeurs });
+    if (error) throw new Error(error.message);
+    return "Page de campagne enregistrée.";
+  });
+}
+
 // -------------------------------------------------------------------- packs
 
 export async function enregistrerPack(

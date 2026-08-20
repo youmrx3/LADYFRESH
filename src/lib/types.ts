@@ -108,6 +108,28 @@ export type SiteSettings = {
   hero_lede: string;
   hero_lede_ar?: string | null;
   hero_lede_en?: string | null;
+  /* Page de campagne : retouchable sans déploiement. */
+  camp_bandeau_actif: boolean;
+  camp_image: string;
+  camp_bandeau: string;
+  camp_bandeau_ar?: string | null;
+  camp_bandeau_en?: string | null;
+  camp_eyebrow: string;
+  camp_eyebrow_ar?: string | null;
+  camp_eyebrow_en?: string | null;
+  camp_titre: string;
+  camp_titre_ar?: string | null;
+  camp_titre_en?: string | null;
+  camp_lede: string;
+  camp_lede_ar?: string | null;
+  camp_lede_en?: string | null;
+  camp_cta: string;
+  camp_cta_ar?: string | null;
+  camp_cta_en?: string | null;
+  /** Garanties séparées par « | ». */
+  camp_gages: string;
+  camp_gages_ar?: string | null;
+  camp_gages_en?: string | null;
   contact_email: string;
   contact_phone: string;
   contact_address: string;

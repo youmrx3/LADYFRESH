@@ -31,6 +31,7 @@ export default async function LayoutAdmin({
     { href: "/admin/gammes", label: o.gammes, court: o.courts.gammes, icone: "gammes" },
     { href: "/admin/produits", label: o.produits, court: o.courts.produits, icone: "produits" },
     { href: "/admin/formats", label: o.formats, court: o.courts.formats, icone: "formats" },
+    { href: "/admin/campagne", label: o.campagne, court: o.courts.campagne, icone: "campagne" },
     { href: "/admin/contenu", label: o.contenu, court: o.courts.contenu, icone: "contenu" },
   ];
 

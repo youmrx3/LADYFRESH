@@ -14,6 +14,7 @@ type Icone =
   | "commandes"
   | "pistes"
   | "packs"
+  | "campagne"
   | "types"
   | "gammes"
   | "produits"
@@ -136,6 +137,13 @@ function Glyphe({ nom }: { nom: Icone }) {
       return (
         <svg {...commun}>
           <path d="M3 8h18v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM3 8l2-4h14l2 4M12 4v16" />
+        </svg>
+      );
+    case "campagne":
+      // Un porte-voix : ce que la publicité fait entendre.
+      return (
+        <svg {...commun}>
+          <path d="M4 10v4a1 1 0 0 0 1 1h3l5 4V5L8 9H5a1 1 0 0 0-1 1zM17 9a4 4 0 0 1 0 6" />
         </svg>
       );
     case "types":

@@ -4,7 +4,7 @@ import { Boutique } from "@/components/Boutique";
 import { BoutiqueProvider } from "@/components/BoutiqueProvider";
 import { Commande } from "@/components/Commande";
 import { EnteteBoutique } from "@/components/EnteteBoutique";
-import { HeroCampagne } from "@/components/HeroCampagne";
+import { BandeauCampagne, HeroCampagne } from "@/components/HeroCampagne";
 import {
   getGammes,
   getPacks,
@@ -68,6 +68,7 @@ export default async function PageBoutique({
       types={types}
       settings={settings}
     >
+      <BandeauCampagne settings={settings} />
       <EnteteBoutique campagne={campagne} />
       <main>
         <HeroCampagne settings={settings} packs={packs} />

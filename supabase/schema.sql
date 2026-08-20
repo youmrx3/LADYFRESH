@@ -392,6 +392,34 @@ end $$;
 alter table site_settings add column if not exists mode_boutique text not null default 'packs';
 alter table site_settings add column if not exists min_produit   int  not null default 1;
 
+-- ------------------------------------------------------------- page campagne
+/*
+  Ce que raconte /boutique.
+
+  La page de campagne se retouche entre deux publicités : un bandeau qu'on
+  allume le temps d'une offre, un titre qu'on essaie autrement, une photo qu'on
+  change. Aucune de ces retouches ne doit passer par un déploiement — sinon
+  elles n'auront jamais lieu.
+
+  Colonnes plates plutôt qu'un objet JSON : c'est le même dessin que
+  `hero_*`, et l'aide de traduction sait déjà lire un `_ar` ou un `_en` accolé.
+
+  `camp_gages` tient les garanties sur une seule ligne, séparées par « | » :
+  trois colonnes pour trois arguments qui changent ensemble n'auraient rien
+  apporté.
+*/
+alter table site_settings add column if not exists camp_bandeau_actif boolean not null default false;
+alter table site_settings add column if not exists camp_image         text not null default '';
+
+do $$ declare c text;
+begin
+  foreach c in array array['camp_bandeau','camp_eyebrow','camp_titre','camp_lede','camp_cta','camp_gages'] loop
+    execute format('alter table site_settings add column if not exists %I text not null default %L', c, '');
+    execute format('alter table site_settings add column if not exists %I text', c || '_ar');
+    execute format('alter table site_settings add column if not exists %I text', c || '_en');
+  end loop;
+end $$;
+
 -- ------------------------------------------------------------ vérification
 -- Doit renvoyer 13 tables. Si le compte est inférieur, relisez les erreurs
 -- au-dessus : le script est idempotent, vous pouvez le relancer.
