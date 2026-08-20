@@ -41,12 +41,28 @@ const kufi = Noto_Kufi_Arabic({
   preload: false,
 });
 
+/*
+  Jeton de vérification de domaine Meta.
+
+  Il prouve que ce site nous appartient, ce qui débloque l'attribution des
+  conversions et les publicités qui pointent vers ce domaine. Public par nature
+  — il est destiné à être lu dans le HTML — donc pas de variable d'environnement
+  à gérer pour lui.
+
+  Il passe par `metadata` et non par une balise posée à la main : Meta refuse le
+  jeton s'il arrive hors du `<head>` ou s'il est ajouté par du JavaScript. Next
+  écrit celui-ci dans le HTML rendu côté serveur, ce qui satisfait les deux
+  conditions.
+*/
+const META_DOMAINE = "k9vp5spgwc4626llyls8l51mfd201s";
+
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
   return {
     metadataBase: new URL("https://ladyfresh.dz"),
     title: { default: t.meta.title, template: "%s · Lady Fresh" },
     description: t.meta.description,
+    verification: { other: { "facebook-domain-verification": META_DOMAINE } },
     openGraph: {
       type: "website",
       siteName: "Lady Fresh",
