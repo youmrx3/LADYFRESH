@@ -12,12 +12,14 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  /* La page n'a plus que trois étages : les ancres suivent, sinon un lien
-     renverrait vers une section supprimée. */
+  /* La barre ne sert que le site de marque : la page de campagne a son propre
+     en-tête, allégé. Les ancres suivent donc les étages de l'accueil. */
   const liens = [
     { href: "#accueil", label: t.nav.accueil },
+    { href: "#commander", label: t.nav.commander },
+    { href: "#gammes", label: t.nav.gammes },
     { href: "#boutique", label: t.nav.boutique },
-    { href: "#commande", label: t.nav.commander },
+    { href: "#contact", label: t.nav.contact },
   ];
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import { Boutique } from "@/components/Boutique";
 import { BoutiqueProvider } from "@/components/BoutiqueProvider";
 import { Commande } from "@/components/Commande";
 import { EnteteBoutique } from "@/components/EnteteBoutique";
-import { Hero } from "@/components/Hero";
+import { HeroCampagne } from "@/components/HeroCampagne";
 import {
   getGammes,
   getPacks,
@@ -29,10 +29,14 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * L'adresse à donner dans une publicité.
  *
- * Même contenu que l'accueil, à deux détails près : une barre allégée au lieu
- * de la navigation complète, et l'étiquette `?c=` qui suit la visite jusqu'à la
- * commande. Le bon de commande est partagé avec l'accueil — quelqu'un peut
- * commencer ici et finir là-bas sans rien perdre.
+ * Trois étages, et rien d'autre : ce que c'est, ce qu'on peut prendre, comment
+ * le commander. Le site de marque raconte les gammes, les vidéos, la maison —
+ * ici chacun de ces étages serait un palier de plus entre un clic payé et un
+ * bon de commande rempli.
+ *
+ * Le bon de commande est partagé avec l'accueil : quelqu'un peut commencer ici
+ * et finir là-bas sans rien perdre. Seule l'étiquette `?c=` distingue la visite
+ * dans le suivi.
  */
 export default async function PageBoutique({
   searchParams,
@@ -66,7 +70,7 @@ export default async function PageBoutique({
     >
       <EnteteBoutique campagne={campagne} />
       <main>
-        <Hero settings={settings} packs={packs} />
+        <HeroCampagne settings={settings} packs={packs} />
         <Boutique />
         <Commande />
       </main>
