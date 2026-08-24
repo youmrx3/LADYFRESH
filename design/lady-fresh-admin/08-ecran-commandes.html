@@ -1,3 +1,33 @@
+<!-- @dsCard group="Écrans" -->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Écran — Commandes — Lady Fresh Admin</title>
+<style>
+:root{
+  --comptoir-bg:#f6f8f7; --comptoir-surface:#ffffff; --comptoir-fg:#14171a;
+  --comptoir-muted:#5e6668; --comptoir-line:#e1e6e5;
+  --or-plein:#c9a227; --or-trait:#7d6110; --or-fg:#0b0b0c;
+  --danger:#a30d23; --succes:#0f6b3f;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --comptoir-bg:#121316; --comptoir-surface:#191b1f; --comptoir-fg:#eef1f0;
+    --comptoir-muted:#9aa0a1; --comptoir-line:#2b2e33;
+    --or-plein:#cba53c; --or-trait:#cba53c; --danger:#ff8a9c; --succes:#56d19a;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--comptoir-bg);color:var(--comptoir-fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.page{padding:20px;max-width:880px;margin:0 auto}
+.data{font-variant-numeric:tabular-nums}
+dl{margin:0}
+ul{list-style:none;padding:0;margin:0}
+
 /*
   Le système du back-office.
 
@@ -322,3 +352,16 @@ select.adm-champ {
     animation: none;
   }
 }
+</style>
+</head>
+<body class="adm">
+<div class="page">
+
+<header style="margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--adm-line)">
+  <p class="adm-etiquette" style="margin-bottom:4px">Suivi</p>
+  <h1 style="font-size:var(--adm-t-xl);margin:0;font-weight:600;letter-spacing:-.01em">Commandes</h1>
+</header>
+<ul style="display:grid;gap:12px"><li class="adm-carte" style="overflow:hidden"><details open><summary style="display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:var(--adm-h-lg);cursor:pointer;list-style:none"><span style="width:10px;height:10px;border-radius:50%;background:#b8860b;flex:none"></span><span style="min-width:0;flex:1"><span style="display:flex;flex-wrap:wrap;gap:0 8px;align-items:baseline"><span class="data" style="font-size:var(--adm-t-md);font-weight:500">LF-260824-A4F2</span><span style="font-size:var(--adm-t-sm);color:var(--adm-muted)">Amina Belkacem</span></span><span style="display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:2px;font-size:var(--adm-t-xs);color:var(--adm-muted)"><span class="data">24/08/2026 09:14 &middot; En cours</span><span class="adm-pastille adm-pastille-nue" style="background:color-mix(in srgb,var(--adm-accent) 16%,transparent);border-color:transparent;color:var(--or-trait)">instagram-bio</span></span></span><span class="data" style="font-size:var(--adm-t-md);font-weight:500;flex:none">6 840 DA</span><span aria-hidden style="color:var(--adm-muted);flex:none">&#9662;</span></summary><div style="border-top:1px solid var(--adm-line)"><div style="padding:16px"><p class="adm-etiquette">La cliente</p><dl style="display:grid;gap:12px 24px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"><div><dt style="font-size:var(--adm-t-xs);color:var(--adm-muted);margin-bottom:2px">Nom</dt><dd style="font-size:var(--adm-t-md);margin:0">Amina Belkacem</dd></div><div><dt style="font-size:var(--adm-t-xs);color:var(--adm-muted);margin-bottom:2px">Téléphone</dt><dd style="font-size:var(--adm-t-md);margin:0"><a href="#" class="data" style="font-size:var(--adm-t-champ);text-decoration:underline;text-underline-offset:4px;color:inherit">0770 11 22 33</a></dd></div><div><dt style="font-size:var(--adm-t-xs);color:var(--adm-muted);margin-bottom:2px">Wilaya</dt><dd style="font-size:var(--adm-t-md);margin:0">16 — Alger</dd></div><div><dt style="font-size:var(--adm-t-xs);color:var(--adm-muted);margin-bottom:2px">Adresse</dt><dd style="font-size:var(--adm-t-md);margin:0">Rue Didouche Mourad, en face de la pharmacie</dd></div><div style="grid-column:1/-1"><dt style="font-size:var(--adm-t-xs);color:var(--adm-muted);margin-bottom:2px">Note</dt><dd style="font-size:var(--adm-t-md);margin:0">Livrer le matin de préférence</dd></div></dl></div><div style="padding:16px;border-top:1px solid var(--adm-line)"><p class="adm-etiquette">Le contenu</p><ul><li style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:var(--adm-t-md);margin-bottom:6px"><span>Coffret Sensuel <span class="data" style="font-size:var(--adm-t-sm);color:var(--adm-muted)">Quatre essentiels &middot; &times;2</span></span><span class="data">6 400 DA</span></li><li style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:var(--adm-t-md);margin-bottom:6px"><span>Brume parfumée Douceur <span class="data" style="font-size:var(--adm-t-sm);color:var(--adm-muted)">150 ml &middot; &times;1</span></span><span class="data">440 DA</span></li><li style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-top:1px solid var(--adm-line);padding-top:10px;margin-top:10px"><span class="adm-etiquette" style="margin:0">Total</span><span class="data" style="font-size:var(--adm-t-lg);font-weight:500">6 840 DA</span></li></ul></div><div style="padding:16px;border-top:1px solid var(--adm-line);background:var(--adm-surface-2)"><p class="adm-etiquette">Statut</p><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><button class="adm-btn" style="background:var(--adm-surface);color:var(--adm-fg);border-color:var(--adm-line)">Nouvelle</button><button class="adm-btn" style="background:#b8860b;color:#fff;border-color:#b8860b">En cours</button><button class="adm-btn" style="background:var(--adm-surface);color:var(--adm-fg);border-color:var(--adm-line)">Traitée</button><button class="adm-btn" style="background:var(--adm-surface);color:var(--adm-fg);border-color:var(--adm-line)">Livrée</button><span style="margin-inline-start:auto"><button class="adm-btn adm-btn-danger">Supprimer la commande</button></span></div></div></div></details></li><li class="adm-carte" style="overflow:hidden"><details><summary style="display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:var(--adm-h-lg);cursor:pointer;list-style:none"><span style="width:10px;height:10px;border-radius:50%;background:#c4102b;flex:none"></span><span style="min-width:0;flex:1"><span style="display:flex;flex-wrap:wrap;gap:0 8px;align-items:baseline"><span class="data" style="font-size:var(--adm-t-md);font-weight:500">LF-260824-K7M1</span><span style="font-size:var(--adm-t-sm);color:var(--adm-muted)">Nadia Cherif</span></span><span style="display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:2px;font-size:var(--adm-t-xs);color:var(--adm-muted)"><span class="data">24/08/2026 08:02 &middot; Nouvelle</span><span class="adm-pastille adm-pastille-nue" style="background:color-mix(in srgb,var(--adm-accent) 16%,transparent);border-color:transparent;color:var(--or-trait)">facebook-ads</span></span></span><span class="data" style="font-size:var(--adm-t-md);font-weight:500;flex:none">3 200 DA</span><span aria-hidden style="color:var(--adm-muted);flex:none">&#9662;</span></summary></details></li><li class="adm-carte" style="overflow:hidden"><details><summary style="display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:var(--adm-h-lg);cursor:pointer;list-style:none"><span style="width:10px;height:10px;border-radius:50%;background:#2f8f5b;flex:none"></span><span style="min-width:0;flex:1"><span style="display:flex;flex-wrap:wrap;gap:0 8px;align-items:baseline"><span class="data" style="font-size:var(--adm-t-md);font-weight:500">LF-260823-P9X0</span><span style="font-size:var(--adm-t-sm);color:var(--adm-muted)">Client non renseigné</span></span><span style="display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:2px;font-size:var(--adm-t-xs);color:var(--adm-muted)"><span class="data">23/08/2026 19:47 &middot; Livrée</span></span></span><span class="data" style="font-size:var(--adm-t-md);font-weight:500;flex:none">2 900 DA</span><span aria-hidden style="color:var(--adm-muted);flex:none">&#9662;</span></summary></details></li></ul><div style="position:fixed;inset-inline:0;bottom:0;display:flex;justify-content:center;padding:16px;pointer-events:none"><div class="adm-avis" style="max-width:26rem;display:flex;gap:10px;align-items:flex-start"><span style="color:var(--adm-ok)">&#10003;</span><span style="flex:1">Statut mis à jour.</span><span style="color:var(--adm-muted)">&times;</span></div></div>
+</div>
+</body>
+</html>

@@ -372,6 +372,9 @@ export const ar: Dictionary = {
       testerEmail: "اختبار البريد",
       canalForm: "استمارة",
       filtreTous: "الكل",
+      client: "الزبونة",
+      articles: "المحتوى",
+      totalLigne: "المجموع",
     },
 
     commun: {

@@ -88,147 +88,207 @@ export default async function Commandes({
       ) : (
         <ul className="mt-6 space-y-3">
           {visibles.map((order) => (
-            <li
-              key={order.id}
-              className="overflow-hidden rounded-[var(--adm-r)] border border-[color:var(--adm-line)]"
-              style={{ background: "var(--adm-surface)" }}
-            >
-              <details>
-                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 p-4">
+            <li key={order.id} className="adm-carte overflow-hidden">
+              <details className="group">
+                {/* ------------------------------------------- en-tête */}
+                <summary
+                  className="flex cursor-pointer list-none items-center gap-3 p-3 sm:p-4"
+                  style={{ minHeight: "var(--adm-h-lg)" }}
+                >
                   <span
                     aria-hidden
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ background: TEINTE[order.status] }}
                   />
-                  <span className="data text-[length:var(--adm-t-md)]">{order.ref}</span>
-                  {/*
-                    La pastille ne s'affiche plus que sur les commandes d'avant :
-                    tout arrive maintenant par le site, la mention serait la
-                    même sur chaque ligne.
-                  */}
-                  {order.channel === "whatsapp" && (
-                    <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
-                      {t.admin.commandes.canalWhatsapp}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-baseline gap-x-2">
+                      <span
+                        className="data"
+                        style={{ fontSize: "var(--adm-t-md)", fontWeight: 500 }}
+                      >
+                        {order.ref}
+                      </span>
+                      <span
+                        className="truncate"
+                        style={{ fontSize: "var(--adm-t-sm)", color: "var(--adm-muted)" }}
+                      >
+                        {order.customer_name || t.admin.commandes.clientAbsent}
+                      </span>
                     </span>
-                  )}
-                  <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
-                    {t.achat[order.purchase_type]}
-                  </span>
-                  {order.source && (
                     <span
-                      className="eyebrow rounded-full px-2 py-0.5 text-[length:var(--adm-t-xs)]"
-                      style={{
-                        background: "color-mix(in srgb, var(--or-plein) 22%, transparent)",
-                        color: "var(--or-trait)",
-                      }}
+                      className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1"
+                      style={{ fontSize: "var(--adm-t-xs)", color: "var(--adm-muted)" }}
                     >
-                      {order.source}
+                      <span className="data">
+                        {formatDate(order.created_at, HTML_LANG[locale])}
+                      </span>
+                      <span aria-hidden>·</span>
+                      <span>{t.statuts[order.status]}</span>
+                      {order.source && (
+                        <span
+                          className="adm-pastille adm-pastille-nue"
+                          style={{
+                            background:
+                              "color-mix(in srgb, var(--adm-accent) 16%, transparent)",
+                            borderColor: "transparent",
+                            color: "var(--or-trait)",
+                          }}
+                        >
+                          {order.source}
+                        </span>
+                      )}
                     </span>
-                  )}
-                  <span className="min-w-0 flex-1 truncate text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
-                    {order.customer_name || t.admin.commandes.clientAbsent}
                   </span>
-                  <span className="data text-[length:var(--adm-t-md)]">
+                  <span
+                    className="data shrink-0"
+                    style={{ fontSize: "var(--adm-t-md)", fontWeight: 500 }}
+                  >
                     {da(order.total, t.unites.devise)}
+                  </span>
+                  <span
+                    aria-hidden
+                    className="shrink-0 transition-transform duration-200 group-open:rotate-180"
+                    style={{ color: "var(--adm-muted)" }}
+                  >
+                    &#9662;
                   </span>
                 </summary>
 
-                <div className="border-t border-[color:var(--adm-line)]">
-                  <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
-                    <div className="text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
-                      <p className="data">
-                        {formatDate(order.created_at, HTML_LANG[locale])}
-                      </p>
-                      {order.phone && (
-                        <a
-                          href={`tel:${order.phone.replace(/\s/g, "")}`}
-                          dir="ltr"
-                          className="data inline-block underline underline-offset-2"
-                        >
-                          {order.phone}
-                        </a>
+                <div className="border-t" style={{ borderColor: "var(--adm-line)" }}>
+                  {/* ----------------------------------------- la cliente */}
+                  <div className="p-4">
+                    <p className="adm-etiquette">{t.admin.commandes.client}</p>
+                    <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                      <Info label={t.commande.nom}>
+                        {order.customer_name || "\u2014"}
+                      </Info>
+                      <Info label={t.commande.telephone}>
+                        {order.phone ? (
+                          <a
+                            href={"tel:" + order.phone.replace(/\s/g, "")}
+                            dir="ltr"
+                            className="data underline underline-offset-4"
+                            style={{ fontSize: "var(--adm-t-champ)" }}
+                          >
+                            {order.phone}
+                          </a>
+                        ) : (
+                          "\u2014"
+                        )}
+                      </Info>
+                      <Info label={t.commande.wilaya}>{order.wilaya || "\u2014"}</Info>
+                      <Info label={t.admin.commandes.adresse}>
+                        {order.address || "\u2014"}
+                      </Info>
+                      {order.note && (
+                        <Info label={t.admin.commandes.note} large>
+                          {order.note}
+                        </Info>
                       )}
-                      {order.wilaya && <span> · {order.wilaya}</span>}
-                    </div>
-
-                    <FormAction
-                      action={changerStatutCommande}
-                      className="flex items-end gap-2"
-                    >
-                      <input type="hidden" name="id" value={order.id} />
-                      <label className="block">
-                        <span className="adm-etiquette">
-                          {t.admin.commandes.statut}
-                        </span>
-                        <select
-                          name="status"
-                          defaultValue={order.status}
-                          className="champ !w-auto !py-2 !text-[length:var(--adm-t-sm)]"
-                        >
-                          {STATUTS.map((s) => (
-                            <option key={s} value={s}>
-                              {t.statuts[s]}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <Envoyer>{t.admin.commandes.mettreAJour}</Envoyer>
-                    </FormAction>
-
-                    {/* Irréversible : la confirmation rappelle la référence. */}
-                    <FormAction action={supprimerCommande}>
-                      <input type="hidden" name="id" value={order.id} />
-                      <Envoyer
-                        variante="danger"
-                        confirmer={fill(t.admin.commandes.confirmSuppr, {
-                          ref: order.ref,
-                        })}
-                      >
-                        {t.admin.commandes.supprimer}
-                      </Envoyer>
-                    </FormAction>
+                    </dl>
                   </div>
 
-                  <ul className="divide-y divide-trait border-t border-[color:var(--adm-line)]">
-                    {order.items?.map((item, i) => (
-                      <li
-                        key={item.id || `${item.product_name}-${i}`}
-                        className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-2.5"
-                      >
-                        <span className="text-[length:var(--adm-t-md)]">
-                          {item.product_name}{" "}
-                          <span className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
-                            {item.size_label}
+                  {/* ------------------------------------------ le contenu */}
+                  <div className="border-t p-4" style={{ borderColor: "var(--adm-line)" }}>
+                    <p className="adm-etiquette">{t.admin.commandes.articles}</p>
+                    <ul className="space-y-1.5">
+                      {order.items?.map((item, i) => (
+                        <li
+                          key={item.id || item.product_name + "-" + i}
+                          className="flex items-baseline justify-between gap-3"
+                          style={{ fontSize: "var(--adm-t-md)" }}
+                        >
+                          <span className="min-w-0">
+                            {item.product_name}{" "}
+                            <span
+                              className="data"
+                              style={{
+                                fontSize: "var(--adm-t-sm)",
+                                color: "var(--adm-muted)",
+                              }}
+                            >
+                              {item.size_label} &middot; &times;{item.quantity}
+                            </span>
                           </span>
+                          <span className="data shrink-0">
+                            {da(item.line_total, t.unites.devise)}
+                          </span>
+                        </li>
+                      ))}
+                      <li
+                        className="mt-2 flex items-baseline justify-between gap-3 border-t pt-2"
+                        style={{ borderColor: "var(--adm-line)" }}
+                      >
+                        <span className="adm-etiquette mb-0">
+                          {t.admin.commandes.totalLigne}
                         </span>
-                        <span className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
-                          {item.quantity}{" "}
-                          {order.purchase_type === "gros"
-                            ? t.unites.cartons
-                            : t.unites.pieces}{" "}
-                          × {da(item.unit_price, t.unites.devise)}
-                        </span>
-                        <span className="data text-[length:var(--adm-t-md)]">
-                          {da(item.line_total, t.unites.devise)}
+                        <span
+                          className="data"
+                          style={{ fontSize: "var(--adm-t-lg)", fontWeight: 500 }}
+                        >
+                          {da(order.total, t.unites.devise)}
                         </span>
                       </li>
-                    ))}
-                  </ul>
+                    </ul>
+                  </div>
 
-                  {(order.address || order.note) && (
-                    <div className="border-t border-[color:var(--adm-line)] bg-comptoir px-4 py-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
-                      {order.address && (
-                        <p>
-                          {t.admin.commandes.adresse}{t.api.sep}{order.address}
-                        </p>
-                      )}
-                      {order.note && (
-                        <p>
-                          {t.admin.commandes.note}{t.api.sep}{order.note}
-                        </p>
-                      )}
+                  {/*
+                    Le statut se pose d'un seul geste. Le menu déroulant suivi
+                    d'un bouton en demandait trois, pour quatre valeurs
+                    possibles — et laissait la ligne ouverte sans rien dire.
+
+                    La suppression est reléguée à l'autre bout de la rangée :
+                    on ne veut pas la frôler en changeant un statut.
+                  */}
+                  <div
+                    className="border-t p-4"
+                    style={{
+                      borderColor: "var(--adm-line)",
+                      background: "var(--adm-surface-2)",
+                    }}
+                  >
+                    <p className="adm-etiquette">{t.admin.commandes.statut}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {STATUTS.map((s) => {
+                        const on = s === order.status;
+                        return (
+                          <FormAction key={s} action={changerStatutCommande}>
+                            <input type="hidden" name="id" value={order.id} />
+                            <input type="hidden" name="status" value={s} />
+                            <button
+                              type="submit"
+                              disabled={on}
+                              aria-current={on ? "true" : undefined}
+                              className="adm-btn"
+                              style={{
+                                background: on ? TEINTE[s] : "var(--adm-surface)",
+                                color: on ? "#fff" : "var(--adm-fg)",
+                                borderColor: on ? TEINTE[s] : "var(--adm-line)",
+                                opacity: 1,
+                                cursor: on ? "default" : "pointer",
+                              }}
+                            >
+                              {t.statuts[s]}
+                            </button>
+                          </FormAction>
+                        );
+                      })}
+
+                      <span className="ms-auto">
+                        <FormAction action={supprimerCommande}>
+                          <input type="hidden" name="id" value={order.id} />
+                          <Envoyer
+                            variante="danger"
+                            confirmer={fill(t.admin.commandes.confirmSuppr, {
+                              ref: order.ref,
+                            })}
+                          >
+                            {t.admin.commandes.supprimer}
+                          </Envoyer>
+                        </FormAction>
+                      </span>
                     </div>
-                  )}
+                  </div>
                 </div>
               </details>
             </li>
@@ -275,5 +335,32 @@ function Onglet({
       </span>
       <span className="data mt-0.5 block text-[1.2rem]">{n}</span>
     </Link>
+  );
+}
+
+
+/** Une paire étiquette / valeur, alignée avec ses voisines. */
+function Info({
+  label,
+  children,
+  large,
+}: {
+  label: string;
+  children: React.ReactNode;
+  large?: boolean;
+}) {
+  return (
+    <div className={large ? "sm:col-span-2" : undefined}>
+      <dt
+        style={{
+          fontSize: "var(--adm-t-xs)",
+          color: "var(--adm-muted)",
+          marginBottom: "2px",
+        }}
+      >
+        {label}
+      </dt>
+      <dd style={{ fontSize: "var(--adm-t-md)", margin: 0 }}>{children}</dd>
+    </div>
   );
 }

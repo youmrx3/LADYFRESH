@@ -374,6 +374,9 @@ export const fr = {
       testerEmail: "Tester l'email",
       canalForm: "Formulaire",
       filtreTous: "Toutes",
+      client: "La cliente",
+      articles: "Le contenu",
+      totalLigne: "Total",
     },
 
     commun: {

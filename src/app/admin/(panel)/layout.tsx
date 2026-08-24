@@ -10,6 +10,7 @@ import {
 import { seDeconnecter } from "@/lib/actions";
 import { isAdmin } from "@/lib/auth";
 import { supabaseAdminConfigured } from "@/lib/supabase";
+import { Avis } from "@/components/admin/Retours";
 import { getT } from "@/i18n/server";
 import "../admin.css";
 
@@ -64,6 +65,7 @@ export default async function LayoutAdmin({
   );
 
   return (
+    <Avis>
     <div className="adm min-h-screen bg-comptoir lg:flex">
       {/* -------------------------------------------- barre haute — mobile */}
       <header
@@ -146,5 +148,6 @@ export default async function LayoutAdmin({
         {children}
       </main>
     </div>
+    </Avis>
   );
 }

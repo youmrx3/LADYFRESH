@@ -368,6 +368,9 @@ export const en: Dictionary = {
       testerEmail: "Test the email",
       canalForm: "Form",
       filtreTous: "All",
+      client: "Customer",
+      articles: "Contents",
+      totalLigne: "Total",
     },
 
     commun: {

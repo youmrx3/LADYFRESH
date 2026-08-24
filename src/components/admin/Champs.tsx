@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
+import { useAvis } from "./Retours";
 import { useFormStatus } from "react-dom";
 import type { Retour } from "@/lib/actions";
 
@@ -46,30 +47,50 @@ export function Envoyer({
   );
 }
 
-/** Enveloppe une action serveur et affiche son message sous le formulaire. */
+/**
+ * Enveloppe une action serveur.
+ *
+ * Une réussite s'annonce en bannière et referme la ligne : la modification
+ * faite, on revient à la liste plutôt que de rester devant un formulaire ouvert
+ * sans savoir si le clic a porté.
+ *
+ * Un échec reste sur place, sous le formulaire, là où l'on peut corriger — une
+ * erreur qui s'efface d'elle-même est une erreur qu'on ne lira pas.
+ */
 export function FormAction({
   action,
   children,
   className = "",
   id,
+  garderOuvert = false,
 }: {
   action: (prev: Retour, formData: FormData) => Promise<Retour>;
   children: React.ReactNode;
   className?: string;
   id?: string;
+  /** Pour les écrans d'un seul formulaire, qui n'ont rien à refermer. */
+  garderOuvert?: boolean;
 }) {
   const [etat, formAction] = useActionState(action, {});
+  const annoncer = useAvis();
+  const forme = useRef<HTMLFormElement>(null);
+  const vu = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    // `useActionState` conserve son état : sans ce garde, la bannière
+    // reviendrait à chaque nouveau rendu du parent.
+    if (!etat.ok || etat.ok === vu.current) return;
+    vu.current = etat.ok;
+    annoncer(etat.ok);
+    if (!garderOuvert) forme.current?.closest("details")?.removeAttribute("open");
+  }, [etat.ok, annoncer, garderOuvert]);
+
   return (
-    <form action={formAction} className={className} id={id}>
+    <form ref={forme} action={formAction} className={className} id={id}>
       {children}
       {etat.error && (
         <p role="alert" className="adm-message adm-message-erreur mt-3">
           {etat.error}
-        </p>
-      )}
-      {etat.ok && (
-        <p role="status" className="adm-message adm-message-ok mt-3">
-          {etat.ok}
         </p>
       )}
     </form>
