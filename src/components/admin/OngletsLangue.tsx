@@ -19,10 +19,10 @@ export function OngletsLangue({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="eyebrow text-graphite-doux">{label}</span>
+      <span className="eyebrow text-[color:var(--adm-muted)]">{label}</span>
       <div
         className="flex overflow-hidden rounded border"
-        style={{ borderColor: "var(--comptoir-line)" }}
+        style={{ borderColor: "var(--adm-line)" }}
       >
         {LOCALES.map((code) => {
           const on = code === actif;
@@ -31,10 +31,10 @@ export function OngletsLangue({
               key={code}
               href={code === "fr" ? base : `${base}?edit=${code}`}
               aria-current={on ? "true" : undefined}
-              className="px-3 py-1.5 text-[12.5px] transition-colors"
+              className="px-3 py-1.5 text-[length:var(--adm-t-sm)] transition-colors"
               style={{
                 background: on ? "var(--comptoir-fg)" : "transparent",
-                color: on ? "var(--comptoir-surface)" : "var(--comptoir-muted)",
+                color: on ? "var(--adm-surface)" : "var(--comptoir-muted)",
               }}
             >
               {LOCALE_LABEL[code]}

@@ -61,7 +61,7 @@ export default async function Formats() {
         titre={a.formats.titre}
         aide={a.formats.aide}
         action={
-          <p className="data text-[13px] text-graphite-doux">
+          <p className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
             {fill(total > 1 ? a.formats.totalPluriel : a.formats.total, {
               n: total,
               p: products.length,
@@ -73,7 +73,7 @@ export default async function Formats() {
       <Volet label={a.formats.nouveau} labelOuvert={a.commun.annuler} ton="principal">
         <FormAction
           action={enregistrerVariante}
-          className="rounded-[10px] border border-trait p-4"
+          className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
         >
           <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Liste
@@ -107,7 +107,7 @@ export default async function Formats() {
             />
           </div>
           <div className="mt-4">
-            <Envoyer variante="or">{a.commun.ajouter}</Envoyer>
+            <Envoyer variante="principal">{a.commun.ajouter}</Envoyer>
           </div>
         </FormAction>
       </Volet>
@@ -116,10 +116,10 @@ export default async function Formats() {
         {products.map((product) => (
           <li
             key={product.id}
-            className="overflow-hidden rounded-[10px] border border-trait"
-            style={{ background: "var(--comptoir-surface)" }}
+            className="overflow-hidden rounded-[var(--adm-r)] border border-[color:var(--adm-line)]"
+            style={{ background: "var(--adm-surface)" }}
           >
-            <div className="flex items-center gap-3 border-b border-trait p-3 sm:p-4">
+            <div className="flex items-center gap-3 border-b border-[color:var(--adm-line)] p-3 sm:p-4">
               <span
                 className="relative block h-11 w-11 shrink-0 overflow-hidden rounded"
                 style={{
@@ -137,10 +137,10 @@ export default async function Formats() {
                 )}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="display truncate text-[1rem] leading-tight">
+                <p className="display truncate text-[length:var(--adm-t-md)] leading-tight">
                   {nom(product.id)}
                 </p>
-                <p className="data mt-0.5 text-[11.5px] text-graphite-doux">
+                <p className="data mt-0.5 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
                   {product.variants.length
                     ? fill(
                         product.variants.length > 1
@@ -159,13 +159,13 @@ export default async function Formats() {
                   <li key={variant.id}>
                     <details className="group">
                       <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-                        <span className="data text-[14px]">
+                        <span className="data text-[length:var(--adm-t-md)]">
                           {variant.size_label}
                         </span>
-                        <span className="data text-[13px] text-graphite-doux">
+                        <span className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
                           {da(variant.price_demi_gros, devise)}
                         </span>
-                        <span className="eyebrow shrink-0 text-[10px] text-graphite-doux">
+                        <span className="eyebrow shrink-0 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
                           <span className="group-open:hidden">
                             {a.commun.modifier}
                           </span>
@@ -175,7 +175,7 @@ export default async function Formats() {
                         </span>
                       </summary>
 
-                      <div className="border-t border-trait bg-comptoir p-4">
+                      <div className="border-t border-[color:var(--adm-line)] bg-comptoir p-4">
                         <FormAction action={enregistrerVariante}>
                           <input type="hidden" name="id" value={variant.id} />
                           <input

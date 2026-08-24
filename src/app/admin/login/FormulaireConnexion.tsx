@@ -17,7 +17,7 @@ export function FormulaireConnexion({ labels }: { labels: Labels }) {
   return (
     <form action={action} className="mt-8">
       <label className="block">
-        <span className="etiquette" style={{ color: "var(--vitrine-muted)" }}>
+        <span className="adm-etiquette" style={{ color: "var(--vitrine-muted)" }}>
           {labels.email}
         </span>
         <input
@@ -27,12 +27,12 @@ export function FormulaireConnexion({ labels }: { labels: Labels }) {
           autoFocus
           dir="ltr"
           autoComplete="username"
-          className="champ"
+          className="adm-champ"
         />
       </label>
 
       <label className="mt-3 block">
-        <span className="etiquette" style={{ color: "var(--vitrine-muted)" }}>
+        <span className="adm-etiquette" style={{ color: "var(--vitrine-muted)" }}>
           {labels.motDePasse}
         </span>
         <input
@@ -40,7 +40,7 @@ export function FormulaireConnexion({ labels }: { labels: Labels }) {
           type="password"
           required
           autoComplete="current-password"
-          className="champ"
+          className="adm-champ"
         />
       </label>
 
@@ -49,8 +49,8 @@ export function FormulaireConnexion({ labels }: { labels: Labels }) {
       {etat.error && (
         <p
           role="alert"
-          className="mt-3 text-[13px]"
-          style={{ color: "var(--danger)" }}
+          className="mt-3 text-[length:var(--adm-t-sm)]"
+          style={{ color: "var(--adm-danger)" }}
         >
           {etat.error}
         </p>
@@ -62,7 +62,7 @@ export function FormulaireConnexion({ labels }: { labels: Labels }) {
 function Bouton({ labels }: { labels: Labels }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="btn btn-or mt-4 w-full">
+    <button type="submit" disabled={pending} className="adm-btn adm-btn-principal mt-4 w-full">
       {pending ? labels.verification : labels.entrer}
     </button>
   );

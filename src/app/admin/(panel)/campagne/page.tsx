@@ -58,7 +58,7 @@ export default async function Campagne({
             href="/boutique"
             target="_blank"
             rel="noreferrer"
-            className="eyebrow text-graphite-doux underline underline-offset-4 hover:text-graphite"
+            className="eyebrow text-[color:var(--adm-muted)] underline underline-offset-4 "
           >
             {a.voir} →
           </Link>
@@ -74,7 +74,7 @@ export default async function Campagne({
       </div>
 
       {packs.length === 0 && (
-        <p className="mb-5 rounded border border-dashed border-trait px-5 py-4 text-[13.5px] text-graphite-doux">
+        <p className="mb-5 rounded border border-dashed border-[color:var(--adm-line)] px-5 py-4 text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
           {a.sansCoffret}{" "}
           <Link href="/admin/packs" className="underline underline-offset-2">
             {t.admin.onglets.packs}
@@ -86,12 +86,12 @@ export default async function Campagne({
         <input type="hidden" name="edit_lang" value={langue} />
 
         <div
-          className="rounded-[10px] border border-trait p-4"
-          style={{ background: "var(--comptoir-surface)" }}
+          className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
+          style={{ background: "var(--adm-surface)" }}
         >
           {/* ------------------------------------------------- bandeau */}
-          <p className="eyebrow text-graphite-doux">{a.sectionBandeau}</p>
-          <p className="mb-3 text-[12.5px] text-graphite-doux">{a.bandeauAide}</p>
+          <p className="eyebrow text-[color:var(--adm-muted)]">{a.sectionBandeau}</p>
+          <p className="mb-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.bandeauAide}</p>
 
           <Champ
             label={a.bandeau}
@@ -112,11 +112,11 @@ export default async function Campagne({
 
         {/* -------------------------------------------------- ouverture */}
         <div
-          className="mt-4 rounded-[10px] border border-trait p-4"
-          style={{ background: "var(--comptoir-surface)" }}
+          className="mt-4 rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
+          style={{ background: "var(--adm-surface)" }}
         >
-          <p className="eyebrow text-graphite-doux">{a.sectionHero}</p>
-          <p className="mb-3 text-[12.5px] text-graphite-doux">{a.heroAide}</p>
+          <p className="eyebrow text-[color:var(--adm-muted)]">{a.sectionHero}</p>
+          <p className="mb-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.heroAide}</p>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <Champ
@@ -141,7 +141,7 @@ export default async function Campagne({
               rows={2}
               defaultValue={champ(settings, "camp_titre", langue)}
             />
-            <p className="mt-1 text-[12px] text-graphite-doux">{a.titreAide}</p>
+            <p className="mt-1 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.titreAide}</p>
           </div>
 
           <div className="mt-3">
@@ -162,7 +162,7 @@ export default async function Campagne({
               defaultValue={champ(settings, "camp_gages", langue)}
               placeholder="Livraison 58 wilayas|Paiement à la réception|On vous rappelle"
             />
-            <p className="mt-1 text-[12px] text-graphite-doux">{a.gagesAide}</p>
+            <p className="mt-1 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.gagesAide}</p>
           </div>
 
           {fr ? (
@@ -174,17 +174,17 @@ export default async function Campagne({
                 labels={labelsImage}
                 ratio="4 / 5"
               />
-              <p className="mt-1 text-[12px] text-graphite-doux">{a.photoAide}</p>
+              <p className="mt-1 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.photoAide}</p>
             </div>
           ) : (
-            <p className="mt-3 text-[12.5px] text-graphite-doux">
+            <p className="mt-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
               {t.admin.commun.videFrRepris}
             </p>
           )}
         </div>
 
         <div className="mt-4">
-          <Envoyer variante="or">{t.admin.commun.enregistrer}</Envoyer>
+          <Envoyer variante="principal">{t.admin.commun.enregistrer}</Envoyer>
         </div>
       </FormAction>
     </div>

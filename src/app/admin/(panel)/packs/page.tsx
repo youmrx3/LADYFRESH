@@ -79,8 +79,8 @@ export default async function Packs({
       {langue === "fr" && (
         <Volet label={a.nouveau} labelOuvert={t.admin.commun.annuler} ton="principal">
           <div
-            className="rounded-[10px] border border-trait p-4"
-            style={{ background: "var(--comptoir-surface)" }}
+            className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
+            style={{ background: "var(--adm-surface)" }}
           >
             <FormAction action={enregistrerPack}>
               <input type="hidden" name="edit_lang" value="fr" />
@@ -92,7 +92,7 @@ export default async function Packs({
                 ordreParDefaut={packs.length + 1}
               />
               <div className="mt-4">
-                <Envoyer variante="or">{t.admin.commun.creer}</Envoyer>
+                <Envoyer variante="principal">{t.admin.commun.creer}</Envoyer>
               </div>
             </FormAction>
           </div>
@@ -112,7 +112,7 @@ export default async function Packs({
                 ) : (
                   <span
                     className="block h-full w-full"
-                    style={{ background: "var(--comptoir-line)" }}
+                    style={{ background: "var(--adm-line)" }}
                   />
                 )}
               </span>
@@ -272,7 +272,7 @@ function ChampsPack({
           </div>
         </>
       ) : (
-        <p className="mt-2 text-[12.5px] text-graphite-doux">
+        <p className="mt-2 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
           {t.admin.commun.videFrRepris}
         </p>
       )}

@@ -51,14 +51,14 @@ export default async function Types({
       {langue === "fr" && (
         <Volet label={a.types.nouveau} labelOuvert={a.commun.annuler} ton="principal">
           <div
-            className="rounded-[10px] border border-trait p-4"
-            style={{ background: "var(--comptoir-surface)" }}
+            className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
+            style={{ background: "var(--adm-surface)" }}
           >
             <FormAction action={enregistrerType}>
               <input type="hidden" name="edit_lang" value="fr" />
               <ChampsType t={t} langue="fr" ordreParDefaut={types.length + 1} />
               <div className="mt-4">
-                <Envoyer variante="or">{a.commun.creer}</Envoyer>
+                <Envoyer variante="principal">{a.commun.creer}</Envoyer>
               </div>
             </FormAction>
           </div>
@@ -171,7 +171,7 @@ function ChampsType({
       )}
 
       {langue !== "fr" && (
-        <p className="mt-2 text-[12.5px] text-graphite-doux">
+        <p className="mt-2 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
           {a.commun.videFrRepris}
         </p>
       )}

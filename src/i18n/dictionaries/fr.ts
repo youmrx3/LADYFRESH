@@ -331,6 +331,11 @@ export const fr = {
       confirmSuppr: "Supprimer cette piste ?",
     },
     onglets: {
+      groupes: {
+        vente: "Vente",
+        catalogue: "Catalogue",
+        site: "Site",
+      },
       courts: {
         commandes: "Commandes",
         pistes: "À rappeler",

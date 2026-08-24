@@ -26,23 +26,23 @@ export function AmorcerBase({
         onClick={(e) => {
           if (!window.confirm(confirmer)) e.preventDefault();
         }}
-        className="btn btn-fantome !px-4 !py-2.5 !text-[11px]"
+        className="btn btn-fantome !px-4 !py-2.5 !text-[length:var(--adm-t-xs)]"
       >
         {pending ? enCours : label}
       </button>
       {etat.error && (
         <p
           role="alert"
-          className="mt-2 max-w-[28rem] text-[12.5px]"
-          style={{ color: "var(--danger)" }}
+          className="mt-2 max-w-[28rem] text-[length:var(--adm-t-sm)]"
+          style={{ color: "var(--adm-danger)" }}
         >
           {etat.error}
         </p>
       )}
       {etat.ok && (
         <p
-          className="mt-2 max-w-[28rem] text-[12.5px]"
-          style={{ color: "var(--succes)" }}
+          className="mt-2 max-w-[28rem] text-[length:var(--adm-t-sm)]"
+          style={{ color: "var(--adm-ok)" }}
         >
           {etat.ok}
         </p>

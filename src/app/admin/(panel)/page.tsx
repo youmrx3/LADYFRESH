@@ -46,7 +46,7 @@ export default async function Commandes({
         titre={t.admin.commandes.titre}
         action={
           <div className="flex flex-col items-end gap-1.5">
-            <p className="data text-[13px] text-graphite-doux">
+            <p className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
               {fill(t.admin.commandes.total, { n: orders.length })}
             </p>
             {/*
@@ -55,7 +55,7 @@ export default async function Commandes({
               écrit ici même ce qui a échoué, ou vers où c'est parti.
             */}
             <FormAction action={testerEmail}>
-              <Envoyer variante="fantome">{t.admin.commandes.testerEmail}</Envoyer>
+              <Envoyer variante="neutre">{t.admin.commandes.testerEmail}</Envoyer>
             </FormAction>
           </div>
         }
@@ -82,7 +82,7 @@ export default async function Commandes({
       </nav>
 
       {visibles.length === 0 ? (
-        <p className="mt-8 rounded border border-dashed border-trait px-6 py-16 text-center text-[15px] text-graphite-doux">
+        <p className="mt-8 rounded border border-dashed border-[color:var(--adm-line)] px-6 py-16 text-center text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
           {t.admin.commandes.vide}
         </p>
       ) : (
@@ -90,8 +90,8 @@ export default async function Commandes({
           {visibles.map((order) => (
             <li
               key={order.id}
-              className="overflow-hidden rounded-[10px] border border-trait"
-              style={{ background: "var(--comptoir-surface)" }}
+              className="overflow-hidden rounded-[var(--adm-r)] border border-[color:var(--adm-line)]"
+              style={{ background: "var(--adm-surface)" }}
             >
               <details>
                 <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 p-4">
@@ -100,23 +100,23 @@ export default async function Commandes({
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ background: TEINTE[order.status] }}
                   />
-                  <span className="data text-[14px]">{order.ref}</span>
+                  <span className="data text-[length:var(--adm-t-md)]">{order.ref}</span>
                   {/*
                     La pastille ne s'affiche plus que sur les commandes d'avant :
                     tout arrive maintenant par le site, la mention serait la
                     même sur chaque ligne.
                   */}
                   {order.channel === "whatsapp" && (
-                    <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+                    <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
                       {t.admin.commandes.canalWhatsapp}
                     </span>
                   )}
-                  <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+                  <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
                     {t.achat[order.purchase_type]}
                   </span>
                   {order.source && (
                     <span
-                      className="eyebrow rounded-full px-2 py-0.5 text-[9.5px]"
+                      className="eyebrow rounded-full px-2 py-0.5 text-[length:var(--adm-t-xs)]"
                       style={{
                         background: "color-mix(in srgb, var(--or-plein) 22%, transparent)",
                         color: "var(--or-trait)",
@@ -125,17 +125,17 @@ export default async function Commandes({
                       {order.source}
                     </span>
                   )}
-                  <span className="min-w-0 flex-1 truncate text-[13.5px] text-graphite-doux">
+                  <span className="min-w-0 flex-1 truncate text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
                     {order.customer_name || t.admin.commandes.clientAbsent}
                   </span>
-                  <span className="data text-[15px]">
+                  <span className="data text-[length:var(--adm-t-md)]">
                     {da(order.total, t.unites.devise)}
                   </span>
                 </summary>
 
-                <div className="border-t border-trait">
+                <div className="border-t border-[color:var(--adm-line)]">
                   <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
-                    <div className="text-[13px] text-graphite-doux">
+                    <div className="text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
                       <p className="data">
                         {formatDate(order.created_at, HTML_LANG[locale])}
                       </p>
@@ -157,13 +157,13 @@ export default async function Commandes({
                     >
                       <input type="hidden" name="id" value={order.id} />
                       <label className="block">
-                        <span className="etiquette">
+                        <span className="adm-etiquette">
                           {t.admin.commandes.statut}
                         </span>
                         <select
                           name="status"
                           defaultValue={order.status}
-                          className="champ !w-auto !py-2 !text-[13px]"
+                          className="champ !w-auto !py-2 !text-[length:var(--adm-t-sm)]"
                         >
                           {STATUTS.map((s) => (
                             <option key={s} value={s}>
@@ -189,26 +189,26 @@ export default async function Commandes({
                     </FormAction>
                   </div>
 
-                  <ul className="divide-y divide-trait border-t border-trait">
+                  <ul className="divide-y divide-trait border-t border-[color:var(--adm-line)]">
                     {order.items?.map((item, i) => (
                       <li
                         key={item.id || `${item.product_name}-${i}`}
                         className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-2.5"
                       >
-                        <span className="text-[14px]">
+                        <span className="text-[length:var(--adm-t-md)]">
                           {item.product_name}{" "}
-                          <span className="data text-[12px] text-graphite-doux">
+                          <span className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
                             {item.size_label}
                           </span>
                         </span>
-                        <span className="data text-[13px] text-graphite-doux">
+                        <span className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
                           {item.quantity}{" "}
                           {order.purchase_type === "gros"
                             ? t.unites.cartons
                             : t.unites.pieces}{" "}
                           × {da(item.unit_price, t.unites.devise)}
                         </span>
-                        <span className="data text-[14px]">
+                        <span className="data text-[length:var(--adm-t-md)]">
                           {da(item.line_total, t.unites.devise)}
                         </span>
                       </li>
@@ -216,7 +216,7 @@ export default async function Commandes({
                   </ul>
 
                   {(order.address || order.note) && (
-                    <div className="border-t border-trait bg-comptoir px-4 py-3 text-[13px] text-graphite-doux">
+                    <div className="border-t border-[color:var(--adm-line)] bg-comptoir px-4 py-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
                       {order.address && (
                         <p>
                           {t.admin.commandes.adresse}{t.api.sep}{order.address}
@@ -258,12 +258,12 @@ function Onglet({
       aria-current={actif ? "page" : undefined}
       className="rounded border px-3 py-2.5 transition-colors"
       style={{
-        borderColor: actif ? "var(--comptoir-fg)" : "var(--comptoir-line)",
-        background: actif ? "var(--comptoir-fg)" : "var(--comptoir-surface)",
-        color: actif ? "var(--comptoir-surface)" : "inherit",
+        borderColor: actif ? "var(--comptoir-fg)" : "var(--adm-line)",
+        background: actif ? "var(--comptoir-fg)" : "var(--adm-surface)",
+        color: actif ? "var(--adm-surface)" : "inherit",
       }}
     >
-      <span className="eyebrow flex items-center gap-1.5 text-[9.5px] opacity-70">
+      <span className="eyebrow flex items-center gap-1.5 text-[length:var(--adm-t-xs)] opacity-70">
         {teinte && (
           <span
             aria-hidden

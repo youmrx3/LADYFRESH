@@ -4,6 +4,7 @@ import { FormulaireConnexion } from "./FormulaireConnexion";
 import { BasculeTheme } from "@/components/Bascules";
 import { authConfiguree, isAdmin } from "@/lib/auth";
 import { getT } from "@/i18n/server";
+import "../admin.css";
 
 export const metadata = { title: "Connexion", robots: { index: false, follow: false } };
 
@@ -13,7 +14,7 @@ export default async function Connexion() {
   const configure = authConfiguree;
 
   return (
-    <main className="etage-vitrine flex min-h-screen items-center justify-center px-6 py-16">
+    <main className="adm etage-vitrine flex min-h-screen items-center justify-center px-6 py-16">
       <div className="w-full max-w-[24rem]">
         <div className="flex items-center justify-between gap-4">
           <Image
@@ -49,7 +50,7 @@ export default async function Connexion() {
           />
         ) : (
           <div className="plaque mt-8 p-5">
-            <p className="text-[14px] leading-relaxed text-craie">
+            <p className="text-[length:var(--adm-t-md)] leading-relaxed text-craie">
               {t.admin.pasDeMotDePasse}
             </p>
           </div>

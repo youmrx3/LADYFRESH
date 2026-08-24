@@ -3,13 +3,38 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+/**
+ * La navigation du back-office.
+ *
+ * Elle a grossi sans qu'on la redessine : partie de six sections, elle en
+ * compte neuf, et la barre du bas était restée sur six colonnes. Les trois
+ * dernières retombaient à la ligne, chaque cible faisait quarante pixels de
+ * large, et les légendes tenaient en 9,5 px. Autant dire qu'on visait au juger.
+ *
+ * Deux réponses, une par écran.
+ *
+ * Sur ordinateur, la colonne se regroupe : vendre, tenir le catalogue, écrire
+ * le site. Neuf entrées d'affilée ne se lisent pas ; trois familles de trois se
+ * parcourent d'un coup d'œil.
+ *
+ * Sur téléphone, une bande d'onglets qui défile sous le titre. Rien n'est caché
+ * derrière un menu, chaque pastille atteint la hauteur minimale au pouce, et la
+ * place gagnée en bas revient au contenu. La section active se ramène dans le
+ * champ de vision au montage — sans quoi, arrivé sur la neuvième, on ne saurait
+ * pas où l'on se trouve.
+ */
+
+export type Groupe = "vente" | "catalogue" | "site";
+
 export type LienAdmin = {
   href: string;
   label: string;
-  /** Version courte : la barre du bas ne donne que ~60 px par onglet. */
+  /** Version courte, pour la bande d'onglets. */
   court: string;
   icone: Icone;
+  groupe: Groupe;
 };
+
 type Icone =
   | "commandes"
   | "pistes"
@@ -25,56 +50,72 @@ function estActif(path: string, href: string) {
   return href === "/admin" ? path === "/admin" : path.startsWith(href);
 }
 
-/** Barre latérale, à partir de `lg`. */
-export function LiensAdmin({ liens }: { liens: LienAdmin[] }) {
+const GROUPES: Groupe[] = ["vente", "catalogue", "site"];
+
+/** Colonne de gauche, à partir de `lg`. */
+export function LiensAdmin({
+  liens,
+  titres,
+}: {
+  liens: LienAdmin[];
+  titres: Record<Groupe, string>;
+}) {
   const path = usePathname();
 
   return (
     <nav className="hidden lg:block">
-      <ul>
-        {liens.map((lien) => {
-          const on = estActif(path, lien.href);
-          return (
-            <li key={lien.href}>
-              <Link
-                href={lien.href}
-                aria-current={on ? "page" : undefined}
-                className="flex items-center gap-2.5 border-b border-encre-bord px-5 py-3 text-[14px] transition-colors"
-                style={{
-                  color: on ? "var(--or-fg)" : "var(--vitrine-muted)",
-                  background: on ? "var(--or-plein)" : "transparent",
-                }}
-              >
-                <Glyphe nom={lien.icone} />
-                {lien.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      {GROUPES.map((groupe) => {
+        const dedans = liens.filter((l) => l.groupe === groupe);
+        if (!dedans.length) return null;
+
+        return (
+          <div key={groupe} className="mb-5">
+            <p className="adm-etiquette px-5">{titres[groupe]}</p>
+            <ul>
+              {dedans.map((lien) => {
+                const on = estActif(path, lien.href);
+                return (
+                  <li key={lien.href}>
+                    <Link
+                      href={lien.href}
+                      aria-current={on ? "page" : undefined}
+                      className="flex items-center gap-3 px-5 transition-colors"
+                      style={{
+                        minHeight: "var(--adm-h)",
+                        fontSize: "var(--adm-t-md)",
+                        color: on ? "var(--or-plein)" : "var(--vitrine-muted)",
+                        borderInlineStart: `2px solid ${
+                          on ? "var(--or-plein)" : "transparent"
+                        }`,
+                        background: on
+                          ? "color-mix(in srgb, var(--or-plein) 10%, transparent)"
+                          : "transparent",
+                      }}
+                    >
+                      <Glyphe nom={lien.icone} />
+                      {lien.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
     </nav>
   );
 }
 
-/**
- * Sur téléphone, la navigation descend en bas de l'écran : c'est là que le
- * pouce arrive, et ça libère le haut de la page pour le contenu. Les six
- * sections tiennent en une rangée d'icônes légendées.
- */
+/** Bande d'onglets défilante, sur téléphone et tablette. */
 export function BarreOngletsMobile({ liens }: { liens: LienAdmin[] }) {
   const path = usePathname();
 
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-0 bottom-0 z-40 border-t lg:hidden"
-      style={{
-        background: "var(--vitrine-bg)",
-        borderColor: "var(--vitrine-line)",
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
+      className="no-scrollbar -mx-4 overflow-x-auto px-4 sm:-mx-7 sm:px-7 lg:hidden"
     >
-      <ul className="grid grid-cols-6">
+      <ul className="flex w-max gap-1.5 pb-1">
         {liens.map((lien) => {
           const on = estActif(path, lien.href);
           return (
@@ -82,20 +123,27 @@ export function BarreOngletsMobile({ liens }: { liens: LienAdmin[] }) {
               <Link
                 href={lien.href}
                 aria-current={on ? "page" : undefined}
-                className="flex flex-col items-center gap-1 px-0.5 py-2.5 transition-colors"
+                ref={
+                  on
+                    ? (el) =>
+                        el?.scrollIntoView({
+                          block: "nearest",
+                          inline: "center",
+                        })
+                    : undefined
+                }
+                className="flex items-center gap-2 rounded-full border px-3.5 transition-colors"
                 style={{
-                  color: on ? "var(--or-trait)" : "var(--vitrine-muted)",
+                  minHeight: "var(--adm-h)",
+                  fontSize: "var(--adm-t-sm)",
+                  fontWeight: on ? 500 : 400,
+                  color: on ? "var(--or-fg)" : "var(--vitrine-muted)",
+                  background: on ? "var(--or-plein)" : "transparent",
+                  borderColor: on ? "var(--or-plein)" : "var(--vitrine-line)",
                 }}
               >
                 <Glyphe nom={lien.icone} />
-                <span className="w-full truncate text-center text-[9.5px] leading-tight">
-                  {lien.court}
-                </span>
-                <span
-                  aria-hidden
-                  className="h-[2px] w-5 rounded-full transition-colors"
-                  style={{ background: on ? "var(--or-plein)" : "transparent" }}
-                />
+                {lien.court}
               </Link>
             </li>
           );
@@ -107,8 +155,8 @@ export function BarreOngletsMobile({ liens }: { liens: LienAdmin[] }) {
 
 function Glyphe({ nom }: { nom: Icone }) {
   const commun = {
-    width: 17,
-    height: 17,
+    width: 16,
+    height: 16,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
@@ -116,6 +164,7 @@ function Glyphe({ nom }: { nom: Icone }) {
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     "aria-hidden": true,
+    className: "shrink-0",
   };
 
   switch (nom) {
@@ -161,20 +210,19 @@ function Glyphe({ nom }: { nom: Icone }) {
     case "produits":
       return (
         <svg {...commun}>
-          <path d="M10 3h4v3h-4zM8 6h8l1 15H7z" />
+          <path d="M9 3h6l1 4H8zM8 7h8l1 14H7zM10 12h4" />
         </svg>
       );
     case "formats":
       return (
         <svg {...commun}>
-          <path d="M3 7h18M3 12h18M3 17h18M8 4v16" />
+          <path d="M4 8h16M4 16h16M8 4v16M16 4v16" />
         </svg>
       );
     case "contenu":
       return (
         <svg {...commun}>
-          <path d="M4 5h16v14H4z" />
-          <path d="m4 15 5-4 4 3 3-2 4 3" />
+          <path d="M4 5h16v14H4zM4 10h16M9 10v9" />
         </svg>
       );
   }

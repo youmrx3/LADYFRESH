@@ -13,7 +13,7 @@ const TEINTE: Record<ProspectStatus, string> = {
   ouverte: "var(--or-plein)",
   rappelee: "var(--accent)",
   convertie: "#2f9e63",
-  perdue: "var(--comptoir-line)",
+  perdue: "var(--adm-line)",
 };
 
 /**
@@ -54,10 +54,10 @@ export default async function Pistes({
 
       {tableManquante && (
         <p
-          className="rounded border px-5 py-4 text-[13.5px]"
+          className="rounded border px-5 py-4 text-[length:var(--adm-t-md)]"
           style={{
-            borderColor: "var(--danger)",
-            color: "var(--danger)",
+            borderColor: "var(--adm-danger)",
+            color: "var(--adm-danger)",
             background: "color-mix(in srgb, var(--danger) 7%, transparent)",
           }}
         >
@@ -79,11 +79,11 @@ export default async function Pistes({
                 key={cle}
                 href={cle === "ouverte" ? "/admin/pistes" : `/admin/pistes?f=${cle}`}
                 aria-current={actif ? "page" : undefined}
-                className="eyebrow rounded-full border px-3 py-1.5 text-[10px] transition-colors"
+                className="eyebrow rounded-full border px-3 py-1.5 text-[length:var(--adm-t-xs)] transition-colors"
                 style={{
-                  borderColor: actif ? "var(--comptoir-fg)" : "var(--comptoir-line)",
+                  borderColor: actif ? "var(--comptoir-fg)" : "var(--adm-line)",
                   background: actif ? "var(--comptoir-fg)" : "transparent",
-                  color: actif ? "var(--comptoir-surface)" : "var(--comptoir-muted)",
+                  color: actif ? "var(--adm-surface)" : "var(--comptoir-muted)",
                 }}
               >
                 {a.filtres[cle]} · {compte(cle)}
@@ -94,7 +94,7 @@ export default async function Pistes({
       )}
 
       {!tableManquante && visibles.length === 0 && (
-        <p className="rounded border border-dashed border-trait px-5 py-10 text-center text-[14px] text-graphite-doux">
+        <p className="rounded border border-dashed border-[color:var(--adm-line)] px-5 py-10 text-center text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
           {pistes.length === 0 ? a.vide : a.videFiltre}
         </p>
       )}
@@ -129,8 +129,8 @@ function LignePiste({
 
   return (
     <li
-      className="rounded-[10px] border border-trait p-4"
-      style={{ background: "var(--comptoir-surface)" }}
+      className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
+      style={{ background: "var(--adm-surface)" }}
     >
       <div className="flex flex-wrap items-center gap-2.5">
         <span
@@ -145,47 +145,48 @@ function LignePiste({
         <a
           href={`tel:${piste.phone.replace(/\s/g, "")}`}
           dir="ltr"
-          className="data text-[16px] underline underline-offset-4"
+          className="data underline underline-offset-4"
+          style={{ fontSize: "var(--adm-t-champ)" }}
         >
           {piste.phone}
         </a>
-        <span className="text-[14px]">{piste.customer_name || a.sansNom}</span>
+        <span className="text-[length:var(--adm-t-md)]">{piste.customer_name || a.sansNom}</span>
         {piste.wilaya && (
-          <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+          <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
             {piste.wilaya}
           </span>
         )}
-        <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+        <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
           {t.achat[piste.purchase_type]}
         </span>
         {piste.source && (
-          <span className="eyebrow rounded-full border border-trait px-2 py-0.5 text-[9.5px] text-graphite-doux">
+          <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
             {piste.source}
           </span>
         )}
-        <span className="data ms-auto text-[13px] text-graphite-doux">{quand}</span>
+        <span className="data ms-auto text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{quand}</span>
       </div>
 
-      <ul className="mt-3 space-y-1 border-t border-trait pt-3">
+      <ul className="mt-3 space-y-1 border-t border-[color:var(--adm-line)] pt-3">
         {piste.items.map((i, n) => (
-          <li key={n} className="flex justify-between gap-3 text-[13px]">
-            <span className="text-graphite-doux">
+          <li key={n} className="flex justify-between gap-3 text-[length:var(--adm-t-sm)]">
+            <span className="text-[color:var(--adm-muted)]">
               {i.product_name} {i.size_label} × {i.quantity}
             </span>
             <span className="data shrink-0">{da(i.line_total, devise)}</span>
           </li>
         ))}
-        <li className="flex justify-between gap-3 border-t border-trait pt-1.5 text-[13.5px]">
-          <span className="eyebrow text-graphite-doux">{a.total}</span>
+        <li className="flex justify-between gap-3 border-t border-[color:var(--adm-line)] pt-1.5 text-[length:var(--adm-t-md)]">
+          <span className="eyebrow text-[color:var(--adm-muted)]">{a.total}</span>
           <span className="data">{da(piste.total, devise)}</span>
         </li>
       </ul>
 
       {piste.address && (
-        <p className="mt-2 text-[12.5px] text-graphite-doux">{piste.address}</p>
+        <p className="mt-2 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{piste.address}</p>
       )}
       {piste.note && (
-        <p className="mt-1 text-[12.5px] text-graphite-doux">« {piste.note} »</p>
+        <p className="mt-1 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">« {piste.note} »</p>
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -207,7 +208,7 @@ function LignePiste({
           />
         )}
         {piste.status !== "convertie" ? (
-          <Statut id={piste.id} valeur="convertie" libelle={a.marquerCommande} variante="or" />
+          <Statut id={piste.id} valeur="convertie" libelle={a.marquerCommande} variante="principal" />
         ) : (
           <Statut id={piste.id} valeur="ouverte" libelle={a.annulerCommande} />
         )}
@@ -231,7 +232,7 @@ function Statut({
   id: string;
   valeur: ProspectStatus;
   libelle: string;
-  variante?: "encre" | "or";
+  variante?: "principal" | "neutre";
 }) {
   return (
     <FormAction action={changerStatutPiste}>

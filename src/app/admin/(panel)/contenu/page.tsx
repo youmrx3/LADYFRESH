@@ -68,7 +68,7 @@ export default async function Contenu({
           label={a.commun.langueEditee}
         />
         {!fr && (
-          <p className="mt-2 text-[12.5px] text-graphite-doux">
+          <p className="mt-2 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
             {a.commun.videFrRepris}
           </p>
         )}
@@ -78,12 +78,12 @@ export default async function Contenu({
         {/* ------------------------------------------------ langue du site */}
         <section>
           <h2 className="display display-m">{a.contenu.langueSite}</h2>
-          <p className="mt-1 max-w-[60ch] text-[13.5px] text-graphite-doux">
+          <p className="mt-1 max-w-[60ch] text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
             {a.contenu.langueSiteAide}
           </p>
           <FormAction
             action={changerLangueSite}
-            className="mt-3 flex flex-wrap items-end gap-3 rounded-[10px] border border-trait p-4"
+            className="mt-3 flex flex-wrap items-end gap-3 rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
           >
             <Liste
               label={a.contenu.langueSite}
@@ -95,7 +95,7 @@ export default async function Contenu({
               defaultValue={settings.locale}
               className="min-w-[12rem]"
             />
-            <Envoyer variante="or">{a.contenu.appliquer}</Envoyer>
+            <Envoyer variante="principal">{a.contenu.appliquer}</Envoyer>
           </FormAction>
         </section>
 
@@ -104,7 +104,7 @@ export default async function Contenu({
           <h2 className="display display-m">{a.contenu.commandeContact}</h2>
           <FormAction
             action={enregistrerReglages}
-            className="mt-3 rounded-[10px] border border-trait p-4 sm:p-5"
+            className="mt-3 rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4 sm:p-5"
           >
             <input type="hidden" name="edit_lang" value={langue} />
 
@@ -154,7 +154,7 @@ export default async function Contenu({
                   <Champ label="Facebook" name="facebook_url" dir="ltr" defaultValue={settings.facebook_url} />
                   <Champ label="TikTok" name="tiktok_url" dir="ltr" defaultValue={settings.tiktok_url} />
                 </div>
-                <p className="eyebrow mt-6 text-graphite-doux">
+                <p className="eyebrow mt-6 text-[color:var(--adm-muted)]">
                   {a.contenu.textesHero}
                 </p>
               </>
@@ -184,7 +184,7 @@ export default async function Contenu({
             </div>
 
             <div className="mt-4">
-              <Envoyer variante="or">{a.contenu.enregistrerReglages}</Envoyer>
+              <Envoyer variante="principal">{a.contenu.enregistrerReglages}</Envoyer>
             </div>
           </FormAction>
         </section>
@@ -194,7 +194,7 @@ export default async function Contenu({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="display display-m">{a.contenu.slideshow}</h2>
-              <p className="mt-1 max-w-[60ch] text-[13.5px] text-graphite-doux">
+              <p className="mt-1 max-w-[60ch] text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
                 {a.contenu.slideshowAide}
               </p>
             </div>
@@ -206,7 +206,7 @@ export default async function Contenu({
               >
                 <FormAction
                   action={enregistrerSlide}
-                  className="rounded-[10px] border border-dashed border-trait p-4"
+                  className="rounded-[var(--adm-r)] border border-dashed border-[color:var(--adm-line)] p-4"
                 >
                   <input type="hidden" name="edit_lang" value="fr" />
                   <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -235,7 +235,7 @@ export default async function Contenu({
                     />
                   </div>
                   <div className="mt-4">
-                    <Envoyer variante="or">{a.commun.ajouter}</Envoyer>
+                    <Envoyer variante="principal">{a.commun.ajouter}</Envoyer>
                   </div>
                 </FormAction>
               </Volet>
@@ -333,7 +333,7 @@ export default async function Contenu({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="display display-m">{a.contenu.videosTitre}</h2>
-              <p className="mt-1 max-w-[60ch] text-[13.5px] text-graphite-doux">
+              <p className="mt-1 max-w-[60ch] text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
                 {fill(
                   videos.length > 1
                     ? a.contenu.videosAidePluriel
@@ -350,7 +350,7 @@ export default async function Contenu({
               >
                 <FormAction
                   action={enregistrerVideo}
-                  className="rounded-[10px] border border-dashed border-trait p-4"
+                  className="rounded-[var(--adm-r)] border border-dashed border-[color:var(--adm-line)] p-4"
                 >
                   <input type="hidden" name="edit_lang" value="fr" />
                   <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -380,7 +380,7 @@ export default async function Contenu({
                     />
                   </div>
                   <div className="mt-4">
-                    <Envoyer variante="or">{a.commun.ajouter}</Envoyer>
+                    <Envoyer variante="principal">{a.commun.ajouter}</Envoyer>
                   </div>
                 </FormAction>
               </Volet>

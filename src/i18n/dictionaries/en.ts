@@ -325,6 +325,11 @@ export const en: Dictionary = {
       confirmSuppr: "Delete this lead?",
     },
     onglets: {
+      groupes: {
+        vente: "Selling",
+        catalogue: "Catalogue",
+        site: "Site",
+      },
       courts: {
         commandes: "Orders",
         pistes: "Call back",

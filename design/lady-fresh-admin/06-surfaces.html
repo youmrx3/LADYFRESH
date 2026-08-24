@@ -1,0 +1,337 @@
+<!-- @dsCard group="Surfaces" -->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cartes et lignes de liste — Lady Fresh Admin</title>
+<style>
+:root{
+  --comptoir-bg:#f6f8f7; --comptoir-surface:#ffffff; --comptoir-fg:#14171a;
+  --comptoir-muted:#5e6668; --comptoir-line:#e1e6e5;
+  --or-plein:#c9a227; --or-fg:#0b0b0c; --danger:#a30d23; --succes:#0f6b3f;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --comptoir-bg:#121316; --comptoir-surface:#191b1f; --comptoir-fg:#eef1f0;
+    --comptoir-muted:#9aa0a1; --comptoir-line:#2b2e33;
+    --or-plein:#cba53c; --danger:#ff8a9c; --succes:#56d19a;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--comptoir-bg);color:var(--comptoir-fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.page{padding:24px;max-width:920px;margin:0 auto}
+.bloc>h2{font-size:var(--adm-t-lg);margin:0 0 4px;font-weight:600;letter-spacing:-.01em}
+.bloc>p.note{margin:0 0 16px;font-size:var(--adm-t-sm);color:var(--adm-muted);max-width:62ch}
+.rangee{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grille{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+
+/*
+  Le système du back-office.
+
+  Il n'y en avait pas. Chaque écran choisissait sa taille de texte — dix
+  valeurs différentes entre 9,5 et 14 pixels — et ses hauteurs au jugé :
+  `h-4`, `h-9`, `h-11`, `h-14`, `h-[42px]`. Les boutons tombaient à 36 pixels,
+  sous le minimum tenable au pouce, sur un écran qu'on utilise debout dans une
+  boutique.
+
+  D'où cette couche : une échelle de texte, une échelle d'espacement, une
+  hauteur de contrôle unique, et des couleurs nommées par leur rôle. Elle
+  s'appuie sur les jetons de marque existants — l'or reste l'or — et ne
+  s'applique qu'au back-office, chargée par sa seule mise en page.
+*/
+
+.adm {
+  /* --------------------------------------------------------------- texte
+     Six pas au lieu de dix valeurs improvisées. Le champ de saisie est à
+     16 px et pas moins : en dessous, iOS agrandit la page dès qu'on touche
+     un champ, et la mise en page saute. */
+  --adm-t-xs: 0.6875rem;
+  --adm-t-sm: 0.8125rem;
+  --adm-t-md: 0.9375rem;
+  --adm-t-champ: 1rem;
+  --adm-t-lg: 1.125rem;
+  --adm-t-xl: 1.5rem;
+
+  /* ---------------------------------------------------------- espacement */
+  --adm-1: 0.375rem;
+  --adm-2: 0.625rem;
+  --adm-3: 1rem;
+  --adm-4: 1.5rem;
+  --adm-5: 2.25rem;
+
+  /* ------------------------------------------------------------ contrôles
+     44 px : la plus petite cible qu'un pouce atteint sans viser. */
+  --adm-h: 2.75rem;
+  --adm-h-lg: 3rem;
+
+  --adm-r-sm: 6px;
+  --adm-r: 10px;
+  --adm-r-lg: 14px;
+
+  /* ------------------------------------------------------------- couleurs
+     Nommées par leur rôle, pas par leur teinte : le thème sombre les
+     redéfinit sans qu'aucun composant ne change. */
+  --adm-bg: var(--comptoir-bg);
+  --adm-surface: var(--comptoir-surface);
+  --adm-surface-2: color-mix(in srgb, var(--comptoir-fg) 4%, var(--comptoir-surface));
+  --adm-line: var(--comptoir-line);
+  --adm-line-fort: color-mix(in srgb, var(--comptoir-fg) 22%, transparent);
+  --adm-fg: var(--comptoir-fg);
+  --adm-muted: var(--comptoir-muted);
+  --adm-accent: var(--or-plein);
+  --adm-accent-fg: var(--or-fg);
+  --adm-danger: var(--danger);
+  --adm-ok: var(--succes);
+
+  --adm-ombre: 0 1px 2px rgb(0 0 0 / 4%), 0 6px 20px rgb(0 0 0 / 5%);
+  --adm-anneau: 0 0 0 3px color-mix(in srgb, var(--adm-accent) 30%, transparent);
+}
+
+/* ---------------------------------------------------------------- surfaces */
+
+.adm-carte {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r);
+  box-shadow: var(--adm-ombre);
+}
+
+.adm-etiquette {
+  display: block;
+  margin-bottom: var(--adm-1);
+  font-size: var(--adm-t-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+.adm-aide {
+  font-size: var(--adm-t-sm);
+  line-height: 1.5;
+  color: var(--adm-muted);
+}
+
+/* ------------------------------------------------------------------ saisie */
+
+.adm-champ {
+  display: block;
+  width: 100%;
+  min-height: var(--adm-h);
+  padding: 0 0.75rem;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-sm);
+  font: inherit;
+  font-size: var(--adm-t-champ);
+  color: var(--adm-fg);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+/* Une zone de texte respire, un champ d'une ligne se centre. */
+textarea.adm-champ {
+  padding: 0.625rem 0.75rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.adm-champ::placeholder {
+  color: var(--adm-muted);
+  opacity: 0.65;
+}
+
+.adm-champ:hover {
+  border-color: var(--adm-line-fort);
+}
+
+.adm-champ:focus-visible {
+  outline: none;
+  border-color: var(--adm-accent);
+  box-shadow: var(--adm-anneau);
+}
+
+/* La flèche native disparaît sous Safari : on la redessine. */
+select.adm-champ {
+  appearance: none;
+  padding-inline-end: 2rem;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.05rem) calc(50% + 2px),
+    calc(100% - 0.75rem) calc(50% + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+[dir="rtl"] select.adm-champ {
+  background-position:
+    0.75rem calc(50% + 2px),
+    1.05rem calc(50% + 2px);
+}
+
+/* ----------------------------------------------------------------- boutons */
+
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--adm-h);
+  padding: 0 1rem;
+  border-radius: var(--adm-r-sm);
+  border: 1px solid transparent;
+  font-size: var(--adm-t-sm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.adm-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--adm-anneau);
+}
+
+.adm-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adm-btn-principal {
+  background: var(--adm-accent);
+  color: var(--adm-accent-fg);
+  border-color: var(--adm-accent);
+}
+
+.adm-btn-principal:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--adm-accent) 86%, #fff);
+}
+
+.adm-btn-neutre {
+  background: var(--adm-surface);
+  color: var(--adm-fg);
+  border-color: var(--adm-line);
+}
+
+.adm-btn-neutre:hover:not(:disabled) {
+  border-color: var(--adm-line-fort);
+  background: var(--adm-surface-2);
+}
+
+.adm-btn-discret {
+  background: transparent;
+  color: var(--adm-muted);
+  border-color: transparent;
+  padding: 0 0.5rem;
+}
+
+.adm-btn-discret:hover:not(:disabled) {
+  color: var(--adm-fg);
+  background: var(--adm-surface-2);
+}
+
+.adm-btn-danger {
+  background: transparent;
+  color: var(--adm-danger);
+  border-color: color-mix(in srgb, var(--adm-danger) 35%, transparent);
+}
+
+.adm-btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--adm-danger) 10%, transparent);
+  border-color: var(--adm-danger);
+}
+
+/* ------------------------------------------------------------------ pastille
+   La couleur seule ne dit rien à qui ne la distingue pas : chaque pastille
+   porte son texte, la teinte ne fait que confirmer. */
+
+.adm-pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--adm-line);
+  font-size: var(--adm-t-xs);
+  font-weight: 500;
+  color: var(--adm-muted);
+  white-space: nowrap;
+}
+
+.adm-pastille::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.adm-pastille-nue::before {
+  display: none;
+}
+
+/* -------------------------------------------------------------- messages */
+
+.adm-message {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--adm-r-sm);
+  font-size: var(--adm-t-sm);
+  line-height: 1.5;
+  border: 1px solid;
+}
+
+.adm-message-erreur {
+  color: var(--adm-danger);
+  border-color: color-mix(in srgb, var(--adm-danger) 32%, transparent);
+  background: color-mix(in srgb, var(--adm-danger) 7%, transparent);
+}
+
+.adm-message-ok {
+  color: var(--adm-ok);
+  border-color: color-mix(in srgb, var(--adm-ok) 32%, transparent);
+  background: color-mix(in srgb, var(--adm-ok) 7%, transparent);
+}
+
+/* ------------------------------------------------------------------- vide */
+
+.adm-vide {
+  padding: var(--adm-5) var(--adm-3);
+  text-align: center;
+  border: 1px dashed var(--adm-line);
+  border-radius: var(--adm-r);
+  color: var(--adm-muted);
+  font-size: var(--adm-t-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm *,
+  .adm *::before,
+  .adm *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body class="adm">
+<div class="page">
+<div class="bloc">
+<h2>Cartes et lignes de liste</h2>
+<p class="note">La ligne entière est cliquable : viser un petit « modifier » au bout d'une rangée est un exercice sur un téléphone.</p>
+<div class="adm-carte" style="padding:16px;margin-bottom:12px"><p class="adm-etiquette">Bandeau d'annonce</p><p class="adm-aide" style="margin:4px 0 12px">Une bande dorée tout en haut. À allumer le temps d'une offre.</p><input class="adm-champ" value="Livraison offerte cette semaine"></div><ul style="list-style:none;padding:0;margin:0;display:grid;gap:10px"><li class="adm-carte" style="padding:14px;display:flex;gap:12px;align-items:center;min-height:var(--adm-h-lg)"><span style="width:52px;height:52px;border-radius:8px;background:color-mix(in srgb,var(--adm-accent) 18%,transparent);flex:none"></span><span style="min-width:0;flex:1"><span style="display:block;font-size:var(--adm-t-md);font-weight:500">Coffret Sensuel</span><span style="display:block;font-size:var(--adm-t-sm);color:var(--adm-muted)">3 200 DA · 4 produits</span></span><span aria-hidden style="color:var(--adm-muted)">▾</span></li><li class="adm-carte" style="padding:14px;display:flex;gap:12px;align-items:center;min-height:var(--adm-h-lg)"><span style="width:52px;height:52px;border-radius:8px;background:color-mix(in srgb,var(--adm-fg) 8%,transparent);flex:none"></span><span style="min-width:0;flex:1"><span style="display:block;font-size:var(--adm-t-md);font-weight:500">Coffret Douceur</span><span style="display:block;font-size:var(--adm-t-sm);color:var(--adm-muted)">2 900 DA · 4 produits · Masqué</span></span><span aria-hidden style="color:var(--adm-muted)">▾</span></li></ul>
+</div>
+</div>
+</body>
+</html>

@@ -130,11 +130,11 @@ export function ChampImage({
 
   return (
     <div className={className}>
-      <span className="etiquette">{label}</span>
+      <span className="adm-etiquette">{label}</span>
 
       <div className="flex items-start gap-3">
         <div
-          className="relative w-[68px] shrink-0 overflow-hidden rounded border border-trait bg-comptoir"
+          className="relative w-[68px] shrink-0 overflow-hidden rounded border border-[color:var(--adm-line)] bg-comptoir"
           style={{ aspectRatio: ratio }}
         >
           {url ? (
@@ -146,7 +146,7 @@ export function ChampImage({
               className="absolute inset-0 h-full w-full object-contain"
             />
           ) : (
-            <span className="absolute inset-0 flex items-center justify-center px-1 text-center text-[9.5px] leading-tight text-graphite-doux">
+            <span className="absolute inset-0 flex items-center justify-center px-1 text-center text-[length:var(--adm-t-xs)] leading-tight text-[color:var(--adm-muted)]">
               {labels.aucune}
             </span>
           )}
@@ -172,7 +172,7 @@ export function ChampImage({
               type="button"
               disabled={enCours}
               onClick={() => fichier.current?.click()}
-              className="btn btn-encre !px-3 !py-2 !text-[10.5px]"
+              className="adm-btn adm-btn-neutre"
             >
               {enCours ? labels.televersement : labels.choisirFichier}
             </button>
@@ -180,7 +180,7 @@ export function ChampImage({
               <button
                 type="button"
                 onClick={() => setUrl("")}
-                className="btn btn-fantome !px-3 !py-2 !text-[10.5px]"
+                className="adm-btn adm-btn-discret"
               >
                 {labels.retirer}
               </button>
@@ -194,11 +194,11 @@ export function ChampImage({
             onChange={(e) => setUrl(e.target.value)}
             placeholder={labels.ouCollerUrl}
             aria-label={labels.ouCollerUrl}
-            className="champ data mt-2 !py-1.5 !text-[11.5px]"
+            className="champ data mt-2 !py-1.5 !text-[length:var(--adm-t-sm)]"
           />
 
           {erreur && (
-            <p role="alert" className="mt-1 text-[12px]" style={{ color: "var(--danger)" }}>
+            <p role="alert" className="mt-1 text-[length:var(--adm-t-sm)]" style={{ color: "var(--adm-danger)" }}>
               {erreur}
             </p>
           )}

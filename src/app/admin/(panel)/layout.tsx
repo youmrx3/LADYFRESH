@@ -11,6 +11,7 @@ import { seDeconnecter } from "@/lib/actions";
 import { isAdmin } from "@/lib/auth";
 import { supabaseAdminConfigured } from "@/lib/supabase";
 import { getT } from "@/i18n/server";
+import "../admin.css";
 
 export const metadata = { title: "Gestion", robots: { index: false, follow: false } };
 
@@ -24,16 +25,24 @@ export default async function LayoutAdmin({
 
   const o = t.admin.onglets;
   const liens: LienAdmin[] = [
-    { href: "/admin", label: o.commandes, court: o.courts.commandes, icone: "commandes" },
-    { href: "/admin/pistes", label: o.pistes, court: o.courts.pistes, icone: "pistes" },
-    { href: "/admin/packs", label: o.packs, court: o.courts.packs, icone: "packs" },
-    { href: "/admin/types", label: o.types, court: o.courts.types, icone: "types" },
-    { href: "/admin/gammes", label: o.gammes, court: o.courts.gammes, icone: "gammes" },
-    { href: "/admin/produits", label: o.produits, court: o.courts.produits, icone: "produits" },
-    { href: "/admin/formats", label: o.formats, court: o.courts.formats, icone: "formats" },
-    { href: "/admin/campagne", label: o.campagne, court: o.courts.campagne, icone: "campagne" },
-    { href: "/admin/contenu", label: o.contenu, court: o.courts.contenu, icone: "contenu" },
+    // Vendre, tenir le catalogue, écrire le site : neuf entrées d'affilée ne
+    // se lisent pas, trois familles se parcourent d'un coup d'œil.
+    { href: "/admin", label: o.commandes, court: o.courts.commandes, icone: "commandes", groupe: "vente" },
+    { href: "/admin/pistes", label: o.pistes, court: o.courts.pistes, icone: "pistes", groupe: "vente" },
+    { href: "/admin/packs", label: o.packs, court: o.courts.packs, icone: "packs", groupe: "catalogue" },
+    { href: "/admin/produits", label: o.produits, court: o.courts.produits, icone: "produits", groupe: "catalogue" },
+    { href: "/admin/formats", label: o.formats, court: o.courts.formats, icone: "formats", groupe: "catalogue" },
+    { href: "/admin/gammes", label: o.gammes, court: o.courts.gammes, icone: "gammes", groupe: "catalogue" },
+    { href: "/admin/types", label: o.types, court: o.courts.types, icone: "types", groupe: "catalogue" },
+    { href: "/admin/campagne", label: o.campagne, court: o.courts.campagne, icone: "campagne", groupe: "site" },
+    { href: "/admin/contenu", label: o.contenu, court: o.courts.contenu, icone: "contenu", groupe: "site" },
   ];
+
+  const titresGroupes = {
+    vente: o.groupes.vente,
+    catalogue: o.groupes.catalogue,
+    site: o.groupes.site,
+  } as const;
 
   const marque = (
     <Link href="/" className="block shrink-0">
@@ -55,7 +64,7 @@ export default async function LayoutAdmin({
   );
 
   return (
-    <div className="min-h-screen bg-comptoir lg:flex">
+    <div className="adm min-h-screen bg-comptoir lg:flex">
       {/* -------------------------------------------- barre haute — mobile */}
       <header
         className="etage-vitrine sticky top-0 z-40 flex items-center gap-3 border-b px-4 py-3 lg:hidden"
@@ -70,8 +79,8 @@ export default async function LayoutAdmin({
               type="submit"
               aria-label={t.admin.seDeconnecter}
               title={t.admin.seDeconnecter}
-              className="flex h-9 w-9 items-center justify-center rounded border"
-              style={{ borderColor: "color-mix(in srgb, currentColor 22%, transparent)" }}
+              className="adm-btn adm-btn-neutre !px-0"
+              style={{ width: "var(--adm-h)" }}
             >
               <svg
                 width="16"
@@ -98,7 +107,7 @@ export default async function LayoutAdmin({
           <p className="eyebrow mt-2 text-or">{t.admin.gestion}</p>
         </div>
 
-        <LiensAdmin liens={liens} />
+        <LiensAdmin liens={liens} titres={titresGroupes} />
 
         <div className="mt-auto flex items-center justify-between gap-3 px-5 py-4">
           <BasculeTheme compact />
@@ -115,7 +124,7 @@ export default async function LayoutAdmin({
       </aside>
 
       {/* La marge basse laisse passer la barre d'onglets sur téléphone. */}
-      <main className="min-w-0 flex-1 px-4 pb-28 pt-6 sm:px-7 sm:pt-8 lg:pb-10">
+      <main className="min-w-0 flex-1 px-4 pb-14 pt-5 sm:px-7 sm:pt-8">
         {!supabaseAdminConfigured && (
           <div
             className="mb-6 rounded border px-4 py-3"
@@ -124,16 +133,18 @@ export default async function LayoutAdmin({
               background: "color-mix(in srgb, var(--or-trait) 10%, transparent)",
             }}
           >
-            <p className="text-[13.5px] font-medium">{t.admin.baseAbsente}</p>
-            <p className="mt-1 text-[13px] leading-relaxed text-graphite-doux">
+            <p className="text-[length:var(--adm-t-md)] font-medium">{t.admin.baseAbsente}</p>
+            <p className="mt-1 text-[length:var(--adm-t-sm)] leading-relaxed text-[color:var(--adm-muted)]">
               {t.admin.baseAbsenteAide}
             </p>
           </div>
         )}
+        <div className="mb-6 lg:hidden">
+          <BarreOngletsMobile liens={liens} />
+        </div>
+
         {children}
       </main>
-
-      <BarreOngletsMobile liens={liens} />
     </div>
   );
 }

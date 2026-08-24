@@ -43,9 +43,9 @@ export function CompositionPack({
     );
 
   return (
-    <div className="rounded-[10px] border border-trait p-3.5">
-      <p className="etiquette">{labels.titre}</p>
-      <p className="mb-3 text-[12.5px] text-graphite-doux">{labels.aide}</p>
+    <div className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-3.5">
+      <p className="adm-etiquette">{labels.titre}</p>
+      <p className="mb-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{labels.aide}</p>
 
       <ul className="space-y-2">
         {lignes.map((ligne, i) => (
@@ -62,7 +62,7 @@ export function CompositionPack({
                   const trouve = options.find((o) => o.value === value);
                   poser(i, { variantId: value, label: trouve?.label ?? "" });
                 }}
-                className="champ !py-2 !text-[13px]"
+                className="adm-champ"
               >
                 <option value="">{labels.choisir}</option>
                 {options.map((o) => (
@@ -86,7 +86,7 @@ export function CompositionPack({
                 onChange={(e) =>
                   poser(i, { quantity: Math.max(1, Number(e.target.value) || 1) })
                 }
-                className="champ !py-2 !text-[13px]"
+                className="adm-champ"
               />
             </label>
 
@@ -98,7 +98,7 @@ export function CompositionPack({
                 )
               }
               aria-label={labels.retirer}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-trait text-[16px] text-graphite-doux transition-colors hover:text-graphite"
+              className="adm-btn adm-btn-neutre shrink-0 !px-0" style={{ width: "var(--adm-h)" }}
             >
               ×
             </button>
@@ -111,7 +111,7 @@ export function CompositionPack({
         onClick={() =>
           setLignes((actuel) => [...actuel, { variantId: "", label: "", quantity: 1 }])
         }
-        className="btn btn-fantome mt-3 !px-3 !py-2 !text-[10.5px]"
+        className="adm-btn adm-btn-neutre mt-3"
       >
         {labels.ajouter}
       </button>

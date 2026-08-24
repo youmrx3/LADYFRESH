@@ -58,7 +58,7 @@ export default async function Produits() {
       />
 
       {types.length === 0 ? (
-        <p className="rounded border border-dashed border-trait px-5 py-8 text-[14px] text-graphite-doux">
+        <p className="rounded border border-dashed border-[color:var(--adm-line)] px-5 py-8 text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
           {a.types.aide}{" "}
           <Link href="/admin/types" className="underline underline-offset-2">
             {a.types.nouveau}
@@ -71,10 +71,10 @@ export default async function Produits() {
           ton="principal"
         >
           <div
-            className="rounded-[10px] border border-trait p-4"
-            style={{ background: "var(--comptoir-surface)" }}
+            className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
+            style={{ background: "var(--adm-surface)" }}
           >
-            <p className="mb-3 text-[13px] text-graphite-doux">
+            <p className="mb-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
               {a.produits.dabordProduit}
             </p>
             <FormAction action={enregistrerProduit}>
@@ -86,7 +86,7 @@ export default async function Produits() {
                 ordreParDefaut={products.length + 1}
               />
               <div className="mt-4">
-                <Envoyer variante="or">{a.commun.creer}</Envoyer>
+                <Envoyer variante="principal">{a.commun.creer}</Envoyer>
               </div>
             </FormAction>
           </div>
@@ -134,7 +134,7 @@ export default async function Produits() {
                 </FormAction>
                 <Link
                   href="/admin/formats"
-                  className="eyebrow text-graphite-doux underline underline-offset-4 hover:text-graphite"
+                  className="eyebrow text-[color:var(--adm-muted)] underline underline-offset-4 "
                 >
                   {a.formats.titre} →
                 </Link>

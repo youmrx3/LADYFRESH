@@ -329,6 +329,11 @@ export const ar: Dictionary = {
       confirmSuppr: "حذف هذه السلة؟",
     },
     onglets: {
+      groupes: {
+        vente: "البيع",
+        catalogue: "الكتالوج",
+        site: "الموقع",
+      },
       courts: {
         commandes: "الطلبات",
         pistes: "للاتصال",
