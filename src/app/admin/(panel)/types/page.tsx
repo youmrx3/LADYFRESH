@@ -5,7 +5,12 @@ import {
   FormAction,
 } from "@/components/admin/Champs";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
-import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
+import {
+  EnTetePage,
+  Ligne,
+  PiedFormulaire,
+  Volet,
+} from "@/components/admin/Volet";
 import { enregistrerType, supprimerType } from "@/lib/actions";
 import { getProductTypes, getProductsAdmin } from "@/lib/data";
 import { fill } from "@/i18n";
@@ -57,9 +62,7 @@ export default async function Types({
             <FormAction action={enregistrerType}>
               <input type="hidden" name="edit_lang" value="fr" />
               <ChampsType t={t} langue="fr" ordreParDefaut={types.length + 1} />
-              <div className="mt-4">
-                <Envoyer variante="principal">{a.commun.creer}</Envoyer>
-              </div>
+              <PiedFormulaire><Envoyer variante="principal">{a.commun.creer}</Envoyer></PiedFormulaire>
             </FormAction>
           </div>
         </Volet>
@@ -102,9 +105,7 @@ export default async function Types({
                   langue={langue}
                   ordreParDefaut={type.sort_order}
                 />
-                <div className="mt-4">
-                  <Envoyer>{a.commun.enregistrer}</Envoyer>
-                </div>
+                <PiedFormulaire><Envoyer>{a.commun.enregistrer}</Envoyer></PiedFormulaire>
               </FormAction>
             </Ligne>
           );

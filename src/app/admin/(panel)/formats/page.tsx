@@ -7,7 +7,11 @@ import {
   Liste,
 } from "@/components/admin/Champs";
 import { ChampImage } from "@/components/admin/ChampImage";
-import { EnTetePage, Volet } from "@/components/admin/Volet";
+import {
+  EnTetePage,
+  PiedFormulaire,
+  Volet,
+} from "@/components/admin/Volet";
 import { enregistrerVariante, supprimerVariante } from "@/lib/actions";
 import { getGammesAdmin, getProductTypes, getProductsAdmin } from "@/lib/data";
 import { da } from "@/lib/format";
@@ -106,9 +110,7 @@ export default async function Formats() {
               ratio="4 / 5"
             />
           </div>
-          <div className="mt-4">
-            <Envoyer variante="principal">{a.commun.ajouter}</Envoyer>
-          </div>
+          <PiedFormulaire><Envoyer variante="principal">{a.commun.ajouter}</Envoyer></PiedFormulaire>
         </FormAction>
       </Volet>
 

@@ -9,7 +9,12 @@ import {
   Liste,
 } from "@/components/admin/Champs";
 import { ChampImage } from "@/components/admin/ChampImage";
-import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
+import {
+  EnTetePage,
+  Ligne,
+  PiedFormulaire,
+  Volet,
+} from "@/components/admin/Volet";
 import { enregistrerProduit, supprimerProduit } from "@/lib/actions";
 import {
   getGammesAdmin,
@@ -85,9 +90,7 @@ export default async function Produits() {
                 labelsImage={labelsImage}
                 ordreParDefaut={products.length + 1}
               />
-              <div className="mt-4">
-                <Envoyer variante="principal">{a.commun.creer}</Envoyer>
-              </div>
+              <PiedFormulaire><Envoyer variante="principal">{a.commun.creer}</Envoyer></PiedFormulaire>
             </FormAction>
           </div>
         </Volet>
@@ -151,9 +154,7 @@ export default async function Produits() {
                 labelsImage={labelsImage}
                 ordreParDefaut={product.sort_order}
               />
-              <div className="mt-4">
-                <Envoyer>{a.commun.enregistrer}</Envoyer>
-              </div>
+              <PiedFormulaire><Envoyer>{a.commun.enregistrer}</Envoyer></PiedFormulaire>
             </FormAction>
           </Ligne>
         ))}

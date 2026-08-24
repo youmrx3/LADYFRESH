@@ -128,76 +128,98 @@ function LignePiste({
   );
 
   return (
-    <li
-      className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
-      style={{ background: "var(--adm-surface)" }}
-    >
-      <div className="flex flex-wrap items-center gap-2.5">
+    <li className="adm-carte p-4">
+      {/*
+        Le numéro passe en tête, seul sur sa ligne et à la taille d'une saisie :
+        c'est la seule chose qu'on vient chercher ici, et on la touche au pouce.
+        Il était auparavant coincé entre une pastille d'état et trois étiquettes.
+      */}
+      <div className="flex items-start gap-3">
         <span
           aria-hidden
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full"
           style={{ background: TEINTE[piste.status] }}
         />
-        {/*
-          Le numéro d'abord, en gros et cliquable : c'est la seule chose qu'on
-          vient chercher sur cette page.
-        */}
-        <a
-          href={`tel:${piste.phone.replace(/\s/g, "")}`}
-          dir="ltr"
-          className="data underline underline-offset-4"
-          style={{ fontSize: "var(--adm-t-champ)" }}
-        >
-          {piste.phone}
-        </a>
-        <span className="text-[length:var(--adm-t-md)]">{piste.customer_name || a.sansNom}</span>
-        {piste.wilaya && (
-          <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
-            {piste.wilaya}
-          </span>
-        )}
-        <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
-          {t.achat[piste.purchase_type]}
-        </span>
-        {piste.source && (
-          <span className="eyebrow rounded-full border border-[color:var(--adm-line)] px-2 py-0.5 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
-            {piste.source}
-          </span>
-        )}
-        <span className="data ms-auto text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{quand}</span>
+        <div className="min-w-0 flex-1">
+          <a
+            href={"tel:" + piste.phone.replace(/\s/g, "")}
+            dir="ltr"
+            className="data inline-flex items-center underline underline-offset-4"
+            style={{ fontSize: "var(--adm-t-lg)", minHeight: "var(--adm-h)" }}
+          >
+            {piste.phone}
+          </a>
+          <p style={{ fontSize: "var(--adm-t-md)" }}>
+            {piste.customer_name || a.sansNom}
+          </p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {piste.wilaya && (
+              <span className="adm-pastille adm-pastille-nue">{piste.wilaya}</span>
+            )}
+            {piste.source && (
+              <span className="adm-pastille adm-pastille-nue">{piste.source}</span>
+            )}
+            <span
+              className="data"
+              style={{ fontSize: "var(--adm-t-xs)", color: "var(--adm-muted)" }}
+            >
+              {quand}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <ul className="mt-3 space-y-1 border-t border-[color:var(--adm-line)] pt-3">
-        {piste.items.map((i, n) => (
-          <li key={n} className="flex justify-between gap-3 text-[length:var(--adm-t-sm)]">
-            <span className="text-[color:var(--adm-muted)]">
-              {i.product_name} {i.size_label} × {i.quantity}
-            </span>
-            <span className="data shrink-0">{da(i.line_total, devise)}</span>
-          </li>
-        ))}
-        <li className="flex justify-between gap-3 border-t border-[color:var(--adm-line)] pt-1.5 text-[length:var(--adm-t-md)]">
-          <span className="eyebrow text-[color:var(--adm-muted)]">{a.total}</span>
-          <span className="data">{da(piste.total, devise)}</span>
-        </li>
-      </ul>
+      {/* ------------------------------------------------- le panier laissé */}
+      <div
+        className="mt-3 border-t pt-3"
+        style={{ borderColor: "var(--adm-line)" }}
+      >
+        <ul className="space-y-1">
+          {piste.items.map((i, n) => (
+            <li
+              key={n}
+              className="flex justify-between gap-3"
+              style={{ fontSize: "var(--adm-t-sm)" }}
+            >
+              <span style={{ color: "var(--adm-muted)" }}>
+                {i.product_name} {i.size_label} &times; {i.quantity}
+              </span>
+              <span className="data shrink-0">{da(i.line_total, devise)}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 flex justify-between gap-3">
+          <span className="adm-etiquette mb-0">{a.total}</span>
+          <span
+            className="data"
+            style={{ fontSize: "var(--adm-t-md)", fontWeight: 500 }}
+          >
+            {da(piste.total, devise)}
+          </span>
+        </p>
+      </div>
 
-      {piste.address && (
-        <p className="mt-2 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{piste.address}</p>
+      {(piste.address || piste.note) && (
+        <div className="mt-2.5" style={{ fontSize: "var(--adm-t-sm)", color: "var(--adm-muted)" }}>
+          {piste.address && <p>{piste.address}</p>}
+          {piste.note && <p>&laquo;&nbsp;{piste.note}&nbsp;&raquo;</p>}
+        </div>
       )}
-      {piste.note && (
-        <p className="mt-1 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">« {piste.note} »</p>
-      )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        {/*
-          Deux gestes distincts, et c'est voulu.
+      {/*
+        Deux gestes distincts, et c'est voulu.
 
-          « Rappelé » dit qu'on a téléphoné. « A commandé » dit que l'appel a
-          donné une vente — une commande prise au téléphone n'entre pas par le
-          site, donc rien ne peut la marquer automatiquement. Sans ce second
-          bouton, une piste conclue restait indéfiniment dans la liste d'appels.
-        */}
+        « Rappelé » dit qu'on a téléphoné. « A commandé » dit que l'appel a donné
+        une vente — une commande prise au téléphone n'entre pas par le site, donc
+        rien ne peut la marquer automatiquement. Sans ce second bouton, une piste
+        conclue restait indéfiniment dans la liste d'appels.
+
+        La suppression est reléguée en bout de rangée, à l'écart des deux autres.
+      */}
+      <div
+        className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3"
+        style={{ borderColor: "var(--adm-line)" }}
+      >
         {piste.status !== "convertie" && (
           <Statut
             id={piste.id}
@@ -208,16 +230,24 @@ function LignePiste({
           />
         )}
         {piste.status !== "convertie" ? (
-          <Statut id={piste.id} valeur="convertie" libelle={a.marquerCommande} variante="principal" />
+          <Statut
+            id={piste.id}
+            valeur="convertie"
+            libelle={a.marquerCommande}
+            variante="principal"
+          />
         ) : (
           <Statut id={piste.id} valeur="ouverte" libelle={a.annulerCommande} />
         )}
-        <FormAction action={supprimerPiste}>
-          <input type="hidden" name="id" value={piste.id} />
-          <Envoyer variante="danger" confirmer={a.confirmSuppr}>
-            {t.admin.commun.supprimer}
-          </Envoyer>
-        </FormAction>
+
+        <span className="ms-auto">
+          <FormAction action={supprimerPiste}>
+            <input type="hidden" name="id" value={piste.id} />
+            <Envoyer variante="danger" confirmer={a.confirmSuppr}>
+              {t.admin.commun.supprimer}
+            </Envoyer>
+          </FormAction>
+        </span>
       </div>
     </li>
   );

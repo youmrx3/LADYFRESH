@@ -9,7 +9,12 @@ import {
 import { ChampImage } from "@/components/admin/ChampImage";
 import { CompositionPack } from "@/components/admin/CompositionPack";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
-import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
+import {
+  EnTetePage,
+  Ligne,
+  PiedFormulaire,
+  Volet,
+} from "@/components/admin/Volet";
 import { enregistrerPack, supprimerPack } from "@/lib/actions";
 import { getPacksAdmin, getProductsAdmin, getProductTypes } from "@/lib/data";
 import { da } from "@/lib/format";
@@ -91,9 +96,7 @@ export default async function Packs({
                 labelsImage={labelsImage}
                 ordreParDefaut={packs.length + 1}
               />
-              <div className="mt-4">
-                <Envoyer variante="principal">{t.admin.commun.creer}</Envoyer>
-              </div>
+              <PiedFormulaire><Envoyer variante="principal">{t.admin.commun.creer}</Envoyer></PiedFormulaire>
             </FormAction>
           </div>
         </Volet>
@@ -144,9 +147,7 @@ export default async function Packs({
                 labelsImage={labelsImage}
                 ordreParDefaut={pack.sort_order}
               />
-              <div className="mt-4">
-                <Envoyer>{t.admin.commun.enregistrer}</Envoyer>
-              </div>
+              <PiedFormulaire><Envoyer>{t.admin.commun.enregistrer}</Envoyer></PiedFormulaire>
             </FormAction>
           </Ligne>
         ))}

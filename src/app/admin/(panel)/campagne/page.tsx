@@ -8,7 +8,7 @@ import {
 } from "@/components/admin/Champs";
 import { ChampImage } from "@/components/admin/ChampImage";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
-import { EnTetePage } from "@/components/admin/Volet";
+import { EnTetePage, PiedFormulaire } from "@/components/admin/Volet";
 import { enregistrerCampagne } from "@/lib/actions";
 import { getPacks, getSettings } from "@/lib/data";
 import { champ } from "@/i18n/contenu";
@@ -183,9 +183,7 @@ export default async function Campagne({
           )}
         </div>
 
-        <div className="mt-4">
-          <Envoyer variante="principal">{t.admin.commun.enregistrer}</Envoyer>
-        </div>
+        <PiedFormulaire><Envoyer variante="principal">{t.admin.commun.enregistrer}</Envoyer></PiedFormulaire>
       </FormAction>
     </div>
   );

@@ -7,7 +7,12 @@ import {
 } from "@/components/admin/Champs";
 import { ChampImage } from "@/components/admin/ChampImage";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
-import { EnTetePage, Ligne, Volet } from "@/components/admin/Volet";
+import {
+  EnTetePage,
+  Ligne,
+  PiedFormulaire,
+  Volet,
+} from "@/components/admin/Volet";
 import {
   changerLangueSite,
   enregistrerReglages,
@@ -183,9 +188,7 @@ export default async function Contenu({
               />
             </div>
 
-            <div className="mt-4">
-              <Envoyer variante="principal">{a.contenu.enregistrerReglages}</Envoyer>
-            </div>
+            <PiedFormulaire><Envoyer variante="principal">{a.contenu.enregistrerReglages}</Envoyer></PiedFormulaire>
           </FormAction>
         </section>
 
@@ -234,9 +237,7 @@ export default async function Contenu({
                       required
                     />
                   </div>
-                  <div className="mt-4">
-                    <Envoyer variante="principal">{a.commun.ajouter}</Envoyer>
-                  </div>
+                  <PiedFormulaire><Envoyer variante="principal">{a.commun.ajouter}</Envoyer></PiedFormulaire>
                 </FormAction>
               </Volet>
             )}
@@ -319,9 +320,7 @@ export default async function Contenu({
                       />
                     </div>
                   )}
-                  <div className="mt-4">
-                    <Envoyer>{a.commun.enregistrer}</Envoyer>
-                  </div>
+                  <PiedFormulaire><Envoyer>{a.commun.enregistrer}</Envoyer></PiedFormulaire>
                 </FormAction>
               </Ligne>
             ))}
@@ -379,9 +378,7 @@ export default async function Contenu({
                       ratio="16 / 9"
                     />
                   </div>
-                  <div className="mt-4">
-                    <Envoyer variante="principal">{a.commun.ajouter}</Envoyer>
-                  </div>
+                  <PiedFormulaire><Envoyer variante="principal">{a.commun.ajouter}</Envoyer></PiedFormulaire>
                 </FormAction>
               </Volet>
             )}
@@ -451,9 +448,7 @@ export default async function Contenu({
                       />
                     </div>
                   )}
-                  <div className="mt-4">
-                    <Envoyer>{a.commun.enregistrer}</Envoyer>
-                  </div>
+                  <PiedFormulaire><Envoyer>{a.commun.enregistrer}</Envoyer></PiedFormulaire>
                 </FormAction>
               </Ligne>
             ))}

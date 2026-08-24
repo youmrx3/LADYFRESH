@@ -167,3 +167,33 @@ export function Ligne({
     </li>
   );
 }
+
+/**
+ * Pied de formulaire.
+ *
+ * Le bouton d'enregistrement flottait au bas de champs empilés, sans rien qui
+ * le sépare d'eux : on ne voyait pas où le formulaire finissait. Un trait et un
+ * fond léger suffisent à le poser, et la barre reste collante sur téléphone —
+ * un formulaire de coffret fait deux écrans de haut, et remonter chercher le
+ * bouton après l'avoir rempli n'a aucun intérêt.
+ */
+export function PiedFormulaire({
+  children,
+  aide,
+}: {
+  children: React.ReactNode;
+  aide?: string;
+}) {
+  return (
+    <div
+      className="sticky bottom-0 -mx-4 -mb-4 mt-4 flex flex-wrap items-center gap-3 border-t px-4 py-3 backdrop-blur"
+      style={{
+        borderColor: "var(--adm-line)",
+        background: "color-mix(in srgb, var(--adm-surface) 92%, transparent)",
+      }}
+    >
+      {children}
+      {aide && <span className="adm-aide">{aide}</span>}
+    </div>
+  );
+}
