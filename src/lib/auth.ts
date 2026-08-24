@@ -109,16 +109,3 @@ export async function isAdmin() {
   }
 }
 
-/** L'adresse connectée, pour l'afficher dans le back-office. */
-export async function emailConnecte(): Promise<string | null> {
-  if (!authConfiguree) return null;
-  try {
-    const supabase = await clientAuth();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return user?.email ?? null;
-  } catch {
-    return null;
-  }
-}

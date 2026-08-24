@@ -10,7 +10,7 @@ import { DEFAULT_LOCALE, isLocale, type Locale } from "./config";
  * C'est une marque algérienne qui s'adresse à un marché donné — laisser
  * chaque visiteur basculer n'apportait rien et dupliquait le réglage.
  */
-export async function getLocale(): Promise<Locale> {
+async function getLocale(): Promise<Locale> {
   try {
     const settings = await getSettings();
     return isLocale(settings.locale) ? settings.locale : DEFAULT_LOCALE;

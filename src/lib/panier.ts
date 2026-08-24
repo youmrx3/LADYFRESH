@@ -17,8 +17,8 @@ import type { OrderItem } from "./types";
  * boutique serait pire qu'aucune liste.
  */
 
-export const MAX_LIGNES = 60;
-export const MAX_QUANTITE = 10_000;
+const MAX_LIGNES = 60;
+const MAX_QUANTITE = 10_000;
 
 export type LigneDemandee = { kind?: string; id?: string; quantity?: number };
 

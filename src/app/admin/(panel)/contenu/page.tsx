@@ -111,14 +111,6 @@ export default async function Contenu({
             {fr && (
               <>
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <Champ
-                    label={a.contenu.numeroWhatsapp}
-                    name="whatsapp_number"
-                    dir="ltr"
-                    defaultValue={settings.whatsapp_number}
-                    placeholder="213555123456"
-                    required
-                  />
                   {/*
                     Le réglage qui décide de ce que la vitrine met en avant.
                     Un seul choix, ici, plutôt qu'une question posée à chaque

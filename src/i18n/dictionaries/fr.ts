@@ -462,9 +462,7 @@ export const fr = {
       imageDefaut: "Image par défaut",
       formats: "Formats et prix",
       format: "Format",
-      prixDemi: "Demi-gros ({devise})",
-      prixGros: "Gros ({devise})",
-      parCarton: "Pièces / carton",
+      prix: "Prix de vente ({devise})",
       photo: "Photo",
       ajouterFormat: "Ajouter un format",
       supprimerFormat: "Supprimer ce format",
@@ -472,7 +470,6 @@ export const fr = {
       confirmSuppr: "Supprimer « {nom} » et ses formats ?",
       nbFormats: "{n} format",
       nbFormatsPluriel: "{n} formats",
-      cartonEgale: "Carton de {n} = {prix} en gros",
       dabordProduit:
         "Créez d'abord le produit, puis ajoutez-lui ses formats.",
     },

@@ -91,23 +91,10 @@ export default async function Formats() {
               required
             />
             <Champ
-              label={fill(a.produits.prixDemi, { devise })}
+              label={fill(a.produits.prix, { devise })}
               name="price_demi_gros"
               type="number"
               min={0}
-            />
-            <Champ
-              label={fill(a.produits.prixGros, { devise })}
-              name="price_gros"
-              type="number"
-              min={0}
-            />
-            <Champ
-              label={a.produits.parCarton}
-              name="units_per_carton"
-              type="number"
-              min={1}
-              defaultValue={12}
             />
             <Bascule label={a.commun.actif} name="active" defaultChecked />
           </div>
@@ -176,19 +163,7 @@ export default async function Formats() {
                           {variant.size_label}
                         </span>
                         <span className="data text-[13px] text-graphite-doux">
-                          {a.formats.demiCourt} {da(variant.price_demi_gros, devise)}
-                        </span>
-                        <span className="data text-[13px] text-graphite-doux">
-                          {a.formats.grosCourt} {da(variant.price_gros, devise)}
-                        </span>
-                        <span className="data ms-auto text-[12px] text-graphite-doux">
-                          {fill(a.produits.cartonEgale, {
-                            n: variant.units_per_carton,
-                            prix: da(
-                              variant.price_gros * variant.units_per_carton,
-                              devise,
-                            ),
-                          })}
+                          {da(variant.price_demi_gros, devise)}
                         </span>
                         <span className="eyebrow shrink-0 text-[10px] text-graphite-doux">
                           <span className="group-open:hidden">
@@ -265,25 +240,11 @@ function ChampsVariante({
           required
         />
         <Champ
-          label={fill(a.produits.prixDemi, { devise })}
+          label={fill(a.produits.prix, { devise })}
           name="price_demi_gros"
           type="number"
           min={0}
           defaultValue={variant.price_demi_gros}
-        />
-        <Champ
-          label={fill(a.produits.prixGros, { devise })}
-          name="price_gros"
-          type="number"
-          min={0}
-          defaultValue={variant.price_gros}
-        />
-        <Champ
-          label={a.produits.parCarton}
-          name="units_per_carton"
-          type="number"
-          min={1}
-          defaultValue={variant.units_per_carton}
         />
       </div>
       <div className="mt-3 grid items-end gap-3 sm:grid-cols-[1fr_auto]">

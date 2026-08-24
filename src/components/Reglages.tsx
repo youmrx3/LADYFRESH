@@ -41,6 +41,6 @@ export function useReglages() {
 }
 
 /** Raccourci : `const t = useT()`. */
-export function useT() {
+function useT() {
   return useContext(Ctx).t;
 }

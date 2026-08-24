@@ -6,7 +6,7 @@ import { useReglages } from "./Reglages";
 import { LOCALES, LOCALE_COOKIE, LOCALE_SHORT, LOCALE_LABEL } from "@/i18n/config";
 
 export type Theme = "clair" | "sombre";
-export const THEME_STORAGE = "ladyfresh.theme";
+const THEME_STORAGE = "ladyfresh.theme";
 
 /**
  * Bascule clair / sombre. Le thème est écrit sur `html[data-theme]` par le
@@ -80,54 +80,3 @@ function IconeSoleil() {
   );
 }
 
-/** Sélecteur de langue. Trois langues : autant les montrer toutes. */
-export function BasculeLangue({ compact = false }: { compact?: boolean }) {
-  const { locale, t } = useReglages();
-  const router = useRouter();
-  const [enCours, setEnCours] = useState(false);
-
-  function choisir(cible: string) {
-    if (cible === locale) return;
-    setEnCours(true);
-    // 1 an, accessible à tout le site.
-    document.cookie = `${LOCALE_COOKIE}=${cible}; path=/; max-age=31536000; samesite=lax`;
-    router.refresh();
-  }
-
-  return (
-    <div
-      role="group"
-      aria-label={t.nav.langue}
-      className={`flex shrink-0 items-center overflow-hidden rounded border ${
-        enCours ? "opacity-60" : ""
-      }`}
-      style={{ borderColor: "color-mix(in srgb, currentColor 22%, transparent)" }}
-    >
-      {LOCALES.map((code) => {
-        const on = code === locale;
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => choisir(code)}
-            aria-pressed={on}
-            aria-label={LOCALE_LABEL[code]}
-            title={LOCALE_LABEL[code]}
-            className={`px-2 transition-colors ${
-              compact ? "h-9 text-[11px]" : "h-11 text-[12px]"
-            }`}
-            style={{
-              fontFamily: code === "ar" ? "inherit" : "var(--font-display)",
-              letterSpacing: code === "ar" ? "0" : "0.1em",
-              background: on ? "var(--or-plein)" : "transparent",
-              color: on ? "var(--or-fg)" : "inherit",
-              opacity: on ? 1 : 0.7,
-            }}
-          >
-            {LOCALE_SHORT[code]}
-          </button>
-        );
-      })}
-    </div>
-  );
-}

@@ -18,7 +18,7 @@ const anonKey = propre(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 const serviceKey = propre(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 /** True once NEXT_PUBLIC_SUPABASE_URL and the anon key are set. */
-export const supabaseConfigured = Boolean(url && anonKey);
+const supabaseConfigured = Boolean(url && anonKey);
 
 /** True once the service-role key is set — required to read/write orders. */
 export const supabaseAdminConfigured = Boolean(url && serviceKey);

@@ -77,7 +77,7 @@ const Ctx = createContext<Boutique | null>(null);
 const STOCKAGE = "ladyfresh.bon.v2";
 
 export const clePack = (id: string) => `pack:${id}`;
-export const estPack = (cle: CleLigne) => cle.startsWith("pack:");
+const estPack = (cle: CleLigne) => cle.startsWith("pack:");
 
 export function BoutiqueProvider({
   mode,

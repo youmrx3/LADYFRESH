@@ -26,7 +26,7 @@ export function colonne(base: string, locale: Locale) {
   return locale === "fr" ? base : `${base}_${locale}`;
 }
 
-export function typeOf(product: Product, types: ProductType[]) {
+function typeOf(product: Product, types: ProductType[]) {
   return types.find((t) => t.id === product.type_id);
 }
 
@@ -44,13 +44,3 @@ export function nomTypeCourt(type: ProductType | undefined, locale: Locale) {
   return champ(type, "short_name", locale) || champ(type, "name", locale);
 }
 
-/** Nom complet d'une référence : « Brume parfumée Sensuel ». */
-export function nomProduit(
-  product: Product,
-  types: ProductType[],
-  gammes: Gamme[],
-  locale: Locale,
-) {
-  const gamme = gammes.find((g) => g.id === product.gamme_id);
-  return `${nomType(product, types, locale)} ${gamme?.name ?? ""}`.trim();
-}

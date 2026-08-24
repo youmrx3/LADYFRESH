@@ -453,9 +453,7 @@ export const en: Dictionary = {
       imageDefaut: "Default image",
       formats: "Sizes and prices",
       format: "Size",
-      prixDemi: "Half-wholesale ({devise})",
-      prixGros: "Wholesale ({devise})",
-      parCarton: "Pieces / carton",
+      prix: "Selling price ({devise})",
       photo: "Photo",
       ajouterFormat: "Add a size",
       supprimerFormat: "Delete this size",
@@ -463,7 +461,6 @@ export const en: Dictionary = {
       confirmSuppr: "Delete “{nom}” and its sizes?",
       nbFormats: "{n} size",
       nbFormatsPluriel: "{n} sizes",
-      cartonEgale: "Carton of {n} = {prix} wholesale",
       dabordProduit: "Create the product first, then add its sizes.",
     },
 

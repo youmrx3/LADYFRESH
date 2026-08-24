@@ -457,9 +457,7 @@ export const ar: Dictionary = {
       imageDefaut: "الصورة الافتراضية",
       formats: "الأحجام والأسعار",
       format: "الحجم",
-      prixDemi: "نصف الجملة ({devise})",
-      prixGros: "الجملة ({devise})",
-      parCarton: "قطعة / كرتون",
+      prix: "سعر البيع ({devise})",
       photo: "الصورة",
       ajouterFormat: "إضافة حجم",
       supprimerFormat: "حذف هذا الحجم",
@@ -467,7 +465,6 @@ export const ar: Dictionary = {
       confirmSuppr: "حذف «{nom}» وأحجامه؟",
       nbFormats: "{n} حجم",
       nbFormatsPluriel: "{n} أحجام",
-      cartonEgale: "كرتون {n} = {prix} بالجملة",
       dabordProduit: "أنشئي المنتج أولاً، ثم أضيفي أحجامه.",
     },
 

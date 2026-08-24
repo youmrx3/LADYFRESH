@@ -209,17 +209,6 @@ export const GAMMES: Gamme[] = [
   },
 ];
 
-/** Filter order for the shop. Rouge comes first, per the brief §2.6. */
-export const COLOR_ORDER = [
-  "Rouge",
-  "Rose",
-  "Bordeaux",
-  "Rose gold",
-  "Violet",
-  "Bleu",
-  "Vert d'eau",
-];
-
 type Line = {
   gamme: string;
   type: string;

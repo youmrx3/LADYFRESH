@@ -54,10 +54,7 @@ export default async function Produits() {
       <EnTetePage
         eyebrow={a.gammes.catalogue}
         titre={a.produits.titre}
-        aide={`${a.produits.aide} ${fill(a.produits.seuils, {
-          gros: settings.min_gros_cartons,
-          demi: settings.min_demi_gros_pieces,
-        })}`}
+        aide={a.produits.aide}
       />
 
       {types.length === 0 ? (

@@ -46,15 +46,3 @@ export function OngletsLangue({
   );
 }
 
-/**
- * Suffixe des colonnes pour la langue éditée : `description` en français,
- * `description_ar` sinon.
- */
-export function champLangue(base: string, edit: Locale) {
-  return edit === "fr" ? base : `${base}_${edit}`;
-}
-
-/** Le français porte le texte de repli, il est donc toujours obligatoire. */
-export function estLangueBase(edit: Locale) {
-  return edit === "fr";
-}
