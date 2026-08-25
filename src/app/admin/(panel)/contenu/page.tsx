@@ -9,6 +9,8 @@ import { ChampImage } from "@/components/admin/ChampImage";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
 import {
   EnTetePage,
+  CarteSection,
+  Groupe,
   Ligne,
   PiedFormulaire,
   Volet,
@@ -81,14 +83,15 @@ export default async function Contenu({
 
       <div className="space-y-10">
         {/* ------------------------------------------------ langue du site */}
-        <section>
-          <h2 className="display display-m">{a.contenu.langueSite}</h2>
-          <p className="mt-1 max-w-[60ch] text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
-            {a.contenu.langueSiteAide}
-          </p>
+        <CarteSection
+          eyebrow={a.contenu.eyebrowLangue}
+          titre={a.contenu.langueSite}
+          aide={a.contenu.langueSiteAide}
+        >
           <FormAction
             action={changerLangueSite}
-            className="mt-3 flex flex-wrap items-end gap-3 rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
+            className="flex flex-wrap items-end gap-3"
+            garderOuvert
           >
             <Liste
               label={a.contenu.langueSite}
@@ -102,20 +105,20 @@ export default async function Contenu({
             />
             <Envoyer variante="principal">{a.contenu.appliquer}</Envoyer>
           </FormAction>
-        </section>
+        </CarteSection>
 
         {/* ------------------------------------------- commande et contact */}
-        <section>
-          <h2 className="display display-m">{a.contenu.commandeContact}</h2>
-          <FormAction
-            action={enregistrerReglages}
-            className="mt-3 rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4 sm:p-5"
-          >
+        <CarteSection
+          eyebrow={a.contenu.eyebrowReglages}
+          titre={a.contenu.commandeContact}
+          aide={a.contenu.reglagesAide}
+        >
+          <FormAction action={enregistrerReglages} garderOuvert>
             <input type="hidden" name="edit_lang" value={langue} />
 
             {fr && (
               <>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <Groupe titre={a.contenu.groupeBoutique}>
                   {/*
                     Le réglage qui décide de ce que la vitrine met en avant.
                     Un seul choix, ici, plutôt qu'une question posée à chaque
@@ -137,6 +140,9 @@ export default async function Contenu({
                     min={1}
                     defaultValue={settings.min_produit}
                   />
+                </Groupe>
+
+                <Groupe titre={a.contenu.groupeContact}>
                   <Champ
                     label={a.contenu.telephoneAffiche}
                     name="contact_phone"
@@ -154,18 +160,34 @@ export default async function Contenu({
                     label={a.contenu.adresse}
                     name="contact_address"
                     defaultValue={settings.contact_address}
+                    className="sm:col-span-2"
                   />
-                  <Champ label="Instagram" name="instagram_url" dir="ltr" defaultValue={settings.instagram_url} />
-                  <Champ label="Facebook" name="facebook_url" dir="ltr" defaultValue={settings.facebook_url} />
-                  <Champ label="TikTok" name="tiktok_url" dir="ltr" defaultValue={settings.tiktok_url} />
-                </div>
-                <p className="eyebrow mt-6 text-[color:var(--adm-muted)]">
-                  {a.contenu.textesHero}
-                </p>
+                </Groupe>
+
+                <Groupe titre={a.contenu.groupeReseaux} colonnes={3}>
+                  <Champ
+                    label="Instagram"
+                    name="instagram_url"
+                    dir="ltr"
+                    defaultValue={settings.instagram_url}
+                  />
+                  <Champ
+                    label="Facebook"
+                    name="facebook_url"
+                    dir="ltr"
+                    defaultValue={settings.facebook_url}
+                  />
+                  <Champ
+                    label="TikTok"
+                    name="tiktok_url"
+                    dir="ltr"
+                    defaultValue={settings.tiktok_url}
+                  />
+                </Groupe>
               </>
             )}
 
-            <div className={`grid gap-3 ${fr ? "mt-2" : ""}`}>
+            <Groupe titre={a.contenu.textesHero} colonnes={1}>
               <Champ
                 label={a.contenu.surtitre}
                 name="hero_eyebrow"
@@ -186,17 +208,21 @@ export default async function Contenu({
                 defaultValue={champ(settings, "hero_lede", langue)}
                 rows={2}
               />
-            </div>
+            </Groupe>
 
-            <PiedFormulaire><Envoyer variante="principal">{a.contenu.enregistrerReglages}</Envoyer></PiedFormulaire>
+            <PiedFormulaire aide={a.contenu.piedAide}>
+              <Envoyer variante="principal">
+                {a.contenu.enregistrerReglages}
+              </Envoyer>
+            </PiedFormulaire>
           </FormAction>
-        </section>
+        </CarteSection>
 
         {/* ------------------------------------------------------ slideshow */}
-        <section>
+        <section className="adm-carte p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="display display-m">{a.contenu.slideshow}</h2>
+              <h2 style={{ fontSize: "var(--adm-t-lg)", fontWeight: 600, lineHeight: 1.2 }}>{a.contenu.slideshow}</h2>
               <p className="mt-1 max-w-[60ch] text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
                 {a.contenu.slideshowAide}
               </p>
@@ -250,7 +276,8 @@ export default async function Contenu({
                 labelModifier={a.commun.modifier}
                 labelFermer={a.commun.fermer}
                 visuel={
-                  <span className="relative block h-14 w-11 shrink-0 overflow-hidden rounded bg-comptoir">
+                  <span className="relative block h-14 w-11 shrink-0 overflow-hidden rounded"
+                    style={{ background: "var(--adm-surface-2)" }}>
                     {slide.image && (
                       /* URL arbitraire : pas de next/image ici. */
                       // eslint-disable-next-line @next/next/no-img-element
@@ -328,10 +355,10 @@ export default async function Contenu({
         </section>
 
         {/* --------------------------------------------------------- vidéos */}
-        <section>
+        <section className="adm-carte p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="display display-m">{a.contenu.videosTitre}</h2>
+              <h2 style={{ fontSize: "var(--adm-t-lg)", fontWeight: 600, lineHeight: 1.2 }}>{a.contenu.videosTitre}</h2>
               <p className="mt-1 max-w-[60ch] text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
                 {fill(
                   videos.length > 1

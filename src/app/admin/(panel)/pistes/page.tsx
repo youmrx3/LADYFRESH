@@ -79,12 +79,8 @@ export default async function Pistes({
                 key={cle}
                 href={cle === "ouverte" ? "/admin/pistes" : `/admin/pistes?f=${cle}`}
                 aria-current={actif ? "page" : undefined}
-                className="eyebrow rounded-full border px-3 py-1.5 text-[length:var(--adm-t-xs)] transition-colors"
-                style={{
-                  borderColor: actif ? "var(--comptoir-fg)" : "var(--adm-line)",
-                  background: actif ? "var(--comptoir-fg)" : "transparent",
-                  color: actif ? "var(--adm-surface)" : "var(--comptoir-muted)",
-                }}
+                className={`adm-btn ${actif ? "adm-btn-principal" : "adm-btn-neutre"}`}
+                style={{ borderRadius: "999px", textDecoration: "none" }}
               >
                 {a.filtres[cle]} · {compte(cle)}
               </Link>

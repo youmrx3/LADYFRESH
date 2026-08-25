@@ -478,6 +478,13 @@ export const ar: Dictionary = {
 
     contenu: {
       langueSite: "لغة الموقع",
+      eyebrowLangue: "العرض",
+      eyebrowReglages: "الإعدادات",
+      reglagesAide: "ماذا يبيع المتجر، وكيف يمكن الاتصال بك.",
+      groupeBoutique: "المتجر",
+      groupeContact: "الاتصال بك",
+      groupeReseaux: "شبكات التواصل",
+      piedAide: "يظهر فورًا على الموقع.",
       langueSiteAide:
         "الواجهة ولوحة التحكم تتبعان هذا الاختيار. الزوّار لا يمكنهم تغييره.",
       appliquer: "تطبيق",

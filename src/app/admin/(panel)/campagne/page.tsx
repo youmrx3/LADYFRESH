@@ -58,7 +58,7 @@ export default async function Campagne({
             href="/boutique"
             target="_blank"
             rel="noreferrer"
-            className="eyebrow text-[color:var(--adm-muted)] underline underline-offset-4 "
+            className="adm-btn adm-btn-discret underline underline-offset-4"
           >
             {a.voir} →
           </Link>
@@ -85,12 +85,9 @@ export default async function Campagne({
       <FormAction action={enregistrerCampagne}>
         <input type="hidden" name="edit_lang" value={langue} />
 
-        <div
-          className="rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
-          style={{ background: "var(--adm-surface)" }}
-        >
+        <div className="adm-carte p-4 sm:p-5">
           {/* ------------------------------------------------- bandeau */}
-          <p className="eyebrow text-[color:var(--adm-muted)]">{a.sectionBandeau}</p>
+          <p className="adm-etiquette">{a.sectionBandeau}</p>
           <p className="mb-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.bandeauAide}</p>
 
           <Champ
@@ -111,11 +108,8 @@ export default async function Campagne({
         </div>
 
         {/* -------------------------------------------------- ouverture */}
-        <div
-          className="mt-4 rounded-[var(--adm-r)] border border-[color:var(--adm-line)] p-4"
-          style={{ background: "var(--adm-surface)" }}
-        >
-          <p className="eyebrow text-[color:var(--adm-muted)]">{a.sectionHero}</p>
+        <div className="adm-carte mt-4 p-4 sm:p-5">
+          <p className="adm-etiquette">{a.sectionHero}</p>
           <p className="mb-3 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.heroAide}</p>
 
           <div className="grid gap-3 sm:grid-cols-2">

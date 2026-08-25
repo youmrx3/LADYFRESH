@@ -484,6 +484,13 @@ export const fr = {
 
     contenu: {
       langueSite: "Langue du site",
+      eyebrowLangue: "Affichage",
+      eyebrowReglages: "Réglages",
+      reglagesAide: "Ce que vend la boutique, comment vous joindre, et ce que dit la page d'accueil.",
+      groupeBoutique: "La boutique",
+      groupeContact: "Vous joindre",
+      groupeReseaux: "Réseaux sociaux",
+      piedAide: "Visible aussitôt sur le site.",
       langueSiteAide:
         "Vitrine et back-office suivent ce choix. Les visiteurs ne peuvent pas en changer.",
       appliquer: "Appliquer",

@@ -167,7 +167,7 @@ export default async function Formats() {
                         <span className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
                           {da(variant.price_demi_gros, devise)}
                         </span>
-                        <span className="eyebrow shrink-0 text-[length:var(--adm-t-xs)] text-[color:var(--adm-muted)]">
+                        <span className="adm-etiquette mb-0 shrink-0">
                           <span className="group-open:hidden">
                             {a.commun.modifier}
                           </span>
@@ -177,7 +177,8 @@ export default async function Formats() {
                         </span>
                       </summary>
 
-                      <div className="border-t border-[color:var(--adm-line)] bg-comptoir p-4">
+                      <div className="border-t p-4"
+                      style={{ borderColor: "var(--adm-line)", background: "var(--adm-surface-2)" }}>
                         <FormAction action={enregistrerVariante}>
                           <input type="hidden" name="id" value={variant.id} />
                           <input

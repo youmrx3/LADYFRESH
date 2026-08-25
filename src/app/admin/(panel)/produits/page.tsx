@@ -137,7 +137,7 @@ export default async function Produits() {
                 </FormAction>
                 <Link
                   href="/admin/formats"
-                  className="eyebrow text-[color:var(--adm-muted)] underline underline-offset-4 "
+                  className="adm-btn adm-btn-discret underline underline-offset-4"
                 >
                   {a.formats.titre} →
                 </Link>

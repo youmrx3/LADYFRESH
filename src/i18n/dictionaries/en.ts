@@ -475,6 +475,13 @@ export const en: Dictionary = {
 
     contenu: {
       langueSite: "Site language",
+      eyebrowLangue: "Display",
+      eyebrowReglages: "Settings",
+      reglagesAide: "What the shop sells, how to reach you, and what the home page says.",
+      groupeBoutique: "The shop",
+      groupeContact: "Reaching you",
+      groupeReseaux: "Social links",
+      piedAide: "Live on the site straight away.",
       langueSiteAide:
         "Storefront and back office both follow this. Visitors cannot change it.",
       appliquer: "Apply",

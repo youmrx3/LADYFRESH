@@ -197,3 +197,89 @@ export function PiedFormulaire({
     </div>
   );
 }
+
+/**
+ * Section de page, en carte.
+ *
+ * Les écrans longs empilaient des `<h2>` suivis d'un cadre : rien ne disait où
+ * une section finissait et où la suivante commençait, et les réglages du site
+ * se lisaient comme une seule liste de quinze champs. Une carte par sujet, avec
+ * son en-tête et son aide, rend la page parcourable au lieu d'être lue en
+ * entier.
+ */
+export function CarteSection({
+  eyebrow,
+  titre,
+  aide,
+  action,
+  children,
+}: {
+  eyebrow?: string;
+  titre: string;
+  aide?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="adm-carte overflow-hidden">
+      <header
+        className="flex flex-wrap items-start justify-between gap-3 border-b p-4"
+        style={{
+          borderColor: "var(--adm-line)",
+          background: "var(--adm-surface-2)",
+        }}
+      >
+        <div className="min-w-0">
+          {eyebrow && <p className="adm-etiquette mb-1">{eyebrow}</p>}
+          <h2
+            className="leading-tight"
+            style={{ fontSize: "var(--adm-t-lg)", fontWeight: 600 }}
+          >
+            {titre}
+          </h2>
+          {aide && <p className="adm-aide mt-1.5 max-w-[62ch]">{aide}</p>}
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </header>
+      <div className="p-4">{children}</div>
+    </section>
+  );
+}
+
+/**
+ * Groupe de champs apparentés, sous un intitulé.
+ *
+ * Dix champs dans une même grille ne forment pas un formulaire, ils forment un
+ * mur. Les regrouper par sujet — la boutique, le contact, les réseaux — donne
+ * des repères pour retrouver celui qu'on cherche.
+ */
+export function Groupe({
+  titre,
+  children,
+  colonnes = 2,
+}: {
+  titre?: string;
+  children: React.ReactNode;
+  colonnes?: 1 | 2 | 3;
+}) {
+  const grille =
+    colonnes === 1
+      ? ""
+      : colonnes === 3
+        ? "sm:grid-cols-2 lg:grid-cols-3"
+        : "sm:grid-cols-2";
+
+  return (
+    <div className="[&+&]:mt-5">
+      {titre && (
+        <p
+          className="adm-etiquette mb-2 border-b pb-1.5"
+          style={{ borderColor: "var(--adm-line)" }}
+        >
+          {titre}
+        </p>
+      )}
+      <div className={`grid gap-3 ${grille}`}>{children}</div>
+    </div>
+  );
+}
