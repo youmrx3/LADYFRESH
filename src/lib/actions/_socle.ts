@@ -75,6 +75,18 @@ export function rafraichir() {
   quelque chose d'actionnable.
 */
 function messageLisible(brut: string) {
+  /*
+    Postgres refuse de supprimer une ligne encore référencée, et le dit dans sa
+    langue : « violates foreign key constraint products_type_id_fkey ». Ça ne
+    s'agit pas depuis un back-office. On nomme ce qui bloque.
+  */
+  if (/foreign key constraint/i.test(brut)) {
+    if (/products_type_id_fkey/i.test(brut)) {
+      return "Ce type est encore utilisé par des produits. Changez leur type, ou supprimez ces produits d'abord.";
+    }
+    return "Cet élément est encore utilisé ailleurs. Détachez-le d'abord de ce qui s'y rapporte.";
+  }
+
   if (/invalid api key|jw[st]|invalid.*token/i.test(brut)) {
     return "La base refuse la clé de service. Vérifiez SUPABASE_SERVICE_ROLE_KEY chez l'hébergeur — collée en entier, sans espace ni retour à la ligne — puis redéployez : une variable modifiée ne s'applique qu'au déploiement suivant.";
   }

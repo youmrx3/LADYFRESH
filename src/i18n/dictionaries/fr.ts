@@ -450,7 +450,7 @@ export const fr = {
       produits: "{n} produit",
       produitsPluriel: "{n} produits",
       confirmSuppr:
-        "Supprimer la gamme « {nom} » et tous ses produits ?",
+        "Supprimer la gamme « {nom} » ? Ses {n} produits et tous leurs formats seront supprimés avec elle. Cette action est irréversible.",
       amorcer: "Amorcer la base",
       amorcage: "Amorçage…",
       confirmAmorcer:

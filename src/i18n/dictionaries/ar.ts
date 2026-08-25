@@ -447,7 +447,7 @@ export const ar: Dictionary = {
       couverture: "صورة الغلاف",
       produits: "{n} منتج",
       produitsPluriel: "{n} منتج",
-      confirmSuppr: "حذف مجموعة «{nom}» وكل منتجاتها؟",
+      confirmSuppr: "حذف مجموعة «{nom}»؟ ستُحذف معها {n} منتجات وكل أحجامها. لا يمكن التراجع.",
       amorcer: "تعبئة قاعدة البيانات",
       amorcage: "جارٍ التعبئة…",
       confirmAmorcer: "نسخ الكتالوج المرجعي إلى Supabase؟",

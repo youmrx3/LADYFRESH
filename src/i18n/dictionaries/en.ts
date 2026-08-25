@@ -443,7 +443,8 @@ export const en: Dictionary = {
       couverture: "Cover image",
       produits: "{n} product",
       produitsPluriel: "{n} products",
-      confirmSuppr: "Delete the “{nom}” range and all its products?",
+      confirmSuppr:
+        "Delete the “{nom}” range? Its {n} products and all their sizes go with it. This cannot be undone.",
       amorcer: "Seed the database",
       amorcage: "Seeding…",
       confirmAmorcer: "Copy the reference catalogue into Supabase?",

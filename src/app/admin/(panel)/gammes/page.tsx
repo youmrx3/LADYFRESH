@@ -130,7 +130,7 @@ export default async function Gammes({
                     <input type="hidden" name="id" value={gamme.id} />
                     <Envoyer
                       variante="danger"
-                      confirmer={fill(a.gammes.confirmSuppr, { nom: gamme.name })}
+                      confirmer={fill(a.gammes.confirmSuppr, { nom: gamme.name, n: nb })}
                     >
                       {a.commun.supprimer}
                     </Envoyer>

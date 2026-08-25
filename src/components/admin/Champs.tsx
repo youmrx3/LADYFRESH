@@ -74,16 +74,33 @@ export function FormAction({
   const [etat, formAction] = useActionState(action, {});
   const annoncer = useAvis();
   const forme = useRef<HTMLFormElement>(null);
-  const vu = useRef<string | undefined>(undefined);
+  const vu = useRef<Retour | null>(null);
 
   useEffect(() => {
-    // `useActionState` conserve son état : sans ce garde, la bannière
-    // reviendrait à chaque nouveau rendu du parent.
-    if (!etat.ok || etat.ok === vu.current) return;
-    vu.current = etat.ok;
+    /*
+      On compare l'objet d'état, pas son texte.
+
+      Comparer le message revenait à ignorer deux actions identiques de suite :
+      créer deux coffrets rend deux fois « Coffret créé. », et la seconde ne
+      disait rien, ne refermait rien, ne vidait rien. La création avait bien eu
+      lieu — l'écran laissait croire le contraire. `useActionState` rend un
+      objet neuf à chaque envoi, l'identité suffit donc à les distinguer.
+    */
+    if (!etat.ok || etat === vu.current) return;
+    vu.current = etat;
     annoncer(etat.ok);
-    if (!garderOuvert) forme.current?.closest("details")?.removeAttribute("open");
-  }, [etat.ok, annoncer, garderOuvert]);
+    if (garderOuvert) return;
+
+    forme.current?.closest("details")?.removeAttribute("open");
+
+    /*
+      Un formulaire de création garde sinon ce qu'on vient d'y taper, et rien ne
+      distingue « c'est enregistré » de « ça n'est pas parti » : on le vide.
+      Un formulaire d'édition, lui, doit conserver les valeurs affichées.
+    */
+    const forme_ = forme.current;
+    if (forme_ && !forme_.querySelector('input[name="id"]')) forme_.reset();
+  }, [etat, annoncer, garderOuvert]);
 
   return (
     <form ref={forme} action={formAction} className={className} id={id}>
