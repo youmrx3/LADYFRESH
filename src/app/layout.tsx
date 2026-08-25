@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Instrument_Sans, Jost, Noto_Kufi_Arabic } from "next/fon
 import { PixelMeta } from "@/components/PixelMeta";
 import { ReglagesProvider } from "@/components/Reglages";
 import { PIXEL_ID, amorcePixel } from "@/lib/pixelAmorce";
+import { TIKTOK_ID, amorceTikTok } from "@/lib/pixelTikTok";
 import { DIRECTION, HTML_LANG } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 import "./globals.css";
@@ -104,6 +105,10 @@ export default async function RootLayout({
         {/* Meta Pixel — avant l'hydratation, voir `pixelAmorce`. */}
         {PIXEL_ID ? (
           <script dangerouslySetInnerHTML={{ __html: amorcePixel(PIXEL_ID) }} />
+        ) : null}
+        {/* TikTok — même raison d'être ici : `ttq` avant l'hydratation. */}
+        {TIKTOK_ID ? (
+          <script dangerouslySetInnerHTML={{ __html: amorceTikTok(TIKTOK_ID) }} />
         ) : null}
       </head>
       <body>

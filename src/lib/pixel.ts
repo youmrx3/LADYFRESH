@@ -32,12 +32,30 @@ type Params = Record<string, unknown>;
  * script encore en vol. Une commande ne doit pas échouer pour cette raison :
  * en cas de doute on ne fait rien.
  */
+/*
+  Les deux régies ne nomment pas les mêmes jalons. Meta parle de `Purchase`,
+  TikTok de `CompletePayment` ; le reste se recoupe. La table tient la
+  correspondance, et un jalon sans équivalent n'est simplement pas envoyé.
+*/
+const NOMS_TIKTOK: Record<string, string> = {
+  AddToCart: "AddToCart",
+  InitiateCheckout: "InitiateCheckout",
+  Purchase: "CompletePayment",
+  ViewContent: "ViewContent",
+};
+
 export function pixel(nom: string, params?: Params) {
   if (typeof window === "undefined") return;
   try {
     window.fbq?.("track", nom, params);
   } catch {
     // Le suivi est accessoire ; la commande ne l'est pas.
+  }
+  try {
+    const equivalent = NOMS_TIKTOK[nom];
+    if (equivalent) window.ttq?.track(equivalent, params);
+  } catch {
+    // Une régie muette ne doit pas en emporter une autre.
   }
 }
 
@@ -57,13 +75,13 @@ export function pixel(nom: string, params?: Params) {
  */
 export function pixelDesQuePret(nom: string, params?: Params, delaiMax = 10_000) {
   if (typeof window === "undefined") return;
-  if (window.fbq) {
+  if (window.fbq || window.ttq) {
     pixel(nom, params);
     return;
   }
   const debut = Date.now();
   const minuteur = setInterval(() => {
-    if (window.fbq) {
+    if (window.fbq || window.ttq) {
       clearInterval(minuteur);
       pixel(nom, params);
     } else if (Date.now() - debut > delaiMax) {

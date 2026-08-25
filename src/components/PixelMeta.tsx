@@ -7,6 +7,8 @@ import { PIXEL_ID } from "@/lib/pixelAmorce";
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
+    /* Posé par l'amorce TikTok ; absent tant qu'aucun identifiant n'est réglé. */
+    ttq?: { track: (nom: string, params?: Record<string, unknown>) => void };
   }
 }
 

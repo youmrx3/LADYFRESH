@@ -59,6 +59,20 @@ const META = process.env.NEXT_PUBLIC_META_PIXEL_ID
     }
   : { script: "", image: "", connect: "" };
 
+/*
+  TikTok charge son SDK depuis analytics.tiktok.com et y poste ses événements.
+  Sans ces ouvertures, la CSP le bloque en silence : la page s'affiche, le pixel
+  ne compte rien — exactement le piège déjà rencontré avec Meta. Ouvert
+  seulement si un identifiant est configuré.
+*/
+const TIKTOK = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID
+  ? {
+      script: " https://analytics.tiktok.com",
+      image: " https://analytics.tiktok.com",
+      connect: " https://analytics.tiktok.com",
+    }
+  : { script: "", image: "", connect: "" };
+
 /**
  * `unsafe-inline` sur les scripts est imposé par Next : l'hydratation et le
  * script de thème sont en ligne. Une CSP à nonce obligerait à rendre chaque
@@ -81,12 +95,12 @@ function csp() {
     "object-src 'none'",
     OUTIL_META ? `frame-ancestors ${CADRES_META}` : "frame-ancestors 'none'",
     "form-action 'self'",
-    `script-src 'self' 'unsafe-inline'${dev}${META.script}`,
+    `script-src 'self' 'unsafe-inline'${dev}${META.script}${TIKTOK.script}`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
-    `img-src 'self' data: blob:${sb}${META.image}`,
+    `img-src 'self' data: blob:${sb}${META.image}${TIKTOK.image}`,
     `media-src 'self' blob:${sb}`,
-    `connect-src 'self'${sb}${devSocket}${META.connect}`,
+    `connect-src 'self'${sb}${devSocket}${META.connect}${TIKTOK.connect}`,
     ...(DEV ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
 }
