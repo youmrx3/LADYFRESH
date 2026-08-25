@@ -163,10 +163,19 @@ export async function enregistrerVariante(
   return tenter(async () => {
     const db = await garde();
     const id = mot(formData, "id");
+    const prix = Number(formData.get("price_demi_gros") ?? 0);
     const valeurs = {
       product_id: mot(formData, "product_id"),
       size_label: mot(formData, "size_label"),
-      price_demi_gros: Number(formData.get("price_demi_gros") ?? 0),
+      price_demi_gros: prix,
+      /*
+        `price_gros` est un vestige : la boutique ne vend plus qu'au détail, et
+        le champ a disparu du formulaire. La colonne, elle, reste « not null »
+        sans valeur par défaut — ne plus l'écrire faisait échouer toute création
+        de format sur un refus de la base. On y recopie le prix de vente plutôt
+        qu'un zéro : la colonne garde ainsi un sens si on la relit un jour.
+      */
+      price_gros: prix,
       image: mot(formData, "image"),
       active: formData.get("active") === "on",
     };

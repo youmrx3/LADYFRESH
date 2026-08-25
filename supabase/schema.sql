@@ -392,6 +392,15 @@ end $$;
 alter table site_settings add column if not exists mode_boutique text not null default 'packs';
 alter table site_settings add column if not exists min_produit   int  not null default 1;
 
+/*
+  `price_gros` a perdu son formulaire quand la vente est passée au détail, mais
+  la colonne restait « not null » sans valeur par défaut : toute création de
+  format échouait sur un refus de la base. Le code la remplit de nouveau ; la
+  valeur par défaut est la ceinture, pour qu'un futur chemin d'insertion ne
+  retombe pas dans le même trou.
+*/
+alter table product_variants alter column price_gros set default 0;
+
 -- ------------------------------------------------------------- page campagne
 /*
   Ce que raconte /boutique.
