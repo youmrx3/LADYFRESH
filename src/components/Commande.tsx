@@ -285,9 +285,10 @@ export function Commande({
                         alt=""
                         fill
                         sizes="56px"
-                        className={
-                          l.kind === "pack" ? "object-cover" : "object-contain p-1"
-                        }
+                        // Même règle que sur la carte : une photo de coffret est
+                        // debout, la recadrer dans un carré n'en laisse voir que
+                        // le logo.
+                        className="object-contain p-1"
                       />
                     )}
                   </span>

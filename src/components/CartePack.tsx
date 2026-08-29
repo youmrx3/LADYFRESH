@@ -41,9 +41,24 @@ export function CartePack({ pack }: { pack: Pack }) {
           : "var(--ombre-carte)",
       }}
     >
+      {/*
+        Un coffret se photographie debout : le sac, les flacons alignés, le
+        logo au centre. Le cadre était en 4/3 couché et l'image recadrée pour le
+        remplir — on n'en voyait qu'une bande horizontale, sans le haut du sac
+        ni le bas des flacons. C'est précisément ce qui fait acheter qu'on
+        coupait.
+
+        Portrait et `contain` : la photo entre en entier, quel que soit son
+        format. Le fond reste celui de la carte quand il y a une image, pour
+        qu'un fond blanc de studio s'y fonde au lieu d'y flotter en rectangle.
+      */}
       <div
-        className="relative aspect-[4/3] overflow-hidden"
-        style={{ background: "color-mix(in srgb, var(--or-plein) 8%, var(--comptoir-surface))" }}
+        className="relative aspect-[3/4] overflow-hidden"
+        style={{
+          background: pack.image
+            ? "var(--comptoir-surface)"
+            : "color-mix(in srgb, var(--or-plein) 8%, var(--comptoir-surface))",
+        }}
       >
         {pack.image && (
           <Image
@@ -51,7 +66,7 @@ export function CartePack({ pack }: { pack: Pack }) {
             alt={nom}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover"
+            className="object-contain p-2"
           />
         )}
         {remise > 0 && (
