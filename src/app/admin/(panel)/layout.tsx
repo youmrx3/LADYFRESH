@@ -30,11 +30,13 @@ export default async function LayoutAdmin({
     // se lisent pas, trois familles se parcourent d'un coup d'œil.
     { href: "/admin", label: o.commandes, court: o.courts.commandes, icone: "commandes", groupe: "vente" },
     { href: "/admin/pistes", label: o.pistes, court: o.courts.pistes, icone: "pistes", groupe: "vente" },
+    { href: "/admin/stats", label: o.stats, court: o.courts.stats, icone: "stats", groupe: "vente" },
     { href: "/admin/packs", label: o.packs, court: o.courts.packs, icone: "packs", groupe: "catalogue" },
     { href: "/admin/produits", label: o.produits, court: o.courts.produits, icone: "produits", groupe: "catalogue" },
     { href: "/admin/formats", label: o.formats, court: o.courts.formats, icone: "formats", groupe: "catalogue" },
     { href: "/admin/gammes", label: o.gammes, court: o.courts.gammes, icone: "gammes", groupe: "catalogue" },
     { href: "/admin/types", label: o.types, court: o.courts.types, icone: "types", groupe: "catalogue" },
+    { href: "/admin/livraison", label: o.livraison, court: o.courts.livraison, icone: "livraison", groupe: "site" },
     { href: "/admin/campagne", label: o.campagne, court: o.courts.campagne, icone: "campagne", groupe: "site" },
     { href: "/admin/contenu", label: o.contenu, court: o.courts.contenu, icone: "contenu", groupe: "site" },
   ];

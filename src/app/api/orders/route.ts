@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createOrder, getSettings, ordersArePersisted, pisteConvertie } from "@/lib/data";
 import { orderRef } from "@/lib/format";
 import { avertirCommande } from "@/lib/email";
+import { fraisLivraison } from "@/lib/livraison";
 import { composer, type LigneDemandee } from "@/lib/panier";
 import { fill, getDictionary } from "@/i18n";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
@@ -78,6 +79,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.api.nomTel }, { status: 400 });
   }
 
+  /*
+    Les frais de port se calculent ici, à partir de la grille — le formulaire
+    n'envoie qu'un mode. Un montant posté depuis la console reviendrait à
+    choisir ses propres frais de livraison, au même titre qu'un total forgé.
+  */
+  const frais = await fraisLivraison(wilaya, customer.livraison_mode);
+  if (!frais.ok) {
+    return NextResponse.json(
+      {
+        error:
+          frais.raison === "mode" ? t.livraison.choisir : t.livraison.indisponible,
+      },
+      { status: 422 },
+    );
+  }
+
   const ref = orderRef();
   const order = {
     ref,
@@ -87,12 +104,15 @@ export async function POST(request: Request) {
     address: borne(customer.address, 300),
     note: borne(customer.note),
     source: borne(body.source, 60),
+    livraison_mode: frais.mode,
+    livraison_prix: frais.prix,
     /* La colonne est un enum hérité de l'époque WhatsApp. Tout entre désormais
        par le site ; on écrit la seule valeur qui reste. */
     channel: "formulaire" as const,
     /* Idem : la vente est au détail, la colonne garde sa valeur historique. */
     purchase_type: "demi_gros" as const,
-    total: panier.total,
+    /* Le total est ce que la cliente paie à la porte : marchandise et port. */
+    total: panier.total + frais.prix,
     status: "nouvelle" as const,
     created_at: new Date().toISOString(),
     items: panier.items,
@@ -132,7 +152,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ref,
-    total: panier.total,
+    total: order.total,
     persisted: ordersArePersisted(),
   });
 }

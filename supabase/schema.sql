@@ -429,12 +429,88 @@ begin
   end loop;
 end $$;
 
+-- ------------------------------------------------------------- suivi simplifié
+/*
+  Trois états de commande, plus quatre.
+
+  « nouvelle, en cours, traitée, livrée » décrivait un travail que le site ne
+  fait pas : l'expédition se suit chez le transporteur, pas ici. Ce qui se
+  décide dans ce back-office tient en un geste — la commande est-elle confirmée
+  au téléphone ou non — plus un cas de retour, qui doit rester comptable.
+
+  Un type énuméré n'oublie pas ses valeurs : on ajoute les deux nouvelles et on
+  fait migrer les anciennes. Les valeurs mortes restent déclarées sans être
+  employées, ce qui ne coûte rien et évite de casser d'anciennes lignes.
+*/
+do $$ begin
+  alter type order_status add value if not exists 'confirmee';
+exception when others then null; end $$;
+
+do $$ begin
+  alter type order_status add value if not exists 'retour';
+exception when others then null; end $$;
+
+/*
+  Les états intermédiaires d'autrefois valent tous « confirmée » aujourd'hui.
+
+  Cette bascule ne peut PAS vivre ici : Postgres refuse d'employer une valeur
+  d'énuméré dans la transaction même où elle est ajoutée, et l'éditeur SQL
+  exécute tout le fichier d'un bloc. Enveloppée dans un `exception when others`,
+  elle échouerait en silence — les anciennes commandes resteraient « en cours »
+  sans que rien ne le dise.
+
+  Elle est donc dans `supabase/migration-statuts.sql`, à passer UNE FOIS après
+  celui-ci. Sauter cette étape ne casse rien : les anciennes commandes gardent
+  leur état, restent lisibles, et apparaissent dans l'onglet « Toutes ».
+*/
+
+-- --------------------------------------------------------------- livraison
+/*
+  La grille tarifaire.
+
+  Un tarif par wilaya et par mode, comme facturent les transporteurs du pays.
+  Une commande paie une livraison, quel que soit le nombre de coffrets — d'où
+  une table à part plutôt qu'un prix accroché à chaque coffret.
+
+  `wilaya_code` est la clé : c'est ce que le formulaire enregistre déjà dans les
+  commandes, sous la forme « 16 — Alger ».
+*/
+create table if not exists livraison_tarifs (
+  wilaya_code text primary key,
+  wilaya_nom  text not null default '',
+  stopdesk    numeric(10,2) not null default 0,
+  domicile    numeric(10,2) not null default 0,
+  /* Une wilaya non desservie se décoche : elle disparaît du choix. */
+  active      boolean not null default true,
+  updated_at  timestamptz not null default now()
+);
+
+alter table livraison_tarifs enable row level security;
+
+do $$ begin
+  create policy "public read livraison_tarifs" on livraison_tarifs
+    for select using (true);
+exception when duplicate_object then null; end $$;
+
+/*
+  Ce que la cliente a choisi, figé sur la commande.
+
+  Le prix est recopié et non recalculé : une grille modifiée la semaine
+  suivante ne doit pas réécrire ce qu'une cliente a accepté de payer.
+*/
+alter table orders add column if not exists livraison_mode text not null default '';
+alter table orders add column if not exists livraison_prix numeric(10,2) not null default 0;
+
+/* L'interrupteur général : parfois on vend livraison comprise. */
+alter table site_settings add column if not exists livraison_active boolean not null default false;
+
 -- ------------------------------------------------------------ vérification
--- Doit renvoyer 13 tables. Si le compte est inférieur, relisez les erreurs
+-- Doit renvoyer 14 tables. Si le compte est inférieur, relisez les erreurs
 -- au-dessus : le script est idempotent, vous pouvez le relancer.
 select count(*) as tables_creees
 from information_schema.tables
 where table_schema = 'public'
   and table_name in ('gammes','product_types','products','product_variants',
                      'orders','order_items','hero_slides','videos','site_settings',
-                     'prospects','admins','packs','pack_items');
+                     'prospects','admins','packs','pack_items',
+                     'livraison_tarifs');

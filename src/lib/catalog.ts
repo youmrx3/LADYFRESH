@@ -487,6 +487,7 @@ export const SETTINGS: SiteSettings = {
   whatsapp_number: "213000000000",
   min_gros_cartons: 1,
   min_demi_gros_pieces: 5,
+  livraison_active: false,
   mode_boutique: "packs" as const,
   min_produit: 1,
   hero_eyebrow: "Cosmétiques — Algérie",

@@ -6,7 +6,7 @@ import {
   supprimerCommande,
   testerEmail,
 } from "@/lib/actions";
-import { getOrders } from "@/lib/data";
+import { PAR_PAGE, compterCommandes, getOrders } from "@/lib/data";
 import { da, formatDate } from "@/lib/format";
 import { fill } from "@/i18n";
 import { HTML_LANG } from "@/i18n/config";
@@ -15,10 +15,21 @@ import type { OrderStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const STATUTS: OrderStatus[] = ["nouvelle", "en_cours", "traitee", "livree"];
+/*
+  Trois états, plus quatre.
 
-const TEINTE: Record<OrderStatus, string> = {
+  « en cours, traitée, livrée » décrivait un travail qui se fait ailleurs : une
+  fois la commande confirmée au téléphone, c'est le transporteur qui la suit.
+  Ce qui se décide ici tient en un geste — confirmer — plus le cas du retour,
+  qu'on veut pouvoir compter.
+*/
+const STATUTS: OrderStatus[] = ["nouvelle", "confirmee", "retour"];
+
+const TEINTE: Record<string, string> = {
   nouvelle: "#c4102b",
+  confirmee: "#2f8f5b",
+  retour: "#b8860b",
+  // Anciennes valeurs : encore portées par des commandes d'avant la migration.
   en_cours: "#b8860b",
   traitee: "#2e7d9a",
   livree: "#2f8f5b",
@@ -27,47 +38,64 @@ const TEINTE: Record<OrderStatus, string> = {
 export default async function Commandes({
   searchParams,
 }: {
-  searchParams: Promise<{ statut?: string }>;
+  searchParams: Promise<{ statut?: string; page?: string }>;
 }) {
   const { t, locale } = await getT();
-  const { statut } = await searchParams;
-  const orders = await getOrders();
+  const { statut, page } = await searchParams;
 
   const filtre = STATUTS.includes(statut as OrderStatus)
     ? (statut as OrderStatus)
-    : null;
-  const visibles = filtre ? orders.filter((o) => o.status === filtre) : orders;
-  const compte = (s: OrderStatus) => orders.filter((o) => o.status === s).length;
+    : undefined;
+  const p = Math.max(0, Number(page) || 0);
+
+  const [{ orders, total }, compteurs] = await Promise.all([
+    getOrders({ page: p, statut: filtre }),
+    compterCommandes(),
+  ]);
+
+  const a = t.admin.commandes;
+  const pages = Math.ceil(total / PAR_PAGE);
+
+  const lien = (n: number) => {
+    const q = new URLSearchParams();
+    if (filtre) q.set("statut", filtre);
+    if (n > 0) q.set("page", String(n));
+    const s = q.toString();
+    return s ? `/admin?${s}` : "/admin";
+  };
 
   return (
     <div>
       <EnTetePage
-        eyebrow={t.admin.commandes.suivi}
-        titre={t.admin.commandes.titre}
+        eyebrow={a.suivi}
+        titre={a.titre}
         action={
-          <div className="flex flex-col items-end gap-1.5">
-            <p className="data text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">
-              {fill(t.admin.commandes.total, { n: orders.length })}
-            </p>
+          <div className="flex flex-wrap items-center gap-2">
             {/*
-              Un avis qui ne part pas ne se voit nulle part : il faudrait
-              ouvrir les journaux de l'hébergeur. Ce bouton tente un envoi et
-              écrit ici même ce qui a échoué, ou vers où c'est parti.
+              L'export part vers la société de livraison : on ne lui envoie que
+              ce qui est bon à expédier, donc les confirmées seules.
             */}
-            <FormAction action={testerEmail}>
-              <Envoyer variante="neutre">{t.admin.commandes.testerEmail}</Envoyer>
+            <a
+              href="/admin/export"
+              className="adm-btn adm-btn-neutre"
+              style={{ textDecoration: "none" }}
+            >
+              {a.exporter}
+            </a>
+            <FormAction action={testerEmail} garderOuvert>
+              <Envoyer variante="discret">{a.testerEmail}</Envoyer>
             </FormAction>
           </div>
         }
       />
 
       {/* Les compteurs servent aussi de filtre : un clic, pas de menu. */}
-      <nav className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <nav className="flex flex-wrap gap-2">
         <Onglet
           href="/admin"
           actif={!filtre}
-          label={t.admin.commandes.filtreTous}
-          n={orders.length}
+          label={a.filtreTous}
+          n={compteurs.tous ?? total}
         />
         {STATUTS.map((s) => (
           <Onglet
@@ -75,22 +103,19 @@ export default async function Commandes({
             href={`/admin?statut=${s}`}
             actif={filtre === s}
             label={t.statuts[s]}
-            n={compte(s)}
+            n={compteurs[s] ?? 0}
             teinte={TEINTE[s]}
           />
         ))}
       </nav>
 
-      {visibles.length === 0 ? (
-        <p className="mt-8 rounded border border-dashed border-[color:var(--adm-line)] px-6 py-16 text-center text-[length:var(--adm-t-md)] text-[color:var(--adm-muted)]">
-          {t.admin.commandes.vide}
-        </p>
+      {orders.length === 0 ? (
+        <p className="adm-vide mt-6">{a.vide}</p>
       ) : (
         <ul className="mt-6 space-y-3">
-          {visibles.map((order) => (
+          {orders.map((order) => (
             <li key={order.id} className="adm-carte overflow-hidden">
               <details className="group">
-                {/* ------------------------------------------- en-tête */}
                 <summary
                   className="flex cursor-pointer list-none items-center gap-3 p-3 sm:p-4"
                   style={{ minHeight: "var(--adm-h-lg)" }}
@@ -110,14 +135,20 @@ export default async function Commandes({
                       </span>
                       <span
                         className="truncate"
-                        style={{ fontSize: "var(--adm-t-sm)", color: "var(--adm-muted)" }}
+                        style={{
+                          fontSize: "var(--adm-t-sm)",
+                          color: "var(--adm-muted)",
+                        }}
                       >
-                        {order.customer_name || t.admin.commandes.clientAbsent}
+                        {order.customer_name || a.clientAbsent}
                       </span>
                     </span>
                     <span
                       className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1"
-                      style={{ fontSize: "var(--adm-t-xs)", color: "var(--adm-muted)" }}
+                      style={{
+                        fontSize: "var(--adm-t-xs)",
+                        color: "var(--adm-muted)",
+                      }}
                     >
                       <span className="data">
                         {formatDate(order.created_at, HTML_LANG[locale])}
@@ -155,12 +186,12 @@ export default async function Commandes({
                 </summary>
 
                 <div className="border-t" style={{ borderColor: "var(--adm-line)" }}>
-                  {/* ----------------------------------------- la cliente */}
+                  {/* ------------------------------------------ la cliente */}
                   <div className="p-4">
-                    <p className="adm-etiquette">{t.admin.commandes.client}</p>
+                    <p className="adm-etiquette">{a.client}</p>
                     <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
                       <Info label={t.commande.nom}>
-                        {order.customer_name || "\u2014"}
+                        {order.customer_name || "—"}
                       </Info>
                       <Info label={t.commande.telephone}>
                         {order.phone ? (
@@ -173,24 +204,34 @@ export default async function Commandes({
                             {order.phone}
                           </a>
                         ) : (
-                          "\u2014"
+                          "—"
                         )}
                       </Info>
-                      <Info label={t.commande.wilaya}>{order.wilaya || "\u2014"}</Info>
-                      <Info label={t.admin.commandes.adresse}>
-                        {order.address || "\u2014"}
-                      </Info>
+                      <Info label={t.commande.wilaya}>{order.wilaya || "—"}</Info>
+                      <Info label={a.adresse}>{order.address || "—"}</Info>
+                      {order.livraison_mode && (
+                        <Info label={a.livraison}>
+                          {order.livraison_mode === "stopdesk"
+                            ? t.livraison.stopdesk
+                            : t.livraison.domicile}
+                          {order.livraison_prix > 0 &&
+                            ` — ${da(order.livraison_prix, t.unites.devise)}`}
+                        </Info>
+                      )}
                       {order.note && (
-                        <Info label={t.admin.commandes.note} large>
+                        <Info label={a.note} large>
                           {order.note}
                         </Info>
                       )}
                     </dl>
                   </div>
 
-                  {/* ------------------------------------------ le contenu */}
-                  <div className="border-t p-4" style={{ borderColor: "var(--adm-line)" }}>
-                    <p className="adm-etiquette">{t.admin.commandes.articles}</p>
+                  {/* ------------------------------------------- le contenu */}
+                  <div
+                    className="border-t p-4"
+                    style={{ borderColor: "var(--adm-line)" }}
+                  >
+                    <p className="adm-etiquette">{a.articles}</p>
                     <ul className="space-y-1.5">
                       {order.items?.map((item, i) => (
                         <li
@@ -219,9 +260,7 @@ export default async function Commandes({
                         className="mt-2 flex items-baseline justify-between gap-3 border-t pt-2"
                         style={{ borderColor: "var(--adm-line)" }}
                       >
-                        <span className="adm-etiquette mb-0">
-                          {t.admin.commandes.totalLigne}
-                        </span>
+                        <span className="adm-etiquette mb-0">{a.totalLigne}</span>
                         <span
                           className="data"
                           style={{ fontSize: "var(--adm-t-lg)", fontWeight: 500 }}
@@ -233,61 +272,46 @@ export default async function Commandes({
                   </div>
 
                   {/*
-                    Le statut se pose d'un seul geste. Le menu déroulant suivi
-                    d'un bouton en demandait trois, pour quatre valeurs
-                    possibles — et laissait la ligne ouverte sans rien dire.
-
-                    La suppression est reléguée à l'autre bout de la rangée :
-                    on ne veut pas la frôler en changeant un statut.
+                    Un seul geste par état, et la suppression à l'autre bout :
+                    on ne veut pas la frôler en confirmant une commande.
                   */}
                   <div
-                    className="border-t p-4"
+                    className="flex flex-wrap items-center gap-2 border-t p-4"
                     style={{
                       borderColor: "var(--adm-line)",
                       background: "var(--adm-surface-2)",
                     }}
                   >
-                    <p className="adm-etiquette">{t.admin.commandes.statut}</p>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {STATUTS.map((s) => {
-                        const on = s === order.status;
-                        return (
-                          <FormAction key={s} action={changerStatutCommande}>
-                            <input type="hidden" name="id" value={order.id} />
-                            <input type="hidden" name="status" value={s} />
-                            <button
-                              type="submit"
-                              disabled={on}
-                              aria-current={on ? "true" : undefined}
-                              className="adm-btn"
-                              style={{
-                                background: on ? TEINTE[s] : "var(--adm-surface)",
-                                color: on ? "#fff" : "var(--adm-fg)",
-                                borderColor: on ? TEINTE[s] : "var(--adm-line)",
-                                opacity: 1,
-                                cursor: on ? "default" : "pointer",
-                              }}
-                            >
-                              {t.statuts[s]}
-                            </button>
-                          </FormAction>
-                        );
-                      })}
+                    {order.status !== "confirmee" && (
+                      <Statut
+                        id={order.id}
+                        valeur="confirmee"
+                        libelle={a.confirmer}
+                        variante="principal"
+                      />
+                    )}
+                    {order.status !== "nouvelle" && (
+                      <Statut
+                        id={order.id}
+                        valeur="nouvelle"
+                        libelle={a.remettreNouvelle}
+                      />
+                    )}
+                    {order.status !== "retour" && (
+                      <Statut id={order.id} valeur="retour" libelle={a.marquerRetour} />
+                    )}
 
-                      <span className="ms-auto">
-                        <FormAction action={supprimerCommande}>
-                          <input type="hidden" name="id" value={order.id} />
-                          <Envoyer
-                            variante="danger"
-                            confirmer={fill(t.admin.commandes.confirmSuppr, {
-                              ref: order.ref,
-                            })}
-                          >
-                            {t.admin.commandes.supprimer}
-                          </Envoyer>
-                        </FormAction>
-                      </span>
-                    </div>
+                    <span className="ms-auto">
+                      <FormAction action={supprimerCommande}>
+                        <input type="hidden" name="id" value={order.id} />
+                        <Envoyer
+                          variante="danger"
+                          confirmer={fill(a.confirmSuppr, { ref: order.ref })}
+                        >
+                          {a.supprimer}
+                        </Envoyer>
+                      </FormAction>
+                    </span>
                   </div>
                 </div>
               </details>
@@ -295,7 +319,70 @@ export default async function Commandes({
           ))}
         </ul>
       )}
+
+      {/*
+        La pagination n'est pas un ornement : le plafond précédent était de trois
+        cents lignes, et tout ce qui dépassait disparaissait sans le dire.
+      */}
+      {pages > 1 && (
+        <nav
+          className="mt-6 flex items-center justify-between gap-3"
+          aria-label={a.pages}
+        >
+          <PageLien href={lien(p - 1)} actif={p > 0} libelle={a.precedente} />
+          <span className="adm-aide">
+            {fill(a.pageSur, { n: p + 1, total: pages })}
+          </span>
+          <PageLien
+            href={lien(p + 1)}
+            actif={p + 1 < pages}
+            libelle={a.suivante}
+          />
+        </nav>
+      )}
     </div>
+  );
+}
+
+function Statut({
+  id,
+  valeur,
+  libelle,
+  variante,
+}: {
+  id: string;
+  valeur: OrderStatus;
+  libelle: string;
+  variante?: "principal" | "neutre";
+}) {
+  return (
+    <FormAction action={changerStatutCommande}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="status" value={valeur} />
+      <Envoyer variante={variante ?? "neutre"}>{libelle}</Envoyer>
+    </FormAction>
+  );
+}
+
+function PageLien({
+  href,
+  actif,
+  libelle,
+}: {
+  href: string;
+  actif: boolean;
+  libelle: string;
+}) {
+  if (!actif)
+    return (
+      <span className="adm-btn adm-btn-neutre" style={{ opacity: 0.4 }}>
+        {libelle}
+      </span>
+    );
+  return (
+    <Link href={href} className="adm-btn adm-btn-neutre" style={{ textDecoration: "none" }}>
+      {libelle}
+    </Link>
   );
 }
 
@@ -316,28 +403,23 @@ function Onglet({
     <Link
       href={href}
       aria-current={actif ? "page" : undefined}
-      className="rounded border px-3 py-2.5 transition-colors"
-      style={{
-        borderColor: actif ? "var(--comptoir-fg)" : "var(--adm-line)",
-        background: actif ? "var(--comptoir-fg)" : "var(--adm-surface)",
-        color: actif ? "var(--adm-surface)" : "inherit",
-      }}
+      className={`adm-btn ${actif ? "adm-btn-principal" : "adm-btn-neutre"}`}
+      style={{ borderRadius: "999px", textDecoration: "none" }}
     >
-      <span className="eyebrow flex items-center gap-1.5 text-[length:var(--adm-t-xs)] opacity-70">
-        {teinte && (
-          <span
-            aria-hidden
-            className="inline-block h-2 w-2 shrink-0 rounded-full"
-            style={{ background: teinte }}
-          />
-        )}
-        {label}
+      {teinte && (
+        <span
+          aria-hidden
+          className="inline-block h-2 w-2 shrink-0 rounded-full"
+          style={{ background: actif ? "currentColor" : teinte }}
+        />
+      )}
+      {label}
+      <span className="data" style={{ opacity: 0.7 }}>
+        {n}
       </span>
-      <span className="data mt-0.5 block text-[1.2rem]">{n}</span>
     </Link>
   );
 }
-
 
 /** Une paire étiquette / valeur, alignée avec ses voisines. */
 function Info({

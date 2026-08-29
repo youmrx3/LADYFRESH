@@ -11,6 +11,7 @@ import {
   getProductTypes,
   getProducts,
   getSettings,
+  getTarifs,
 } from "@/lib/data";
 import { getT } from "@/i18n/server";
 import type { ModeBoutique } from "@/lib/types";
@@ -48,13 +49,31 @@ export default async function PageBoutique({
   // Étiquette courte et sobre : elle finit dans une colonne de la base.
   const campagne = (c ?? "").trim().slice(0, 60);
 
-  const [gammes, packs, products, types, settings] = await Promise.all([
+  const [gammes, packs, products, types, settings, tarifs] = await Promise.all([
     getGammes(),
     getPacks(),
     getProducts(),
     getProductTypes(),
     getSettings(),
+    getTarifs(),
   ]);
+
+  /*
+    La grille descend jusqu'au formulaire pour que le total s'affiche sans
+    aller-retour. Seules les wilayas desservies partent, et seulement leurs
+    prix : le montant facturé, lui, est recalculé à l'enregistrement.
+  */
+  const grilleLivraison = {
+    active: settings.livraison_active,
+    tarifs: tarifs
+      .filter((x) => x.active)
+      .map((x) => ({
+        code: x.wilaya_code,
+        stopdesk: Number(x.stopdesk),
+        domicile: Number(x.domicile),
+      })),
+  };
+
 
   const mode: ModeBoutique =
     settings.mode_boutique === "produits" ? "produits" : "packs";
@@ -73,7 +92,7 @@ export default async function PageBoutique({
       <main>
         <HeroCampagne settings={settings} packs={packs} />
         <Boutique />
-        <Commande />
+        <Commande livraison={grilleLivraison} />
       </main>
 
       <footer className="etage-vitrine border-t border-encre-bord py-9">

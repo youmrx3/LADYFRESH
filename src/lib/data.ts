@@ -22,6 +22,7 @@ import type {
   ProductType,
   Prospect,
   ProspectStatus,
+  TarifLivraison,
   SiteSettings,
   Variant,
   Video,
@@ -272,6 +273,10 @@ export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
       channel: order.channel,
       source: order.source,
       purchase_type: order.purchase_type,
+      /* Recopiés et non recalculés : une grille modifiée la semaine suivante
+         ne doit pas réécrire ce qu'une cliente a accepté de payer. */
+      livraison_mode: order.livraison_mode,
+      livraison_prix: order.livraison_prix,
       total: order.total,
       status: order.status,
     })
@@ -296,16 +301,75 @@ export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
   return { ...order, id: data.id };
 }
 
-export async function getOrders(): Promise<Order[]> {
+/*
+  Le plafond était de trois cents lignes, sans pagination ni avertissement :
+  passé ce seuil, les commandes les plus anciennes disparaissaient de l'écran
+  comme si elles n'existaient pas. Mille commandes en trois jours rendaient la
+  chose certaine. On lit désormais par tranches, et l'appelant sait s'il en
+  reste.
+*/
+export const PAR_PAGE = 50;
+
+export async function getOrders(
+  { page = 0, statut }: { page?: number; statut?: OrderStatus } = {},
+): Promise<{ orders: Order[]; total: number }> {
   const db = supabaseAdmin();
-  if (!db) return readLocalOrders();
-  const { data, error } = await db
+  if (!db) {
+    const tout = readLocalOrders();
+    return { orders: tout.slice(page * PAR_PAGE, (page + 1) * PAR_PAGE), total: tout.length };
+  }
+
+  let requete = db
     .from("orders")
-    .select("*, items:order_items(*)")
-    .order("created_at", { ascending: false })
-    .limit(300);
-  if (error) return fallback("orders", readLocalOrders(), error);
-  return data as Order[];
+    .select("*, items:order_items(*)", { count: "exact" })
+    .order("created_at", { ascending: false });
+  if (statut) requete = requete.eq("status", statut);
+
+  const { data, error, count } = await requete.range(
+    page * PAR_PAGE,
+    page * PAR_PAGE + PAR_PAGE - 1,
+  );
+  if (error) return { orders: fallback("orders", readLocalOrders(), error), total: 0 };
+  return { orders: (data ?? []) as Order[], total: count ?? 0 };
+}
+
+/**
+ * Les compteurs par état, sans rapatrier les lignes.
+ *
+ * Compter à partir des commandes chargées ne compterait que la page affichée.
+ */
+export async function compterCommandes(): Promise<Record<string, number>> {
+  const db = supabaseAdmin();
+  if (!db) {
+    const tout = readLocalOrders();
+    return tout.reduce<Record<string, number>>(
+      (acc, o) => {
+        acc[o.status] = (acc[o.status] ?? 0) + 1;
+        return acc;
+      },
+      { tous: tout.length },
+    );
+  }
+  const out: Record<string, number> = {};
+  for (const s of ["nouvelle", "confirmee", "retour"] as const) {
+    const { count } = await db
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("status", s);
+    out[s] = count ?? 0;
+  }
+
+  /*
+    Le total ne se déduit pas de la somme des trois : d'anciennes commandes
+    peuvent encore porter un état d'avant la migration, et l'onglet « Toutes »
+    doit les compter — sinon elles n'apparaîtraient nulle part.
+  */
+  const { count } = await db
+    .from("orders")
+    .select("*", { count: "exact", head: true });
+  out.tous = count ?? 0;
+
+  return out;
 }
 
 /**
@@ -426,9 +490,46 @@ export async function getProspects(): Promise<{
     .from("prospects")
     .select("*")
     .order("updated_at", { ascending: false })
-    .limit(300);
+    .limit(500);
   if (error) return { pistes: [], tableManquante: tableAbsente(error) };
   return { pistes: (data ?? []) as Prospect[], tableManquante: false };
+}
+
+/**
+ * La liste d'appels : ce qui reste à rappeler, et rien d'autre.
+ *
+ * Une piste convertie n'a plus rien à faire ici — la vente est faite, elle vit
+ * dans les commandes. Elle était consultable par un filtre, ce qui revenait à
+ * garder ouverte, en permanence, une liste dont chaque ligne est du travail
+ * terminé. Le compte des converties sert encore aux statistiques ; l'écran, lui,
+ * ne montre que ce qui appelle un geste.
+ */
+export async function getPistesActives(): Promise<{
+  pistes: Prospect[];
+  tableManquante: boolean;
+}> {
+  const db = supabaseAdmin();
+  if (!db) return { pistes: [], tableManquante: false };
+  const { data, error } = await db
+    .from("prospects")
+    .select("*")
+    .in("status", ["ouverte", "rappelee"])
+    .order("updated_at", { ascending: false })
+    .limit(500);
+  if (error) return { pistes: [], tableManquante: tableAbsente(error) };
+  return { pistes: (data ?? []) as Prospect[], tableManquante: false };
+}
+
+export async function getProspect(id: string): Promise<Prospect | null> {
+  const db = supabaseAdmin();
+  if (!db) return null;
+  const { data, error } = await db
+    .from("prospects")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) return null;
+  return (data as Prospect) ?? null;
 }
 
 export async function setProspectStatus(id: string, status: ProspectStatus) {
@@ -481,6 +582,177 @@ export async function getPacksAdmin(): Promise<Pack[]> {
   return lirePacks(true);
 }
 
+// ---------------------------------------------------------------- livraison
+
+async function getTarifsBrut(): Promise<TarifLivraison[]> {
+  const db = supabaseRead();
+  if (!db) return [];
+  const { data, error } = await db
+    .from("livraison_tarifs")
+    .select("*")
+    .order("wilaya_code");
+  if (error) return fallback("livraison_tarifs", [] as TarifLivraison[], error);
+  return (data ?? []) as TarifLivraison[];
+}
+
+/** Lecture back-office : wilayas désactivées comprises. */
+export async function getTarifsAdmin(): Promise<TarifLivraison[]> {
+  return getTarifsBrut();
+}
+
+/**
+ * Enregistre la grille d'un coup.
+ *
+ * Cinquante-huit lignes se règlent sur un seul écran : les envoyer une par une
+ * ferait cinquante-huit allers-retours pour un geste unique.
+ */
+export async function enregistrerTarifs(lignes: TarifLivraison[]) {
+  const db = supabaseAdmin();
+  if (!db) throw new Error("Base non connectée.");
+  const { error } = await db.from("livraison_tarifs").upsert(
+    lignes.map((l) => ({ ...l, updated_at: new Date().toISOString() })),
+    { onConflict: "wilaya_code" },
+  );
+  if (error) throw new Error(error.message);
+}
+
+// ------------------------------------------------------------- statistiques
+
+export type Statistiques = {
+  ca: number;
+  confirmees: number;
+  nouvelles: number;
+  retours: number;
+  panier: number;
+  parJour: { jour: string; commandes: number; ca: number }[];
+  topPacks: { nom: string; n: number }[];
+  wilayas: { nom: string; n: number }[];
+  pistesOuvertes: number;
+  pistesConverties: number;
+};
+
+const VIDE: Statistiques = {
+  ca: 0, confirmees: 0, nouvelles: 0, retours: 0, panier: 0,
+  parJour: [], topPacks: [], wilayas: [],
+  pistesOuvertes: 0, pistesConverties: 0,
+};
+
+/**
+ * Les chiffres d'une période.
+ *
+ * Le chiffre d'affaires ne compte que les commandes confirmées : une commande
+ * nouvelle n'est pas encore une vente, et une commande revenue n'en est plus
+ * une. Les frais de livraison en sont retirés — ils passent au transporteur,
+ * pas dans la caisse.
+ *
+ * L'agrégation se fait ici plutôt qu'en SQL parce qu'elle tient en mémoire :
+ * même à mille commandes en trois jours, un mois pèse quelques milliers de
+ * lignes. Le plafond est explicite pour que le jour où il sera atteint, ce soit
+ * une décision et non une surprise.
+ */
+export async function getStatistiques(jours: number): Promise<Statistiques> {
+  const db = supabaseAdmin();
+  if (!db) return VIDE;
+
+  const depuis =
+    jours > 0
+      ? new Date(Date.now() - jours * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+
+  let requete = db
+    .from("orders")
+    .select(
+      "id, created_at, total, status, wilaya, livraison_prix, items:order_items(product_name, quantity, line_total)",
+    )
+    .order("created_at", { ascending: false })
+    .limit(5000);
+  if (depuis) requete = requete.gte("created_at", depuis);
+
+  const { data, error } = await requete;
+  if (error) return fallback("statistiques", VIDE, error);
+
+  type Ligne = {
+    created_at: string;
+    total: number;
+    status: string;
+    wilaya: string | null;
+    livraison_prix: number | null;
+    items: { product_name: string; quantity: number }[] | null;
+  };
+  const lignes = (data ?? []) as unknown as Ligne[];
+
+  const out: Statistiques = { ...VIDE, parJour: [], topPacks: [], wilayas: [] };
+  const jour = new Map<string, { commandes: number; ca: number }>();
+  const packs = new Map<string, number>();
+  const wilayas = new Map<string, number>();
+
+  for (const l of lignes) {
+    if (l.status === "nouvelle") out.nouvelles += 1;
+    if (l.status === "retour") out.retours += 1;
+    if (l.status !== "confirmee") continue;
+
+    const net = Number(l.total ?? 0) - Number(l.livraison_prix ?? 0);
+    out.confirmees += 1;
+    out.ca += net;
+
+    const j = l.created_at.slice(0, 10);
+    const acc = jour.get(j) ?? { commandes: 0, ca: 0 };
+    jour.set(j, { commandes: acc.commandes + 1, ca: acc.ca + net });
+
+    if (l.wilaya) wilayas.set(l.wilaya, (wilayas.get(l.wilaya) ?? 0) + 1);
+    for (const it of l.items ?? [])
+      packs.set(it.product_name, (packs.get(it.product_name) ?? 0) + it.quantity);
+  }
+
+  out.panier = out.confirmees ? Math.round(out.ca / out.confirmees) : 0;
+  out.parJour = [...jour.entries()]
+    .map(([j, v]) => ({ jour: j, ...v }))
+    .sort((a, b) => a.jour.localeCompare(b.jour));
+  const dessus = (m: Map<string, number>) =>
+    [...m.entries()]
+      .map(([nom, n]) => ({ nom, n }))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 6);
+  out.topPacks = dessus(packs);
+  out.wilayas = dessus(wilayas);
+
+  /*
+    Le taux de transformation demande les deux bouts : les paniers restés en
+    plan et ceux qui ont fini en commande. Deux comptages, pas de lignes.
+  */
+  for (const [statut, cle] of [
+    ["ouverte", "pistesOuvertes"],
+    ["convertie", "pistesConverties"],
+  ] as const) {
+    const { count } = await db
+      .from("prospects")
+      .select("*", { count: "exact", head: true })
+      .eq("status", statut);
+    out[cle] = count ?? 0;
+  }
+
+  return out;
+}
+
+/**
+ * Ce qui part chez le transporteur : les commandes confirmées, rien d'autre.
+ *
+ * Exporter les nouvelles enverrait à l'expédition des commandes que personne
+ * n'a encore eues au téléphone.
+ */
+export async function getCommandesExport(): Promise<Order[]> {
+  const db = supabaseAdmin();
+  if (!db) return readLocalOrders().filter((o) => o.status === "confirmee");
+  const { data, error } = await db
+    .from("orders")
+    .select("*, items:order_items(*)")
+    .eq("status", "confirmee")
+    .order("created_at", { ascending: false })
+    .limit(5000);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Order[];
+}
+
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
@@ -492,6 +764,8 @@ export const getProductTypes = enCache("getProductTypes", getProductTypesBrut);
 export const getProducts = enCache("getProducts", getProductsBrut);
 
 export const getPacks = enCache("getPacks", getPacksBrut);
+
+export const getTarifs = enCache("getTarifs", getTarifsBrut);
 
 export const getSettings = enCache("getSettings", getSettingsBrut);
 

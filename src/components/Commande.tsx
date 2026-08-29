@@ -28,13 +28,29 @@ function Requis() {
 }
 
 /**
+ * La grille de livraison, telle qu'elle voyage jusqu'au navigateur.
+ *
+ * Seuls les codes et les deux prix : de quoi afficher un total juste avant
+ * l'envoi. Le montant qui sera facturé est recalculé côté serveur — ceci n'est
+ * qu'un affichage, et un affichage ne fait pas foi.
+ */
+export type GrilleLivraison = {
+  active: boolean;
+  tarifs: { code: string; stopdesk: number; domicile: number }[];
+};
+
+/**
  * Le bon de commande et son formulaire.
  *
  * Tout est à l'écran d'un coup : le récapitulatif, les coordonnées, le bouton.
  * Sur une page de campagne, chaque volet à déplier est une occasion de partir —
  * et le pixel avait montré exactement cela.
  */
-export function Commande() {
+export function Commande({
+  livraison = { active: false, tarifs: [] },
+}: {
+  livraison?: GrilleLivraison;
+}) {
   const { lignes, total, nombreArticles, poser, vider } = useBoutique();
   const { t, locale } = useReglages();
   const router = useRouter();
@@ -46,10 +62,28 @@ export function Commande() {
     wilaya: "",
     address: "",
     note: "",
+    livraison_mode: "",
   });
 
   const vide = lignes.length === 0;
   const devise = t.unites.devise;
+
+  /*
+    Le tarif de la wilaya choisie. Tant que l'interrupteur général est éteint,
+    rien de tout ceci n'existe : ni le choix, ni la ligne de frais, ni la
+    contrainte de remplissage.
+  */
+  const code = client.wilaya.trim().match(/^\d{1,2}/)?.[0]?.padStart(2, "0") ?? "";
+  const tarif = livraison.active
+    ? livraison.tarifs.find((x) => x.code === code)
+    : undefined;
+  const port =
+    tarif && client.livraison_mode
+      ? client.livraison_mode === "stopdesk"
+        ? tarif.stopdesk
+        : tarif.domicile
+      : 0;
+  const aPayer = total + port;
 
   /*
     Étiquette de campagne posée par ?c=…, mémorisée le temps de la visite : la
@@ -69,6 +103,11 @@ export function Commande() {
       ["name", t.commande.nom],
       ["phone", t.commande.telephone],
       ["wilaya", t.commande.wilaya],
+      // Le mode n'est exigé que si la livraison est facturée : sinon la ligne
+      // n'existe pas et rien ne doit bloquer.
+      ...(livraison.active
+        ? ([["livraison_mode", t.livraison.titre]] as const)
+        : []),
     ] as const
   )
     .filter(([cle]) => !client[cle].trim())
@@ -124,7 +163,7 @@ export function Commande() {
     pixel("InitiateCheckout", {
       ...contenus(pourPixel),
       num_items: lignes.length,
-      value: total,
+      value: aPayer,
       currency: DEVISE_PIXEL,
     });
 
@@ -157,7 +196,7 @@ export function Commande() {
       */
       const achat = {
         ...contenus(pourPixel),
-        value: data.total ?? total,
+        value: data.total ?? aPayer,
         currency: DEVISE_PIXEL,
         campagne: campagne || "direct",
       };
@@ -280,16 +319,51 @@ export function Commande() {
               ))}
             </ul>
 
-            <div className="mt-4 flex items-center justify-between border-t border-trait pt-4">
-              <span className="eyebrow text-graphite-doux">
-                {fill(
-                  nombreArticles > 1
-                    ? t.commande.articlesPluriel
-                    : t.commande.articles,
-                  { n: nombreArticles },
-                )}
-              </span>
-              <span className="data text-[1.35rem]">{da(total, devise)}</span>
+            <div className="mt-4 space-y-1.5 border-t border-trait pt-4">
+              <div className="flex items-center justify-between">
+                <span className="eyebrow text-graphite-doux">
+                  {fill(
+                    nombreArticles > 1
+                      ? t.commande.articlesPluriel
+                      : t.commande.articles,
+                    { n: nombreArticles },
+                  )}
+                </span>
+                <span
+                  className={
+                    livraison.active
+                      ? "data text-[15px] text-graphite-doux"
+                      : "data text-[1.35rem]"
+                  }
+                >
+                  {da(total, devise)}
+                </span>
+              </div>
+
+              {livraison.active && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="eyebrow text-graphite-doux">
+                      {t.livraison.frais}
+                    </span>
+                    <span className="data text-[15px] text-graphite-doux">
+                      {client.livraison_mode && tarif
+                        ? port > 0
+                          ? da(port, devise)
+                          : t.livraison.offerte
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-trait pt-2">
+                    <span className="eyebrow text-graphite-doux">
+                      {t.livraison.aPayer}
+                    </span>
+                    <span className="data text-[1.35rem]">
+                      {da(aPayer, devise)}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             <button
@@ -345,7 +419,15 @@ export function Commande() {
                   className="champ"
                   dir={locale === "ar" ? "rtl" : "ltr"}
                   value={client.wilaya}
-                  onChange={(e) => setClient({ ...client, wilaya: e.target.value })}
+                  onChange={(e) =>
+                    // Changer de wilaya change les tarifs : le mode déjà choisi
+                    // ne vaut plus rien tant qu'on ne l'a pas rechoisi.
+                    setClient({
+                      ...client,
+                      wilaya: e.target.value,
+                      livraison_mode: "",
+                    })
+                  }
                 >
                   <option value="">{t.commande.wilayaChoisir}</option>
                   {WILAYAS.map((w) => (
@@ -355,6 +437,65 @@ export function Commande() {
                   ))}
                 </select>
               </div>
+
+              {/*
+                Le choix du mode : deux grandes cibles côte à côte, avec leur
+                prix écrit dessus. Une liste déroulante cacherait justement ce
+                qu'on veut comparer.
+              */}
+              {livraison.active && (
+                <div>
+                  <span className="etiquette">
+                    {t.livraison.titre} <Requis />
+                  </span>
+                  {!client.wilaya ? (
+                    <p className="mt-1 text-[13px] text-graphite-doux">
+                      {t.livraison.wilayaDabord}
+                    </p>
+                  ) : !tarif ? (
+                    <p
+                      className="mt-1 text-[13px]"
+                      style={{ color: "var(--danger)" }}
+                    >
+                      {t.livraison.indisponible}
+                    </p>
+                  ) : (
+                    <div className="mt-1 grid grid-cols-2 gap-2">
+                      {(
+                        [
+                          ["stopdesk", t.livraison.stopdesk, tarif.stopdesk],
+                          ["domicile", t.livraison.domicile, tarif.domicile],
+                        ] as const
+                      ).map(([mode, label, prix]) => {
+                        const on = client.livraison_mode === mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            aria-pressed={on}
+                            onClick={() =>
+                              setClient({ ...client, livraison_mode: mode })
+                            }
+                            className="rounded-[10px] border px-3 py-3 text-start transition-colors"
+                            style={{
+                              minHeight: "3.25rem",
+                              borderColor: on ? "var(--or-plein)" : "var(--trait)",
+                              background: on
+                                ? "color-mix(in srgb, var(--or-plein) 10%, transparent)"
+                                : "var(--comptoir-surface)",
+                            }}
+                          >
+                            <span className="block text-[14px]">{label}</span>
+                            <span className="data block text-[13px] text-graphite-doux">
+                              {prix > 0 ? da(prix, devise) : t.livraison.offerte}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="etiquette" htmlFor="cmd-adresse">
@@ -403,7 +544,7 @@ export function Commande() {
             >
               {etat.phase === "envoi"
                 ? t.commande.envoiEnCours
-                : fill(t.commande.confirmer, { total: da(total, devise) })}
+                : fill(t.commande.confirmer, { total: da(aPayer, devise) })}
             </button>
 
             <p className="mt-2.5 text-center text-[12px] text-graphite-doux">

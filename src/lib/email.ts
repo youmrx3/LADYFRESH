@@ -71,6 +71,13 @@ function corpsTexte(order: Order, devise: string, base: string) {
     ``,
     ...lignes,
     ``,
+    // Le mode figure dans l'avis : c'est lui qui dit s'il faut déposer au
+    // bureau du transporteur ou faire livrer à la porte.
+    ...(order.livraison_mode
+      ? [
+          `Livraison: ${order.livraison_mode === "stopdesk" ? "Stop desk" : "A domicile"} = ${order.livraison_prix} ${devise}`,
+        ]
+      : []),
     `TOTAL : ${order.total} ${devise}`,
     ``,
     `Back-office : ${base}/admin`,
@@ -105,6 +112,13 @@ function corpsHtml(order: Order, devise: string, base: string) {
   </table>
   <table style="border-collapse:collapse;width:100%;font-size:14px">
     ${lignes}
+    ${
+      order.livraison_mode
+        ? `<tr><td style="padding:4px 12px 4px 0;border-top:1px solid #eee">Livraison — ${
+            order.livraison_mode === "stopdesk" ? "Stop desk" : "À domicile"
+          }</td><td style="padding:4px 0;border-top:1px solid #eee;text-align:right;white-space:nowrap">${order.livraison_prix} ${devise}</td></tr>`
+        : ""
+    }
     <tr><td style="padding:8px 12px 0 0;border-top:2px solid #141719"><strong>Total</strong></td>
         <td style="padding:8px 0 0;border-top:2px solid #141719;text-align:right"><strong>${order.total} ${devise}</strong></td></tr>
   </table>

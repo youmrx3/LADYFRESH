@@ -15,6 +15,7 @@ import {
   getProductTypes,
   getProducts,
   getSettings,
+  getTarifs,
   getVideos,
 } from "@/lib/data";
 import type { ModeBoutique } from "@/lib/types";
@@ -32,7 +33,7 @@ import type { ModeBoutique } from "@/lib/types";
  * commencer sur une publicité et finir ici sans rien perdre.
  */
 export default async function Accueil() {
-  const [gammes, packs, products, types, settings, slides, videos] =
+  const [gammes, packs, products, types, settings, slides, videos, tarifs] =
     await Promise.all([
       getGammes(),
       getPacks(),
@@ -41,7 +42,25 @@ export default async function Accueil() {
       getSettings(),
       getHeroSlides(),
       getVideos(),
+      getTarifs(),
     ]);
+
+  /*
+    La grille descend jusqu'au formulaire pour que le total s'affiche sans
+    aller-retour. Seules les wilayas desservies partent, et seulement leurs
+    prix : le montant facturé, lui, est recalculé à l'enregistrement.
+  */
+  const grilleLivraison = {
+    active: settings.livraison_active,
+    tarifs: tarifs
+      .filter((x) => x.active)
+      .map((x) => ({
+        code: x.wilaya_code,
+        stopdesk: Number(x.stopdesk),
+        domicile: Number(x.domicile),
+      })),
+  };
+
 
   // Une référence = un format en vente, pas un produit.
   const referenceCount = products.reduce((n, p) => n + p.variants.length, 0);
@@ -69,7 +88,7 @@ export default async function Accueil() {
         <CommentCommander settings={settings} />
         <RailGammes gammes={gammes} products={products} types={types} />
         <Boutique />
-        <Commande />
+        <Commande livraison={grilleLivraison} />
         <Videos videos={videos} />
         <AppelFinal gammes={gammes} settings={settings} />
       </main>

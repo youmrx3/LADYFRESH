@@ -38,6 +38,8 @@ export type LienAdmin = {
 type Icone =
   | "commandes"
   | "pistes"
+  | "stats"
+  | "livraison"
   | "packs"
   | "campagne"
   | "types"
@@ -179,6 +181,20 @@ function Glyphe({ nom }: { nom: Icone }) {
       return (
         <svg {...commun}>
           <path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z" />
+        </svg>
+      );
+    case "stats":
+      // Trois barres : ce que la période a donné.
+      return (
+        <svg {...commun}>
+          <path d="M4 20V10M10 20V4M16 20v-7M4 20h16" />
+        </svg>
+      );
+    case "livraison":
+      // Un fourgon : ce qui part chez la cliente.
+      return (
+        <svg {...commun}>
+          <path d="M3 7h10v9H3zM13 11h4l3 3v2h-7zM7 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" />
         </svg>
       );
     case "packs":

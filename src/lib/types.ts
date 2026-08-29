@@ -95,6 +95,8 @@ export type SiteSettings = {
   whatsapp_number: string;
   min_gros_cartons: number;
   min_demi_gros_pieces: number;
+  /** La grille de livraison s'applique-t-elle ? Sinon, tout est port compris. */
+  livraison_active: boolean;
   /** Ce que la vitrine met en avant : coffrets ou produits à l'unité. */
   mode_boutique: ModeBoutique;
   /** Minimum de pièces par référence, à l'unité. */
@@ -138,7 +140,23 @@ export type SiteSettings = {
   tiktok_url: string;
 };
 
-export type OrderStatus = "nouvelle" | "en_cours" | "traitee" | "livree";
+/*
+  Trois états, et les anciens gardés pour relire ce qui existe déjà.
+
+  Le back-office ne suit plus l'expédition — elle se suit chez le transporteur.
+  Ce qui se décide ici : la commande est-elle confirmée au téléphone, et
+  est-elle revenue.
+*/
+export type OrderStatus =
+  | "nouvelle"
+  | "confirmee"
+  | "retour"
+  | "en_cours"
+  | "traitee"
+  | "livree";
+
+/** Les seuls états qu'on pose désormais. */
+export const STATUTS_ACTIFS = ["nouvelle", "confirmee", "retour"] as const;
 
 export type OrderItem = {
   id: string;
@@ -170,6 +188,10 @@ export type Order = {
   /** Étiquette de campagne (`?c=` sur /boutique), vide en direct. */
   source: string;
   purchase_type: PurchaseType;
+  /** Ce que la cliente a choisi, figé : « stopdesk » ou « domicile ». */
+  livraison_mode: string;
+  /** Le tarif appliqué, recopié pour survivre à un changement de grille. */
+  livraison_prix: number;
   total: number;
   status: OrderStatus;
   created_at: string;
@@ -254,3 +276,19 @@ export type PackItem = {
   quantity: number;
   sort_order: number;
 };
+
+/**
+ * Un tarif de livraison, par wilaya et par mode.
+ *
+ * Une commande paie une livraison, quel que soit le nombre de coffrets : le
+ * tarif tient donc à la destination, pas à la marchandise.
+ */
+export type TarifLivraison = {
+  wilaya_code: string;
+  wilaya_nom: string;
+  stopdesk: number;
+  domicile: number;
+  active: boolean;
+};
+
+export type ModeLivraison = "stopdesk" | "domicile";
