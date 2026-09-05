@@ -79,7 +79,7 @@ export function Navbar() {
 
           <a
             href="#commande"
-            className="btn btn-or hidden !px-4 !py-2.5 !text-[11.5px] lg:inline-flex"
+            className="btn btn-or btn-vif hidden !px-4 !py-2.5 !text-[11.5px] lg:inline-flex"
           >
             {t.nav.cta}
             {nombreArticles > 0 && (
@@ -142,7 +142,7 @@ export function Navbar() {
               <a
                 href="#commande"
                 onClick={() => setOpen(false)}
-                className="btn btn-or w-full"
+                className="btn btn-or btn-vif w-full"
               >
                 {t.nav.cta}
                 {nombreArticles > 0 && (

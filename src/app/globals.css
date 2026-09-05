@@ -281,6 +281,74 @@
     border-color: color-mix(in srgb, var(--or-plein) 82%, #fff);
   }
 
+  /*
+    Le bouton qui appelle a commander.
+
+    Un bouton dore pose sur un fond creme se lit comme un element de decor : il
+    ne dit pas qu'il attend un clic. Une lueur qui respire le distingue de tout
+    le reste de la page sans rien clignoter — le clignotement, lui, se lit comme
+    une banniere publicitaire et se fait ignorer.
+
+    Deux gestes superposes : un halo qui enfle et retombe en quatre secondes, et
+    un reflet qui traverse la surface. L'animation s'arrete au survol : la main
+    est sur le bouton, l'appel n'a plus lieu d'etre.
+  */
+  .btn-vif {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    animation: btn-halo 4s ease-in-out infinite;
+  }
+
+  .btn-vif::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      color-mix(in srgb, #fff 55%, transparent) 48%,
+      transparent 66%
+    );
+    transform: translateX(-130%);
+    animation: btn-reflet 4s ease-in-out infinite;
+  }
+
+  .btn-vif:hover,
+  .btn-vif:hover::after {
+    animation-play-state: paused;
+  }
+
+  @keyframes btn-halo {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--or-plein) 55%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 0 7px color-mix(in srgb, var(--or-plein) 0%, transparent);
+    }
+  }
+
+  @keyframes btn-reflet {
+    0%,
+    55% {
+      transform: translateX(-130%);
+    }
+    85%,
+    100% {
+      transform: translateX(130%);
+    }
+  }
+
+  /* Qui demande moins de mouvement n'a pas demande un bouton qui respire. */
+  @media (prefers-reduced-motion: reduce) {
+    .btn-vif,
+    .btn-vif::after {
+      animation: none;
+    }
+  }
+
   .btn-fantome {
     background: transparent;
     color: currentColor;

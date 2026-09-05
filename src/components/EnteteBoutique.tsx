@@ -58,7 +58,7 @@ export function EnteteBoutique({ campagne }: { campagne: string }) {
 
         <div className="ms-auto flex shrink-0 items-center gap-2">
           <BasculeTheme compact />
-          <a href="#commande" className="btn btn-or !px-4 !py-2.5 !text-[11.5px]">
+          <a href="#commande" className="btn btn-or btn-vif !px-4 !py-2.5 !text-[11.5px]">
             {t.nav.cta}
             {nombreArticles > 0 && (
               <span

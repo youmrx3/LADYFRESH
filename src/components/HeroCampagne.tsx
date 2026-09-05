@@ -158,7 +158,7 @@ export async function HeroCampagne({
           <div className="lever mt-8" style={{ animationDelay: "250ms" }}>
             <a
               href="#boutique"
-              className="btn btn-or w-full !whitespace-normal !py-4 !leading-snug sm:w-auto sm:!px-9"
+              className="btn btn-or btn-vif w-full !whitespace-normal !py-4 !leading-snug sm:w-auto sm:!px-9"
             >
               {cta}
             </a>

@@ -48,7 +48,7 @@ export function AppelFinal({
           </p>
           {/* Une seule sortie : la commande se passe sur le site. */}
           <div className="mt-8 flex justify-center">
-            <a href="#boutique" className="btn btn-or">
+            <a href="#boutique" className="btn btn-or btn-vif">
               {t.appel.cta}
             </a>
           </div>

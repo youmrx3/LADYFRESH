@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Boutique } from "@/components/Boutique";
+import { Avis } from "@/components/Avis";
 import { BoutiqueProvider } from "@/components/BoutiqueProvider";
 import { Commande } from "@/components/Commande";
 import { EnteteBoutique } from "@/components/EnteteBoutique";
@@ -92,6 +93,7 @@ export default async function PageBoutique({
       <main>
         <HeroCampagne settings={settings} packs={packs} />
         <Boutique />
+        <Avis />
         <Commande livraison={grilleLivraison} />
       </main>
 

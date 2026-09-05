@@ -96,7 +96,7 @@ export function Hero({
             className="lever mt-9 flex flex-wrap items-center gap-3"
             style={{ animationDelay: "340ms" }}
           >
-            <a href="#boutique" className="btn btn-or">
+            <a href="#boutique" className="btn btn-or btn-vif">
               {t.hero.ctaBoutique}
             </a>
             <a href="#commander" className="btn btn-fantome">

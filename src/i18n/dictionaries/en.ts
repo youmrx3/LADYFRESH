@@ -192,6 +192,16 @@ export const en: Dictionary = {
     okCta: "Place another order",
   },
 
+  avis: {
+    eyebrow: "In their words",
+    titre: "What they write to us.",
+    lede: "Messages we received privately, published as they came.",
+    precedent: "Previous review",
+    suivant: "Next review",
+    aller: "Go to review {n}",
+    capture: "Message from a customer",
+  },
+
   videos: {
     eyebrow: "Why choose us",
     titre: "The proof, in motion.",

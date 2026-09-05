@@ -195,6 +195,16 @@ export const fr = {
     okCta: "Passer une autre commande",
   },
 
+  avis: {
+    eyebrow: "Elles en parlent",
+    titre: "Ce qu'on nous écrit.",
+    lede: "Des messages reçus en privé, publiés tels quels.",
+    precedent: "Avis précédent",
+    suivant: "Avis suivant",
+    aller: "Aller à l'avis {n}",
+    capture: "Message d'une cliente",
+  },
+
   videos: {
     eyebrow: "Pourquoi nous choisir",
     titre: "La preuve, en mouvement.",

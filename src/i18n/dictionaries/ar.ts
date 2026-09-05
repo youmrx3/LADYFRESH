@@ -196,6 +196,16 @@ export const ar: Dictionary = {
     okCta: "طلب آخر",
   },
 
+  avis: {
+    eyebrow: "قالت عنّا",
+    titre: "ما يصلنا من رسائل.",
+    lede: "رسائل وصلتنا في الخاص، منشورة كما هي.",
+    precedent: "الرأي السابق",
+    suivant: "الرأي التالي",
+    aller: "الانتقال إلى الرأي {n}",
+    capture: "رسالة من زبونة",
+  },
+
   videos: {
     eyebrow: "لماذا تختاريننا",
     titre: "الدليل، في الحركة.",

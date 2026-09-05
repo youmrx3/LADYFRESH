@@ -1,4 +1,5 @@
 import { AppelFinal } from "@/components/AppelFinal";
+import { Avis } from "@/components/Avis";
 import { Boutique } from "@/components/Boutique";
 import { BoutiqueProvider } from "@/components/BoutiqueProvider";
 import { Commande } from "@/components/Commande";
@@ -88,6 +89,7 @@ export default async function Accueil() {
         <CommentCommander settings={settings} />
         <RailGammes gammes={gammes} products={products} types={types} />
         <Boutique />
+        <Avis />
         <Commande livraison={grilleLivraison} />
         <Videos videos={videos} />
         <AppelFinal gammes={gammes} settings={settings} />
