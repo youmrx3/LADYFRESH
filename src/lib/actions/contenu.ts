@@ -2,11 +2,13 @@
 
 import { isAdmin } from "../auth";
 import { getSettingsAdmin, writeLocalSettings } from "../data";
+import { oublierMedias, oublierRemplacee } from "../media";
 import { supabaseAdmin } from "../supabase";
 import { isLocale } from "@/i18n/config";
 import {
   garde,
   langue,
+  lireLigne,
   mot,
   tenter,
   texte,
@@ -93,10 +95,12 @@ export async function enregistrerSlide(
     const id = mot(formData, "id");
     const lang = langue(formData);
 
-    const valeurs: Record<string, unknown> = traduits(formData, [
-      "eyebrow",
-      "caption",
-    ]);
+    const actuel = await lireLigne(db, "hero_slides", id);
+    const valeurs: Record<string, unknown> = traduits(
+      formData,
+      ["eyebrow", "caption"],
+      actuel,
+    );
     if (lang === "fr") {
       Object.assign(valeurs, {
         image: mot(formData, "image"),
@@ -110,6 +114,8 @@ export async function enregistrerSlide(
       ? await db.from("hero_slides").update(valeurs).eq("id", id)
       : await db.from("hero_slides").insert(valeurs);
     if (error) throw new Error(error.message);
+    if (lang === "fr")
+      await oublierRemplacee(db, actuel?.image as string, valeurs.image as string);
     return id ? "Visuel enregistré." : "Visuel ajouté.";
   });
 }
@@ -120,11 +126,13 @@ export async function supprimerSlide(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
-    const { error } = await db
-      .from("hero_slides")
-      .delete()
-      .eq("id", mot(formData, "id"));
+    const id = mot(formData, "id");
+    const actuel = await lireLigne(db, "hero_slides", id);
+
+    const { error } = await db.from("hero_slides").delete().eq("id", id);
     if (error) throw new Error(error.message);
+
+    await oublierMedias(db, [actuel?.image as string]);
     return "Visuel supprimé.";
   });
 }
@@ -138,7 +146,12 @@ export async function enregistrerVideo(
     const id = mot(formData, "id");
     const lang = langue(formData);
 
-    const valeurs: Record<string, unknown> = traduits(formData, ["title", "note"]);
+    const actuel = await lireLigne(db, "videos", id);
+    const valeurs: Record<string, unknown> = traduits(
+      formData,
+      ["title", "note"],
+      actuel,
+    );
     if (lang === "fr") {
       Object.assign(valeurs, {
         src: mot(formData, "src"),
@@ -152,6 +165,10 @@ export async function enregistrerVideo(
       ? await db.from("videos").update(valeurs).eq("id", id)
       : await db.from("videos").insert(valeurs);
     if (error) throw new Error(error.message);
+    if (lang === "fr") {
+      await oublierRemplacee(db, actuel?.src as string, valeurs.src as string);
+      await oublierRemplacee(db, actuel?.poster as string, valeurs.poster as string);
+    }
     return id ? "Vidéo enregistrée." : "Vidéo ajoutée.";
   });
 }
@@ -162,11 +179,13 @@ export async function supprimerVideo(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
-    const { error } = await db
-      .from("videos")
-      .delete()
-      .eq("id", mot(formData, "id"));
+    const id = mot(formData, "id");
+    const actuel = await lireLigne(db, "videos", id);
+
+    const { error } = await db.from("videos").delete().eq("id", id);
     if (error) throw new Error(error.message);
+
+    await oublierMedias(db, [actuel?.src as string, actuel?.poster as string]);
     return "Vidéo supprimée.";
   });
 }

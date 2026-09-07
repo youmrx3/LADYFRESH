@@ -1,6 +1,7 @@
 import "server-only";
 
 import { revalidatePath, revalidateTag } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { isAdmin } from "../auth";
 import { ETIQUETTE_CATALOGUE } from "../data";
 import { supabaseAdmin } from "../supabase";
@@ -90,6 +91,27 @@ export function traduits(
         : valeur;
   }
   return out;
+}
+
+/**
+ * La ligne telle qu'elle est enregistrée, avant de la réécrire.
+ *
+ * Elle sert deux fois. D'abord au garde-fou de `traduits()`, qui ne peut
+ * reconnaître un texte français recopié dans la colonne arabe qu'en ayant le
+ * français sous les yeux. Ensuite au ménage du stockage, qui doit connaître
+ * l'ancienne photo pour la retirer quand on en pose une autre.
+ *
+ * Une lecture de plus par enregistrement, sur une ligne désignée par sa clé
+ * primaire — c'est peu payé pour les deux.
+ */
+export async function lireLigne(
+  db: SupabaseClient,
+  table: string,
+  id: string,
+): Promise<Record<string, unknown> | undefined> {
+  if (!id) return undefined;
+  const { data } = await db.from(table).select("*").eq("id", id).maybeSingle();
+  return (data as Record<string, unknown> | null) ?? undefined;
 }
 
 export async function garde() {

@@ -1,6 +1,31 @@
 "use server";
 
-import { garde, langue, mot, tenter, traduits, type Retour } from "./_socle";
+import { oublierMedias, oublierRemplacee } from "../media";
+import {
+  garde,
+  langue,
+  lireLigne,
+  mot,
+  tenter,
+  traduits,
+  type Retour,
+} from "./_socle";
+
+/*
+  Deux gestes reviennent partout dans ce fichier, et tous deux demandent la
+  ligne telle qu'elle est enregistrée.
+
+  Le premier est le garde-fou de `traduits()` : un texte identique mot pour mot
+  au français n'est pas une traduction, et l'enregistrer dans la colonne arabe
+  éteint le repli pour toujours — la page arabe affiche alors du français sans
+  que rien ne le dise. Le formulaire est bien corrigé, mais un onglet resté
+  ouvert, un retour en arrière du navigateur ou un brouillon restauré renvoient
+  encore l'ancien contenu. Le garde-fou existait ; il n'était branché que sur
+  les réglages et la page de campagne.
+
+  Le second est le ménage du stockage : remplacer une photo laissait l'ancienne
+  dans le bucket pour toujours.
+*/
 
 // -------------------------------------------------------- types de produits
 
@@ -13,10 +38,12 @@ export async function enregistrerType(
     const id = mot(formData, "id");
     const lang = langue(formData);
 
-    const valeurs: Record<string, unknown> = traduits(formData, [
-      "name",
-      "short_name",
-    ]);
+    const actuel = await lireLigne(db, "product_types", id);
+    const valeurs: Record<string, unknown> = traduits(
+      formData,
+      ["name", "short_name"],
+      actuel,
+    );
     if (lang === "fr") {
       valeurs.slug = mot(formData, "slug");
       valeurs.sort_order = Number(formData.get("sort_order") ?? 0);
@@ -69,10 +96,12 @@ export async function enregistrerGamme(
     const id = mot(formData, "id");
     const lang = langue(formData);
 
-    const valeurs: Record<string, unknown> = traduits(formData, [
-      "tagline",
-      "description",
-    ]);
+    const actuel = await lireLigne(db, "gammes", id);
+    const valeurs: Record<string, unknown> = traduits(
+      formData,
+      ["tagline", "description"],
+      actuel,
+    );
     if (lang === "fr") {
       Object.assign(valeurs, {
         slug: mot(formData, "slug"),
@@ -90,6 +119,8 @@ export async function enregistrerGamme(
       ? await db.from("gammes").update(valeurs).eq("id", id)
       : await db.from("gammes").insert(valeurs);
     if (error) throw new Error(error.message);
+    if (lang === "fr")
+      await oublierRemplacee(db, actuel?.cover_image as string, valeurs.cover_image as string);
     return id ? "Gamme enregistrée." : "Gamme créée.";
   });
 }
@@ -100,11 +131,28 @@ export async function supprimerGamme(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
-    const { error } = await db
-      .from("gammes")
-      .delete()
-      .eq("id", mot(formData, "id"));
+    const id = mot(formData, "id");
+
+    /*
+      La suppression est en cascade : produits et formats partent avec la gamme,
+      et leurs photos deviendraient orphelines. On les relève avant, tant que
+      les lignes existent encore.
+    */
+    const { data: emportes } = await db
+      .from("products")
+      .select("image, variants:product_variants(image)")
+      .eq("gamme_id", id);
+    const actuelle = await lireLigne(db, "gammes", id);
+
+    const { error } = await db.from("gammes").delete().eq("id", id);
     if (error) throw new Error(error.message);
+
+    await oublierMedias(db, [
+      actuelle?.cover_image as string,
+      ...((emportes ?? []) as { image: string; variants: { image: string }[] }[]).flatMap(
+        (p) => [p.image, ...(p.variants ?? []).map((v) => v.image)],
+      ),
+    ]);
     return "Gamme supprimée.";
   });
 }
@@ -133,10 +181,12 @@ export async function enregistrerProduit(
     if (!valeurs.type_id) throw new Error("Choisissez un type de produit.");
     if (!valeurs.gamme_id) throw new Error("Choisissez une gamme.");
 
+    const actuel = await lireLigne(db, "products", id);
     const { error } = id
       ? await db.from("products").update(valeurs).eq("id", id)
       : await db.from("products").insert(valeurs);
     if (error) throw new Error(error.message);
+    await oublierRemplacee(db, actuel?.image as string, valeurs.image);
     return id ? "Produit enregistré." : "Produit créé.";
   });
 }
@@ -147,11 +197,22 @@ export async function supprimerProduit(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
-    const { error } = await db
-      .from("products")
-      .delete()
-      .eq("id", mot(formData, "id"));
+    const id = mot(formData, "id");
+
+    // Les formats partent en cascade : leurs photos aussi doivent partir.
+    const { data: formats } = await db
+      .from("product_variants")
+      .select("image")
+      .eq("product_id", id);
+    const actuel = await lireLigne(db, "products", id);
+
+    const { error } = await db.from("products").delete().eq("id", id);
     if (error) throw new Error(error.message);
+
+    await oublierMedias(db, [
+      actuel?.image as string,
+      ...((formats ?? []) as { image: string }[]).map((v) => v.image),
+    ]);
     return "Produit supprimé.";
   });
 }
@@ -191,10 +252,12 @@ export async function enregistrerVariante(
     */
     if (!(prix > 0)) throw new Error("Le prix de vente doit être supérieur à zéro.");
 
+    const actuel = await lireLigne(db, "product_variants", id);
     const { error } = id
       ? await db.from("product_variants").update(valeurs).eq("id", id)
       : await db.from("product_variants").insert(valeurs);
     if (error) throw new Error(error.message);
+    await oublierRemplacee(db, actuel?.image as string, valeurs.image);
     return id ? "Format enregistré." : "Format ajouté.";
   });
 }
@@ -205,11 +268,13 @@ export async function supprimerVariante(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
-    const { error } = await db
-      .from("product_variants")
-      .delete()
-      .eq("id", mot(formData, "id"));
+    const id = mot(formData, "id");
+    const actuel = await lireLigne(db, "product_variants", id);
+
+    const { error } = await db.from("product_variants").delete().eq("id", id);
     if (error) throw new Error(error.message);
+
+    await oublierMedias(db, [actuel?.image as string]);
     return "Format supprimé.";
   });
 }
@@ -230,11 +295,12 @@ export async function enregistrerPack(
       s'écrivent que depuis le français, sinon une visite dans l'onglet arabe
       les remettrait à zéro.
     */
-    const valeurs: Record<string, unknown> = traduits(formData, [
-      "name",
-      "tagline",
-      "description",
-    ]);
+    const actuel = await lireLigne(db, "packs", id);
+    const valeurs: Record<string, unknown> = traduits(
+      formData,
+      ["name", "tagline", "description"],
+      actuel,
+    );
 
     if (lang === "fr") {
       const prix = Number(formData.get("price") ?? 0);
@@ -287,6 +353,8 @@ export async function enregistrerPack(
       }
     }
 
+    if (lang === "fr")
+      await oublierRemplacee(db, actuel?.image as string, valeurs.image as string);
     return id ? "Coffret enregistré." : "Coffret créé.";
   });
 }
@@ -297,9 +365,14 @@ export async function supprimerPack(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const id = mot(formData, "id");
+    const actuel = await lireLigne(db, "packs", id);
+
     // `pack_items` porte un `on delete cascade` : la composition part avec.
-    const { error } = await db.from("packs").delete().eq("id", mot(formData, "id"));
+    const { error } = await db.from("packs").delete().eq("id", id);
     if (error) throw new Error(error.message);
+
+    await oublierMedias(db, [actuel?.image as string]);
     return "Coffret supprimé.";
   });
 }
