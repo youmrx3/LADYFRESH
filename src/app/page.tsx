@@ -33,6 +33,20 @@ import type { ModeBoutique } from "@/lib/types";
  * `mode_boutique`, et le bon de commande est partagé. Une visiteuse peut
  * commencer sur une publicité et finir ici sans rien perdre.
  */
+/*
+  L'accueil se rend à la demande, il n'est plus figé à la compilation.
+
+  Il était prégénéré et revalidé toutes les cinq minutes. Sa langue vient
+  pourtant d'un réglage en base : on la basculait en arabe, l'accueil restait
+  en français jusqu'à la revalidation suivante, et entre-temps /boutique était
+  déjà passé — d'où une navigation où deux pages du même site ne parlaient pas
+  la même langue.
+
+  Le catalogue reste en cache : ce qu'on paie ici, c'est une lecture des
+  réglages par affichage. Une ligne, par sa clé primaire.
+*/
+export const dynamic = "force-dynamic";
+
 export default async function Accueil() {
   const [gammes, packs, products, types, settings, slides, videos, tarifs] =
     await Promise.all([

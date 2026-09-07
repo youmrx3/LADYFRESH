@@ -140,6 +140,49 @@ export async function getProductsAdmin(): Promise<Product[]> {
   return lireProduits(true);
 }
 
+/**
+ * Le jeu de secours recouvrait la ligne enregistrée, traductions comprises.
+ *
+ * C'est ce qui rendait la boutique impossible à modifier en arabe. `SETTINGS`
+ * embarque dix-huit traductions figées dans le code — l'arabe du texte
+ * d'origine. Une colonne `_ar` vide était donc remplacée par cet arabe-là :
+ * on changeait le titre français, on repassait le site en arabe, et l'ancien
+ * titre revenait. Deux champs traduits en base, trois retombés sur le code, et
+ * la page mélangeait les deux époques.
+ *
+ * La règle est maintenant celle-ci. Une traduction enregistrée gagne toujours.
+ * Absente, le texte de secours ne sert que si le français n'a pas bougé depuis
+ * — sinon il traduirait une phrase qui n'existe plus, et mieux vaut alors
+ * afficher le français, que `champ()` reprend tout seul. Un site fraîchement
+ * installé garde ainsi ses trois langues ; un site modifié dit la vérité.
+ */
+function fusionnerReglages(row: Record<string, unknown>): SiteSettings {
+  const seed = SETTINGS as unknown as Record<string, unknown>;
+  const out: Record<string, unknown> = { ...seed };
+  const rempli = (v: unknown) => v !== null && v !== undefined && v !== "";
+  const nu = (v: unknown) => (typeof v === "string" ? v.trim() : v);
+
+  for (const [cle, valeur] of Object.entries(row)) {
+    const traduction = /_(ar|en)$/.test(cle);
+
+    if (!traduction) {
+      // Vider un texte de base rend le libellé d'origine : une vitrine sans
+      // titre serait pire que le titre par défaut.
+      if (rempli(valeur)) out[cle] = valeur;
+      continue;
+    }
+
+    if (rempli(valeur)) {
+      out[cle] = valeur;
+      continue;
+    }
+    const base = cle.replace(/_(ar|en)$/, "");
+    out[cle] = nu(row[base]) === nu(seed[base]) ? seed[cle] : null;
+  }
+
+  return out as SiteSettings;
+}
+
 async function getSettingsBrut(): Promise<SiteSettings> {
   const db = supabaseRead();
   if (!db) return { ...SETTINGS, ...readLocalSettings() };
@@ -149,8 +192,7 @@ async function getSettingsBrut(): Promise<SiteSettings> {
     .eq("id", "settings")
     .maybeSingle();
   if (error || !data) return fallback("settings", { ...SETTINGS, ...readLocalSettings() }, error);
-  // A freshly-inserted settings row has empty copy; keep the seed wording.
-  return { ...SETTINGS, ...stripEmpty(data as Record<string, unknown>) } as SiteSettings;
+  return fusionnerReglages(data as Record<string, unknown>);
 }
 
 /**
@@ -193,12 +235,6 @@ async function getVideosBrut(): Promise<Video[]> {
   const { data, error } = await db.from("videos").select("*").order("sort_order");
   if (error || !data?.length) return fallback("videos", VIDEOS, error);
   return data as Video[];
-}
-
-function stripEmpty(row: Record<string, unknown>) {
-  return Object.fromEntries(
-    Object.entries(row).filter(([, v]) => v !== null && v !== undefined && v !== ""),
-  );
 }
 
 // --------------------------------------------------------------------- orders
@@ -793,7 +829,25 @@ export const getPacks = enCache("getPacks", getPacksBrut);
 
 export const getTarifs = enCache("getTarifs", getTarifsBrut);
 
-export const getSettings = enCache("getSettings", getSettingsBrut);
+/*
+  Les réglages ne passent pas par le cache, contrairement au catalogue.
+
+  Ils étaient gardés cinq minutes comme le reste. Or c'est ici que vit la
+  langue du site : on la basculait en arabe, la page restait en français, et
+  rien n'expliquait pourquoi — au bout de quelques essais on concluait que le
+  réglage ne marchait pas. La même attente frappait le mode de la boutique, le
+  minimum par référence et l'interrupteur de livraison.
+
+  L'invalidation par étiquette existe et fonctionne, mais elle ne couvre pas
+  tout : une modification faite hors du back-office — un correctif en base, une
+  restauration — laissait le site sur l'ancienne valeur sans qu'aucun geste ne
+  la réveille.
+
+  Le catalogue, lui, reste en cache : ce sont six lectures avec leurs jointures.
+  Les réglages sont une seule ligne lue par sa clé primaire ; la garder coûtait
+  plus en confusion qu'elle ne rapportait en millisecondes.
+*/
+export const getSettings = getSettingsBrut;
 
 export const getHeroSlides = enCache("getHeroSlides", getHeroSlidesBrut);
 

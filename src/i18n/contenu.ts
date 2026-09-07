@@ -68,3 +68,44 @@ export function nomTypeCourt(type: ProductType | undefined, locale: Locale) {
   return champ(type, "short_name", locale) || champ(type, "name", locale);
 }
 
+
+/**
+ * Le contenu d'un coffret, dit dans la langue de la page.
+ *
+ * Les lignes d'un coffret portent un libellé figé au moment où on l'a composé,
+ * en français : « Brume Brume parfumée ARA — 150 ml ». Sur une page arabe,
+ * c'était le dernier bloc à rester en français — et sur la page qui vend.
+ *
+ * Il se reconstruit pourtant sans rien ajouter en base. Le nom d'un produit
+ * est « <type français> <gamme> », et le type est traduit : en retirant le
+ * type du nom, il reste la gamme — « ARA », « Sensuel » — un nom propre qui
+ * s'écrit pareil dans les trois langues. Au passage, la redondance disparaît
+ * aussi en français.
+ *
+ * Un format supprimé du catalogue n'a plus rien à reconstruire : son libellé
+ * figé reste, ce qui vaut mieux qu'une ligne vide.
+ */
+export function libellePackItem(
+  item: { variant_id: string | null; label: string },
+  produits: Product[],
+  types: ProductType[],
+  locale: Locale,
+): string {
+  if (!item.variant_id) return item.label;
+
+  const produit = produits.find((p) =>
+    p.variants.some((v) => v.id === item.variant_id),
+  );
+  if (!produit) return item.label;
+
+  const type = types.find((t) => t.id === produit.type_id);
+  const variante = produit.variants.find((v) => v.id === item.variant_id);
+
+  const typeFr = champ(type, "name", "fr");
+  const gamme = (typeFr ? produit.name.replace(typeFr, "") : produit.name).trim();
+  const court = nomTypeCourt(type, locale);
+
+  return [court, gamme || produit.name, variante?.size_label && `— ${variante.size_label}`]
+    .filter(Boolean)
+    .join(" ");
+}

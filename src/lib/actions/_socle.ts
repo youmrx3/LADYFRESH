@@ -17,14 +17,31 @@ import { isLocale, type Locale } from "@/i18n/config";
 
 export type Retour = { ok?: string; error?: string };
 
+/**
+ * Une zone de saisie rend ses retours à la ligne en CRLF.
+ *
+ * C'est la spécification HTML, pas un caprice de navigateur. Le retour chariot
+ * traversait ensuite toute la chaîne : il se retrouvait en base, ressortait au
+ * milieu d'un titre, et surtout faussait toute comparaison — un texte recopié
+ * du français n'était jamais reconnu comme tel, puisqu'il différait d'un seul
+ * caractère invisible. C'est exactement ce qui a laissé passer un titre
+ * français dans la colonne arabe alors que le garde-fou était déjà en place.
+ *
+ * On normalise à l'entrée, une fois pour toutes.
+ */
+function normaliser(v: unknown): string {
+  return String(v ?? "")
+    .replace(/\r\n?/g, "\n")
+    .trim();
+}
+
 /** Champ facultatif : vide devient null, pour que le repli français joue. */
 export function texte(formData: FormData, name: string): string | null {
-  const v = String(formData.get(name) ?? "").trim();
-  return v || null;
+  return normaliser(formData.get(name)) || null;
 }
 
 export function mot(formData: FormData, name: string): string {
-  return String(formData.get(name) ?? "").trim();
+  return normaliser(formData.get(name));
 }
 
 /** Langue en cours d'édition ; le français porte les colonnes de base. */
@@ -68,7 +85,7 @@ export function traduits(
     */
     const fr = actuel?.[base];
     out[`${base}_${lang}`] =
-      valeur !== null && typeof fr === "string" && valeur === fr.trim()
+      valeur !== null && typeof fr === "string" && valeur === normaliser(fr)
         ? null
         : valeur;
   }

@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Merci } from "@/components/Merci";
 import { getT } from "@/i18n/server";
 
+/* La page suit la langue du site, elle ne peut donc pas être figée à la
+   compilation : la confirmation serait rendue dans la langue du build. */
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
   return {

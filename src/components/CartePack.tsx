@@ -4,7 +4,7 @@ import Image from "next/image";
 import { clePack, useBoutique } from "./BoutiqueProvider";
 import { Quantite } from "./Quantite";
 import { useReglages } from "./Reglages";
-import { champ } from "@/i18n/contenu";
+import { champ, libellePackItem } from "@/i18n/contenu";
 import { da } from "@/lib/format";
 import { DEVISE_PIXEL, contenus, pixel } from "@/lib/pixel";
 import type { Pack } from "@/lib/types";
@@ -18,7 +18,7 @@ import type { Pack } from "@/lib/types";
  * un écran de téléphone.
  */
 export function CartePack({ pack }: { pack: Pack }) {
-  const { quantiteDe } = useBoutique();
+  const { quantiteDe, products, types } = useBoutique();
   const { t, locale } = useReglages();
   const cle = clePack(pack.id);
   const dansLeBon = quantiteDe(cle) > 0;
@@ -95,7 +95,7 @@ export function CartePack({ pack }: { pack: Pack }) {
                   ✓
                 </span>
                 <span>
-                  {i.label}
+                  {libellePackItem(i, products, types, locale)}
                   {i.quantity > 1 && ` × ${i.quantity}`}
                 </span>
               </li>
