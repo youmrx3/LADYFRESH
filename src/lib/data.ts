@@ -153,6 +153,32 @@ async function getSettingsBrut(): Promise<SiteSettings> {
   return { ...SETTINGS, ...stripEmpty(data as Record<string, unknown>) } as SiteSettings;
 }
 
+/**
+ * Les réglages tels qu'ils sont réellement enregistrés.
+ *
+ * `getSettings()` recouvre la ligne d'un jeu de textes de secours, pour qu'un
+ * site tout neuf ne s'ouvre pas sur des blancs. C'est juste en vitrine et
+ * trompeur dans un formulaire : une traduction arabe absente y apparaissait
+ * remplie du texte de secours, indiscernable d'une traduction écrite à la
+ * main — et le premier enregistrement la gravait en base.
+ *
+ * Ici, vide reste vide. Le back-office montre ce qui est écrit, pas ce que la
+ * vitrine affichera faute de mieux.
+ */
+export async function getSettingsAdmin(): Promise<SiteSettings> {
+  const db = supabaseAdmin();
+  if (!db) return { ...SETTINGS, ...readLocalSettings() };
+  const { data, error } = await db
+    .from("site_settings")
+    .select("*")
+    .eq("id", "settings")
+    .maybeSingle();
+  if (error || !data) return { ...SETTINGS, ...readLocalSettings() };
+  /* Pas de `stripEmpty` : une colonne vide doit rester vide à l'écran. Le jeu
+     de secours ne sert qu'aux colonnes que la base ne connaît pas encore. */
+  return { ...SETTINGS, ...(data as Record<string, unknown>) } as SiteSettings;
+}
+
 async function getHeroSlidesBrut(): Promise<HeroSlide[]> {
   const db = supabaseRead();
   if (!db) return HERO_SLIDES;

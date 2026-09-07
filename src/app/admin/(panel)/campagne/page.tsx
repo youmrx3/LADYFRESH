@@ -10,7 +10,7 @@ import { ChampImage } from "@/components/admin/ChampImage";
 import { OngletsLangue } from "@/components/admin/OngletsLangue";
 import { EnTetePage, PiedFormulaire } from "@/components/admin/Volet";
 import { enregistrerCampagne } from "@/lib/actions";
-import { getPacks, getSettings } from "@/lib/data";
+import { getPacks, getSettingsAdmin } from "@/lib/data";
 import { champ, traduction } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
@@ -34,7 +34,7 @@ export default async function Campagne({
   const { edit } = await searchParams;
   const langue: Locale = isLocale(edit) ? edit : DEFAULT_LOCALE;
 
-  const [settings, packs] = await Promise.all([getSettings(), getPacks()]);
+  const [settings, packs] = await Promise.all([getSettingsAdmin(), getPacks()]);
   const a = t.admin.campagne;
   const fr = langue === "fr";
   const dir = langue === "ar" ? "rtl" : "ltr";
@@ -71,6 +71,16 @@ export default async function Campagne({
           base="/admin/campagne"
           label={t.admin.commun.langueEditee}
         />
+        {/*
+          Dire ce que fait l'onglet, une fois pour toutes.
+
+          Ces champs traduisent le contenu de la page publique ; ils ne changent
+          pas la langue de ce back-office — celle-là se règle dans « Contenu du
+          site ». Et un champ laissé vide n'est pas un oubli : c'est le texte
+          français qui sera repris, ce qui est presque toujours ce qu'on veut
+          pour un nom de marque.
+        */}
+        {!fr && <p className="adm-aide mt-2 max-w-[70ch]">{a.aideTraduction}</p>}
       </div>
 
       {packs.length === 0 && (

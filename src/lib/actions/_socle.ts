@@ -40,12 +40,37 @@ export function langue(formData: FormData): Locale {
 export function traduits(
   formData: FormData,
   bases: string[],
+  /** La ligne enregistrée, pour reconnaître une traduction qui n'en est pas une. */
+  actuel?: Record<string, unknown>,
 ): Record<string, string | null> {
   const lang = langue(formData);
   const out: Record<string, string | null> = {};
   for (const base of bases) {
-    const colonne = lang === "fr" ? base : `${base}_${lang}`;
-    out[colonne] = lang === "fr" ? mot(formData, base) : texte(formData, base);
+    if (lang === "fr") {
+      out[base] = mot(formData, base);
+      continue;
+    }
+
+    const valeur = texte(formData, base);
+
+    /*
+      Un garde-fou, appris à la dure.
+
+      Les onglets de langue arrivaient préremplis du texte français ; un
+      enregistrement suffisait à le graver dans la colonne arabe, et le repli
+      ne jouait plus jamais — la page restait en français sans que rien ne le
+      dise. Le formulaire est corrigé, mais une page laissée ouverte dans un
+      onglet, un retour en arrière du navigateur, un brouillon restauré, et le
+      même envoi repart.
+
+      Un texte identique mot pour mot au français n'est pas une traduction :
+      on l'enregistre comme absent, ce qui remet le repli en marche.
+    */
+    const fr = actuel?.[base];
+    out[`${base}_${lang}`] =
+      valeur !== null && typeof fr === "string" && valeur === fr.trim()
+        ? null
+        : valeur;
   }
   return out;
 }

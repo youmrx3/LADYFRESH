@@ -291,6 +291,8 @@ export const en: Dictionary = {
       titre: "Campaign page",
       aide: "What someone arriving from an ad sees, before the bundles. The shop and the form follow the shop settings instead.",
       voir: "View the page",
+      aideTraduction:
+        "These fields translate the public page, not this admin: its language is set in “Site content”. A field left empty falls back to the French text — which is what you want for a brand name.",
       sansCoffret: "No bundles yet: the page will open on an empty shelf.",
       sectionBandeau: "Announcement bar",
       bandeauAide: "A gold strip at the very top. Switch it on for an offer, off afterwards.",

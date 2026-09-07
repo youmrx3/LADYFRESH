@@ -1,7 +1,7 @@
 "use server";
 
 import { isAdmin } from "../auth";
-import { writeLocalSettings } from "../data";
+import { getSettingsAdmin, writeLocalSettings } from "../data";
 import { supabaseAdmin } from "../supabase";
 import { isLocale } from "@/i18n/config";
 import {
@@ -24,11 +24,12 @@ export async function enregistrerReglages(
     const lang = langue(formData);
     const db = await garde();
 
-    const valeurs: Record<string, unknown> = traduits(formData, [
-      "hero_eyebrow",
-      "hero_title",
-      "hero_lede",
-    ]);
+    const actuel = await getSettingsAdmin();
+    const valeurs: Record<string, unknown> = traduits(
+      formData,
+      ["hero_eyebrow", "hero_title", "hero_lede"],
+      actuel as unknown as Record<string, unknown>,
+    );
     if (lang === "fr") {
       Object.assign(valeurs, {
         locale: isLocale(mot(formData, "locale")) ? mot(formData, "locale") : "fr",
@@ -187,14 +188,19 @@ export async function enregistrerCampagne(
     const db = await garde();
     const lang = langue(formData);
 
-    const valeurs: Record<string, unknown> = traduits(formData, [
-      "camp_bandeau",
-      "camp_eyebrow",
-      "camp_titre",
-      "camp_lede",
-      "camp_cta",
-      "camp_gages",
-    ]);
+    const actuel = await getSettingsAdmin();
+    const valeurs: Record<string, unknown> = traduits(
+      formData,
+      [
+        "camp_bandeau",
+        "camp_eyebrow",
+        "camp_titre",
+        "camp_lede",
+        "camp_cta",
+        "camp_gages",
+      ],
+      actuel as unknown as Record<string, unknown>,
+    );
 
     // Photo et interrupteur ne se traduisent pas : édités depuis le français.
     if (lang === "fr") {

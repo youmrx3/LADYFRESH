@@ -26,7 +26,7 @@ import {
 import {
   getGammesAdmin,
   getHeroSlides,
-  getSettings,
+  getSettingsAdmin,
   getVideos,
 } from "@/lib/data";
 import { fill } from "@/i18n";
@@ -48,7 +48,7 @@ export default async function Contenu({
   const dir = langue === "ar" ? "rtl" : "ltr";
 
   const [settings, slides, videos, gammes] = await Promise.all([
-    getSettings(),
+    getSettingsAdmin(),
     getHeroSlides(),
     getVideos(),
     getGammesAdmin(),
