@@ -157,6 +157,16 @@ export async function getProductsAdmin(): Promise<Product[]> {
  * afficher le français, que `champ()` reprend tout seul. Un site fraîchement
  * installé garde ainsi ses trois langues ; un site modifié dit la vérité.
  */
+/**
+ * Les seules colonnes où un blanc doit rendre le texte d'usine.
+ *
+ * Une vitrine sans titre serait pire que le titre par défaut : ces trois-là
+ * portent le haut de l'accueil, et personne ne veut d'un site qui s'ouvre sur
+ * du vide. Partout ailleurs — coordonnées, réseaux, textes de campagne — vide
+ * veut dire vide, et c'est une réponse que la gérante doit pouvoir donner.
+ */
+const REPLI_SI_VIDE = new Set(["hero_eyebrow", "hero_title", "hero_lede"]);
+
 function fusionnerReglages(row: Record<string, unknown>): SiteSettings {
   const seed = SETTINGS as unknown as Record<string, unknown>;
   const out: Record<string, unknown> = { ...seed };
@@ -167,9 +177,28 @@ function fusionnerReglages(row: Record<string, unknown>): SiteSettings {
     const traduction = /_(ar|en)$/.test(cle);
 
     if (!traduction) {
-      // Vider un texte de base rend le libellé d'origine : une vitrine sans
-      // titre serait pire que le titre par défaut.
-      if (rempli(valeur)) out[cle] = valeur;
+      if (rempli(valeur)) {
+        out[cle] = valeur;
+        continue;
+      }
+      /*
+        Vide : on ne rend le texte d'usine que là où un blanc casserait la page.
+
+        La règle valait autrefois pour toutes les colonnes, et elle rendait la
+        moitié des réglages impossibles à effacer. Le formulaire montre bien la
+        valeur réelle — `getSettingsAdmin` ne fusionne pas — on effaçait, on
+        enregistrait, et la vitrine réaffichait le texte d'usine : le
+        back-office avait l'air de mentir.
+
+        Le prix se payait surtout sur les coordonnées. Un champ de contact laissé
+        vide ressortait en `+213 00 00 00 00`, en `contact@ladyfresh.dz`, ou en
+        liens vers les pages d'accueil d'Instagram et de Facebook — des données
+        de démonstration publiées comme si elles étaient vraies, avec un numéro
+        cliquable qui ne mène nulle part. `lienReseau()` sait pourtant très bien
+        ne rien afficher d'un champ vide ; il ne recevait jamais de champ vide.
+      */
+      if (!REPLI_SI_VIDE.has(cle) && valeur !== null && valeur !== undefined)
+        out[cle] = valeur;
       continue;
     }
 

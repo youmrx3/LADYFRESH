@@ -203,7 +203,9 @@ export function Commande({
 
       let remis = false;
       try {
-        const charge: ChargeMerci = { ref: data.ref, achat };
+        /* La langue voyage avec : la confirmation doit parler celle que la
+           cliente vient de lire, campagne comprise. */
+        const charge: ChargeMerci = { ref: data.ref, achat, locale };
         sessionStorage.setItem(CLE_MERCI, JSON.stringify(charge));
         remis = true;
       } catch {

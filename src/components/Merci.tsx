@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useReglages } from "./Reglages";
+import { getDictionary } from "@/i18n";
+import { DIRECTION, HTML_LANG, isLocale, type Locale } from "@/i18n/config";
 import { pixelDesQuePret } from "@/lib/pixel";
 
 /**
@@ -33,10 +35,24 @@ export type ChargeMerci = {
   ref: string;
   /** Les paramètres du Purchase, calculés côté serveur. */
   achat: Record<string, unknown>;
+  /**
+   * La langue dans laquelle la cliente venait de remplir son bon.
+   *
+   * La page de campagne peut parler une autre langue que le site de marque —
+   * c'est tout l'objet de `locale_boutique`. Or l'exception ne portait que sur
+   * `/boutique`, et le tunnel se termine ici : on lisait sa publicité en arabe,
+   * on remplissait son bon en arabe, et la confirmation — le dernier écran,
+   * celui qui dit que la commande est bien passée — s'affichait en français.
+   *
+   * Elle voyage dans la charge plutôt que dans l'adresse : une langue en
+   * paramètre d'URL ferait une seconde source de vérité, alors que le site n'en
+   * a qu'une et s'en porte bien.
+   */
+  locale?: Locale;
 };
 
 export function Merci() {
-  const { t } = useReglages();
+  const reglages = useReglages();
   const router = useRouter();
   const [charge, setCharge] = useState<ChargeMerci | null>(null);
   const [lu, setLu] = useState(false);
@@ -78,8 +94,21 @@ export function Merci() {
 
   if (!lu || !charge) return null;
 
+  /*
+    La langue de la charge gagne. Une charge d'avant ce changement n'en porte
+    pas : on retombe alors sur celle du site, qui était le comportement
+    précédent. `dir` et `lang` sont posés ici et non sur `<html>` — la mise en
+    page racine ne connaît pas la commande qui vient d'être passée.
+  */
+  const locale: Locale = isLocale(charge.locale) ? charge.locale : reglages.locale;
+  const t = getDictionary(locale);
+
   return (
-    <main className="etage-comptoir saut-ancre py-20">
+    <main
+      className="etage-comptoir saut-ancre py-20"
+      lang={HTML_LANG[locale]}
+      dir={DIRECTION[locale]}
+    >
       <div className="shell max-w-[38rem] text-center">
         <p className="eyebrow text-graphite-doux">{t.commande.okEyebrow}</p>
         <h2 className="display display-l mt-4">
