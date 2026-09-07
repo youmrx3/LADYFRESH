@@ -139,9 +139,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.api.echec }, { status: 500 });
   }
 
-  // La piste ouverte pendant la saisie n'a plus à être rappelée.
+  /*
+    La piste ouverte pendant la saisie n'a plus à être rappelée.
+
+    Attendu, et non lancé dans le vide : une fonction serverless peut être gelée
+    dès la réponse rendue, et le marquage n'arrivait alors jamais. La cliente
+    réapparaissait dans la liste d'appels après avoir commandé, et on la
+    rappelait pour rien. Le cas était masqué par l'envoi d'email juste en
+    dessous, qui laissait le temps de passer — sauf quand l'email n'est pas
+    configuré, où la fenêtre disparaît.
+
+    L'attente ne coûte pas de vente : `pisteConvertie` journalise et ne lève
+    jamais, et la commande est déjà enregistrée au-dessus.
+  */
   const clePiste = borne(body.pisteId, 80);
-  if (clePiste) void pisteConvertie(clePiste);
+  if (clePiste) await pisteConvertie(clePiste);
 
   /*
     L'avis est attendu plutôt que renvoyé après la réponse : un envoi qui échoue

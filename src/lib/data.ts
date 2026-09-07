@@ -642,20 +642,59 @@ export async function getProspects(): Promise<{
  * terminé. Le compte des converties sert encore aux statistiques ; l'écran, lui,
  * ne montre que ce qui appelle un geste.
  */
-export async function getPistesActives(): Promise<{
-  pistes: Prospect[];
-  tableManquante: boolean;
-}> {
+export async function getPistesActives(
+  { page = 0, statut }: { page?: number; statut?: ProspectStatus } = {},
+): Promise<{ pistes: Prospect[]; total: number; tableManquante: boolean }> {
   const db = supabaseAdmin();
-  if (!db) return { pistes: [], tableManquante: false };
-  const { data, error } = await db
+  if (!db) return { pistes: [], total: 0, tableManquante: false };
+
+  /*
+    Le plafond de cinq cents lignes n'avait ni pagination ni avertissement :
+    au-delà, les pistes les plus anciennes disparaissaient de l'écran comme si
+    elles n'existaient pas — et comme les compteurs se calculaient depuis le
+    tableau chargé, ils affichaient cinq cents et rien ne signalait la
+    troncature. C'est le défaut déjà corrigé pour les commandes ; les pistes se
+    remplissent pourtant bien plus vite, une ligne s'écrivant dès qu'un numéro
+    complet est saisi, commande ou non.
+  */
+  let requete = db
     .from("prospects")
-    .select("*")
-    .in("status", ["ouverte", "rappelee"])
-    .order("updated_at", { ascending: false })
-    .limit(500);
-  if (error) return { pistes: [], tableManquante: tableAbsente(error) };
-  return { pistes: (data ?? []) as Prospect[], tableManquante: false };
+    .select("*", { count: "exact" })
+    .order("updated_at", { ascending: false });
+  requete = statut
+    ? requete.eq("status", statut)
+    : requete.in("status", ["ouverte", "rappelee"]);
+
+  const { data, error, count } = await requete.range(
+    page * PAR_PAGE,
+    page * PAR_PAGE + PAR_PAGE - 1,
+  );
+  if (error) return { pistes: [], total: 0, tableManquante: tableAbsente(error) };
+  return {
+    pistes: (data ?? []) as Prospect[],
+    total: count ?? 0,
+    tableManquante: false,
+  };
+}
+
+/**
+ * Les compteurs des onglets, sans rapatrier les lignes.
+ *
+ * Les compter depuis le tableau affiché ne comptait que la page en cours.
+ */
+export async function compterPistes(): Promise<Record<string, number>> {
+  const db = supabaseAdmin();
+  if (!db) return {};
+  const out: Record<string, number> = {};
+  for (const s of ["ouverte", "rappelee"] as const) {
+    const { count } = await db
+      .from("prospects")
+      .select("*", { count: "exact", head: true })
+      .eq("status", s);
+    out[s] = count ?? 0;
+  }
+  out.tous = (out.ouverte ?? 0) + (out.rappelee ?? 0);
+  return out;
 }
 
 export async function getProspect(id: string): Promise<Prospect | null> {
@@ -862,10 +901,19 @@ export async function getStatistiques(jours: number): Promise<Statistiques> {
     ["ouverte", "pistesOuvertes"],
     ["convertie", "pistesConverties"],
   ] as const) {
-    const { count } = await db
+    /*
+      Ces deux comptages ignoraient la période, alors que tout le reste de
+      l'écran la respecte. Le taux affiché sous « 7 jours » était donc calculé
+      sur l'histoire entière : il ne bougeait pas d'un onglet à l'autre, et il
+      se dégradait tout seul à mesure que le site vieillissait, son dénominateur
+      ne faisant que croître pendant que le reste parlait de la semaine.
+    */
+    let compte = db
       .from("prospects")
       .select("*", { count: "exact", head: true })
       .eq("status", statut);
+    if (depuis) compte = compte.gte("created_at", depuis);
+    const { count } = await compte;
     out[cle] = count ?? 0;
   }
 

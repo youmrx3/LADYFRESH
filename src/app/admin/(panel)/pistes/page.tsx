@@ -6,8 +6,16 @@ import {
   commanderDepuisPiste,
   supprimerPiste,
 } from "@/lib/actions";
-import { getPacks, getPistesActives, getProducts, getSettings } from "@/lib/data";
+import {
+  PAR_PAGE,
+  compterPistes,
+  getPacks,
+  getPistesActives,
+  getProducts,
+  getSettings,
+} from "@/lib/data";
 import { da, unitPrice } from "@/lib/format";
+import { fill } from "@/i18n";
 import { getT } from "@/i18n/server";
 import { WILAYAS, libelleWilaya, valeurWilaya } from "@/lib/wilayas";
 import type { Prospect, ProspectStatus } from "@/lib/types";
@@ -54,18 +62,24 @@ const FILTRES: Filtre[] = ["tous", "ouverte", "rappelee"];
 export default async function Pistes({
   searchParams,
 }: {
-  searchParams: Promise<{ f?: string }>;
+  searchParams: Promise<{ f?: string; page?: string }>;
 }) {
   const { t, locale } = await getT();
-  const { f } = await searchParams;
+  const { f, page } = await searchParams;
   const filtre: Filtre = FILTRES.includes(f as Filtre) ? (f as Filtre) : "tous";
+  const p = Math.max(0, Number(page) || 0);
 
-  const [{ pistes, tableManquante }, packs, produits, reglages] = await Promise.all([
-    getPistesActives(),
-    getPacks(),
-    getProducts(),
-    getSettings(),
-  ]);
+  const [{ pistes, total, tableManquante }, compteurs, packs, produits, reglages] =
+    await Promise.all([
+      getPistesActives({
+        page: p,
+        statut: filtre === "tous" ? undefined : filtre,
+      }),
+      compterPistes(),
+      getPacks(),
+      getProducts(),
+      getSettings(),
+    ]);
 
   /*
     L'écran de rappel ne connaissait que les coffrets, et l'action ne savait
@@ -95,10 +109,19 @@ export default async function Pistes({
   const a = t.admin.pistes;
   const devise = t.unites.devise;
 
-  const compte = (cle: Filtre) =>
-    cle === "tous" ? pistes.length : pistes.filter((p) => p.status === cle).length;
-  const visibles =
-    filtre === "tous" ? pistes : pistes.filter((p) => p.status === filtre);
+  /* Les compteurs viennent de la base, pas du tableau affiché : celui-ci ne
+     contient qu'une page, et les compter ici ne comptait donc qu'elle. */
+  const compte = (cle: Filtre) => compteurs[cle] ?? 0;
+  const visibles = pistes;
+  const pages = Math.ceil(total / PAR_PAGE);
+
+  const lien = (n: number) => {
+    const q = new URLSearchParams();
+    if (filtre !== "tous") q.set("f", filtre);
+    if (n > 0) q.set("page", String(n));
+    const s = q.toString();
+    return s ? `/admin/pistes?${s}` : "/admin/pistes";
+  };
 
   return (
     <div>
@@ -117,7 +140,7 @@ export default async function Pistes({
         </p>
       )}
 
-      {!tableManquante && pistes.length > 0 && (
+      {!tableManquante && compte("tous") > 0 && (
         <div className="mb-5 flex flex-wrap gap-2">
           {FILTRES.map((cle) => {
             const actif = cle === filtre;
@@ -137,7 +160,7 @@ export default async function Pistes({
       )}
 
       {!tableManquante && visibles.length === 0 && (
-        <p className="adm-vide">{pistes.length === 0 ? a.vide : a.videFiltre}</p>
+        <p className="adm-vide">{compte("tous") === 0 ? a.vide : a.videFiltre}</p>
       )}
 
       {visibles.length > 0 && (
@@ -155,7 +178,55 @@ export default async function Pistes({
           ))}
         </ul>
       )}
+
+      {/* Sans elle, tout ce qui dépasse la première page était invisible. */}
+      {pages > 1 && (
+        <nav
+          className="mt-6 flex items-center justify-between gap-3"
+          aria-label={t.admin.commandes.pages}
+        >
+          <PageLien
+            href={lien(p - 1)}
+            actif={p > 0}
+            libelle={t.admin.commandes.precedente}
+          />
+          <span className="adm-aide">
+            {fill(t.admin.commandes.pageSur, { n: p + 1, total: pages })}
+          </span>
+          <PageLien
+            href={lien(p + 1)}
+            actif={p + 1 < pages}
+            libelle={t.admin.commandes.suivante}
+          />
+        </nav>
+      )}
     </div>
+  );
+}
+
+function PageLien({
+  href,
+  actif,
+  libelle,
+}: {
+  href: string;
+  actif: boolean;
+  libelle: string;
+}) {
+  if (!actif)
+    return (
+      <span className="adm-btn adm-btn-neutre" style={{ opacity: 0.4 }}>
+        {libelle}
+      </span>
+    );
+  return (
+    <Link
+      href={href}
+      className="adm-btn adm-btn-neutre"
+      style={{ textDecoration: "none" }}
+    >
+      {libelle}
+    </Link>
   );
 }
 
