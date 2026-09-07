@@ -64,18 +64,36 @@ export async function enregistrerLivraison(
     const db = supabaseAdmin();
     if (!db) throw new Error("Base non connectée.");
 
+    /*
+      « Vide » et « zéro » ne veulent pas dire la même chose.
+
+      Un tarif à zéro est une réponse : on livre là-bas sans frais. Un champ
+      laissé vide n'en est pas une — c'est une wilaya qu'on n'a pas encore
+      tarifée. Les deux se confondaient : `Number("")` vaut zéro, et la case
+      « desservie » étant cochée par défaut, le premier enregistrement écrivait
+      les cinquante-huit wilayas comme desservies à zéro dinar. Qui remplissait
+      dix lignes et enregistrait offrait la livraison aux quarante-huit autres,
+      en croyant avoir configuré sa grille.
+
+      On garde donc la chaîne brute pour savoir si quelqu'un a écrit quelque
+      chose, et une wilaya sans aucun prix saisi ne peut pas être desservie.
+    */
+    const saisi = (cle: string) => String(formData.get(cle) ?? "").trim();
     const nombre = (cle: string) => {
-      const v = Number(String(formData.get(cle) ?? "").replace(",", "."));
+      const v = Number(saisi(cle).replace(",", "."));
       return Number.isFinite(v) && v > 0 ? Math.round(v) : 0;
     };
 
-    const lignes: TarifLivraison[] = WILAYAS.map((w) => ({
-      wilaya_code: w.code,
-      wilaya_nom: w.fr,
-      stopdesk: nombre(`sd_${w.code}`),
-      domicile: nombre(`dom_${w.code}`),
-      active: formData.get(`on_${w.code}`) === "on",
-    }));
+    const lignes: TarifLivraison[] = WILAYAS.map((w) => {
+      const tarife = Boolean(saisi(`sd_${w.code}`) || saisi(`dom_${w.code}`));
+      return {
+        wilaya_code: w.code,
+        wilaya_nom: w.fr,
+        stopdesk: nombre(`sd_${w.code}`),
+        domicile: nombre(`dom_${w.code}`),
+        active: formData.get(`on_${w.code}`) === "on" && tarife,
+      };
+    });
     await enregistrerTarifs(lignes);
 
     const { error } = await db.from("site_settings").upsert({

@@ -133,7 +133,9 @@ function Prix({
           min={0}
           step={50}
           inputMode="numeric"
-          defaultValue={defaultValue ? String(defaultValue) : ""}
+          /* Zéro se réaffiche « 0 » et non vide : c'est un tarif choisi —
+             livraison offerte — et non un champ resté à remplir. */
+          defaultValue={defaultValue === undefined ? "" : String(defaultValue)}
           placeholder="0"
           className="adm-champ"
           style={{ paddingInlineEnd: "2.6rem" }}

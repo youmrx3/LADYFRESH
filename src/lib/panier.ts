@@ -74,7 +74,8 @@ export async function composer(
         unit_price: pack.price,
         quantity,
         units_per_carton: 1,
-        line_total: pack.price * quantity,
+        // Même arrondi que l'affichage : voir `lineTotal`.
+        line_total: Math.round(pack.price * quantity),
       });
       continue;
     }

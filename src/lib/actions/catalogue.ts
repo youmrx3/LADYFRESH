@@ -224,7 +224,10 @@ export async function enregistrerVariante(
   return tenter(async () => {
     const db = await garde();
     const id = mot(formData, "id");
-    const prix = Number(formData.get("price_demi_gros") ?? 0);
+    /* Arrondi à la saisie : le dinar ne se manipule pas en centimes au
+       comptoir, et un prix à décimales faisait diverger l'affichage du total
+       enregistré — voir `lineTotal`. */
+    const prix = Math.round(Number(formData.get("price_demi_gros") ?? 0));
     const valeurs = {
       product_id: mot(formData, "product_id"),
       size_label: mot(formData, "size_label"),
@@ -303,8 +306,9 @@ export async function enregistrerPack(
     );
 
     if (lang === "fr") {
-      const prix = Number(formData.get("price") ?? 0);
-      const barre = Number(formData.get("prix_barre") ?? 0);
+      // Arrondis à la saisie, pour la même raison que les formats.
+      const prix = Math.round(Number(formData.get("price") ?? 0));
+      const barre = Math.round(Number(formData.get("prix_barre") ?? 0));
       if (!mot(formData, "slug")) throw new Error("Le slug est requis.");
       if (!(prix > 0)) throw new Error("Le prix du coffret doit être supérieur à zéro.");
       if (barre && barre <= prix)

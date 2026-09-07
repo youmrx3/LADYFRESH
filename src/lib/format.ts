@@ -25,8 +25,22 @@ export function unitPrice(variant: Variant) {
   return variant.price_demi_gros;
 }
 
+/**
+ * Le total d'une ligne, en dinars entiers.
+ *
+ * `da()` arrondit chaque montant qu'elle affiche, indépendamment. Les colonnes
+ * étant `numeric(10,2)`, un prix à centimes faisait diverger l'écran de
+ * lui-même : deux coffrets à 1 250,50 s'affichaient « 1 251 » l'unité et
+ * « 2 501 » la ligne, et deux fois 1 251 ne font pas 2 501. Le récapitulatif se
+ * contredisait, puis la commande, l'email et l'export du transporteur
+ * annonçaient trois montants légèrement différents.
+ *
+ * On arrondit donc au même endroit que l'affichage, et une seule fois. Les prix
+ * sont par ailleurs arrondis à la saisie : le dinar ne se manipule pas en
+ * centimes au comptoir.
+ */
 export function lineTotal(variant: Variant, quantity: number) {
-  return unitPrice(variant) * quantity;
+  return Math.round(unitPrice(variant) * quantity);
 }
 
 /**
