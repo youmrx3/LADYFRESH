@@ -11,6 +11,7 @@ import {
   SETTINGS,
   VIDEOS,
 } from "./catalog";
+import { orderRef } from "./format";
 import { supabaseAdmin, supabaseRead } from "./supabase";
 import type {
   Gamme,
@@ -323,7 +324,61 @@ export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
     return local;
   }
 
-  const { data, error } = await db
+  /*
+    La référence porte un tirage au sort : deux commandes du même jour peuvent
+    tomber dessus. `ref` étant `unique`, l'insertion était alors rejetée et la
+    commande perdue — la cliente ne voyait qu'un échec, pour un panier
+    parfaitement valable. On retire donc une fois, avec une nouvelle référence.
+
+    Une seule reprise suffit : après élargissement du suffixe, deux collisions
+    d'affilée relèvent de l'improbable, et boucler indéfiniment sur une erreur
+    mal identifiée coûterait plus cher que d'échouer.
+  */
+  let ref = order.ref;
+  let data: { id: string } | null = null;
+
+  for (let essai = 0; essai < 2; essai += 1) {
+    const tentative = await ecrireEnTete(db, { ...order, ref });
+    if (!tentative.error) {
+      data = tentative.data as { id: string };
+      break;
+    }
+    const derniere = essai === 1;
+    if (derniere || !refDejaPrise(tentative.error))
+      throw new Error(tentative.error.message);
+    console.warn("[orders] référence", ref, "déjà prise — nouveau tirage.");
+    ref = orderRef();
+  }
+  if (!data) throw new Error("La commande n'a pas pu être enregistrée.");
+  order = { ...order, ref };
+
+  const items = order.items.map((i) => ({
+    order_id: data.id,
+    variant_id: isUuid(i.variant_id) ? i.variant_id : null,
+    product_name: i.product_name,
+    gamme_name: i.gamme_name,
+    size_label: i.size_label,
+    unit_price: i.unit_price,
+    quantity: i.quantity,
+    units_per_carton: i.units_per_carton,
+    line_total: i.line_total,
+  }));
+  return finaliserCommande(db, order, data.id, items);
+}
+
+/** Vrai quand Postgres refuse l'insertion pour cause de `ref` déjà employée. */
+function refDejaPrise(error: { code?: string; message?: string }) {
+  return (
+    error.code === "23505" ||
+    /duplicate key|orders_ref_key|already exists/i.test(error.message ?? "")
+  );
+}
+
+async function ecrireEnTete(
+  db: NonNullable<ReturnType<typeof supabaseAdmin>>,
+  order: Omit<Order, "id">,
+) {
+  return db
     .from("orders")
     .insert({
       ref: order.ref,
@@ -342,25 +397,46 @@ export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
       total: order.total,
       status: order.status,
     })
-    .select()
+    .select("id")
     .single();
-  if (error) throw new Error(error.message);
+}
 
-  const items = order.items.map((i) => ({
-    order_id: data.id,
-    variant_id: isUuid(i.variant_id) ? i.variant_id : null,
-    product_name: i.product_name,
-    gamme_name: i.gamme_name,
-    size_label: i.size_label,
-    unit_price: i.unit_price,
-    quantity: i.quantity,
-    units_per_carton: i.units_per_carton,
-    line_total: i.line_total,
-  }));
+/**
+ * Écrit les lignes, et défait l'en-tête si elles ne passent pas.
+ */
+async function finaliserCommande(
+  db: NonNullable<ReturnType<typeof supabaseAdmin>>,
+  order: Omit<Order, "id">,
+  id: string,
+  items: Record<string, unknown>[],
+): Promise<Order> {
   const { error: itemsError } = await db.from("order_items").insert(items);
-  if (itemsError) throw new Error(itemsError.message);
+  if (itemsError) {
+    /*
+      Les deux écritures ne sont pas dans la même transaction : le client
+      Supabase n'en ouvre pas. Sans rattrapage, la ligne `orders` restait seule
+      en base — un total à encaisser, un téléphone, et aucun article. Elle était
+      comptée dans les compteurs, entrait dans le chiffre d'affaires une fois
+      confirmée, et partait dans l'export du transporteur avec un montant et
+      rien à livrer. La cliente, elle, voyait un échec et recommandait.
 
-  return { ...order, id: data.id };
+      On défait donc l'en-tête avant de relever. Si cette suppression échoue à
+      son tour, la référence part dans le journal : c'est le seul cas où une
+      commande fantôme subsiste, et on veut alors pouvoir la retrouver.
+    */
+    const { error: menageError } = await db.from("orders").delete().eq("id", id);
+    if (menageError)
+      console.error(
+        "[orders] commande",
+        order.ref,
+        "écrite sans ses lignes et impossible à retirer —",
+        menageError.message,
+        "· à supprimer à la main.",
+      );
+    throw new Error(itemsError.message);
+  }
+
+  return { ...order, id };
 }
 
 /*

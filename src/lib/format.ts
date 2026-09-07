@@ -29,10 +29,27 @@ export function lineTotal(variant: Variant, quantity: number) {
   return unitPrice(variant) * quantity;
 }
 
-/** LF-YYMMDD-XXXX — assez court pour se dicter au téléphone. */
+/**
+ * LF-YYMMDD-XXXXXX — assez court pour se dicter au téléphone.
+ *
+ * Le suffixe faisait quatre caractères, soit 1 679 616 valeurs, tirées à
+ * nouveau chaque jour puisque la date en fait partie. Par le paradoxe des
+ * anniversaires, à trois cents commandes par jour une collision survenait dans
+ * la journée environ une fois sur trente-sept — et `ref` étant `unique`,
+ * l'insertion était rejetée, la commande perdue sur un message d'échec
+ * générique.
+ *
+ * Six caractières portent l'espace à 2,18 milliards : le risque est divisé par
+ * environ treize cents. `createOrder` réessaie par-dessus, ce qui referme le
+ * cas résiduel.
+ */
 export function orderRef(date = new Date()) {
   const stamp = date.toISOString().slice(2, 10).replace(/-/g, "");
-  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+  // `toString(36)` peut rendre une chaîne courte quand le tirage est petit :
+  // on complète, pour que la référence ait toujours la même forme.
+  const suffix = (Math.random().toString(36).slice(2) + "000000")
+    .slice(0, 6)
+    .toUpperCase();
   return `LF-${stamp}-${suffix}`;
 }
 

@@ -150,8 +150,13 @@ export async function POST(request: Request) {
   */
   await avertirCommande(enregistree, t.unites.devise);
 
+  /*
+    La référence rendue est celle qui a été écrite, pas celle qu'on avait tirée :
+    `createOrder` en change quand la première était déjà prise. Rendre la
+    nôtre donnerait à la cliente un numéro qui n'existe nulle part.
+  */
   return NextResponse.json({
-    ref,
+    ref: enregistree.ref,
     total: order.total,
     persisted: ordersArePersisted(),
   });
