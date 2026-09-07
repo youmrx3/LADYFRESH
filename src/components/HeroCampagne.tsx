@@ -141,9 +141,17 @@ export async function HeroCampagne({
           </p>
 
           <div className="lever mt-8" style={{ animationDelay: "250ms" }}>
+            {/*
+              Pleine largeur à toutes les tailles, et non plus rétréci à la
+              longueur de son texte au-delà du téléphone : c'est le seul geste
+              de la page, il doit occuper la colonne entière — la même que la
+              ligne de garanties juste dessous. Le corps monte de 13 à 16 px et
+              l'interlettrage se resserre un peu, sans quoi un bouton plus grand
+              en majuscules espacées se lit comme une banderole.
+            */}
             <a
               href="#boutique"
-              className="btn btn-or btn-vif w-full !whitespace-normal !py-4 !leading-snug sm:w-auto sm:!px-9"
+              className="btn btn-or btn-vif w-full !whitespace-normal !py-5 !text-[1rem] !leading-snug !tracking-[0.11em]"
             >
               {cta}
             </a>
@@ -155,7 +163,7 @@ export async function HeroCampagne({
               style={{ animationDelay: "330ms" }}
             >
               {gages.map((g) => (
-                <li key={g} className="flex items-center gap-2 text-[13px] text-craie">
+                <li key={g} className="flex items-center gap-2.5 text-[15px] text-craie">
                   <span aria-hidden style={{ color: "var(--or-plein)" }}>
                     ✓
                   </span>

@@ -93,7 +93,7 @@ export default async function PageBoutique({
       <main>
         <HeroCampagne settings={settings} packs={packs} />
         <Boutique />
-        <Avis />
+        <Avis sansEntete />
         <Commande livraison={grilleLivraison} />
       </main>
 

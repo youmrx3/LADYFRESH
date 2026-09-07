@@ -115,7 +115,7 @@ export const fr = {
   packs: {
     eyebrow: "Nos coffrets",
     titre: "Choisissez votre coffret.",
-    lede: "Quatre produits assortis, à un prix pensé pour l'ensemble. Livraison partout en Algérie, paiement à la réception.",
+    lede: "Des produits assortis, à un prix pensé pour l'ensemble. Livraison partout en Algérie, paiement à la réception.",
     vide: "Les coffrets arrivent très bientôt.",
     contient: "Ce coffret contient",
   },

@@ -113,7 +113,7 @@ export const en: Dictionary = {
   packs: {
     eyebrow: "Our bundles",
     titre: "Pick your bundle.",
-    lede: "Four matched products at a price built for the set. Delivery across Algeria, pay on arrival.",
+    lede: "Matched products at a price built for the set. Delivery across Algeria, pay on arrival.",
     vide: "Bundles are coming very soon.",
     contient: "This bundle contains",
   },

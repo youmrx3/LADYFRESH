@@ -35,7 +35,15 @@ const CAPTURES = [
 
 const DELAI = 5000;
 
-export function Avis() {
+/**
+ * Les captures de messages reçus.
+ *
+ * `sansEntete` sur la page de campagne : l'accueil raconte la marque et peut
+ * présenter la section, une page de publicité n'a que des paliers entre le clic
+ * payé et le bon de commande. Le titre reste — il dit ce qu'on regarde — le
+ * surtitre et la phrase d'introduction partent.
+ */
+export function Avis({ sansEntete = false }: { sansEntete?: boolean }) {
   const { t } = useReglages();
   const a = t.avis;
 
@@ -100,9 +108,15 @@ export function Avis() {
       className="etage-comptoir saut-ancre border-t border-trait py-14 sm:py-20"
     >
       <div className="shell max-w-[42rem]">
-        <p className="eyebrow text-graphite-doux">{a.eyebrow}</p>
-        <h2 className="display display-l mt-2.5">{a.titre}</h2>
-        <p className="lede mt-3 text-graphite-doux">{a.lede}</p>
+        {!sansEntete && (
+          <p className="eyebrow text-graphite-doux">{a.eyebrow}</p>
+        )}
+        <h2 className={`display display-l${sansEntete ? "" : " mt-2.5"}`}>
+          {a.titre}
+        </h2>
+        {!sansEntete && (
+          <p className="lede mt-3 text-graphite-doux">{a.lede}</p>
+        )}
 
         <div
           className="mt-8"
