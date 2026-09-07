@@ -166,17 +166,31 @@ export async function commanderDepuisPiste(
     if (!piste) throw new Error("Piste introuvable.");
 
     /*
-      Les quantités arrivent sous `qte_<identifiant de coffret>` : le formulaire
+      Les quantités arrivent sous `qte_<nature>_<identifiant>` : le formulaire
       liste le catalogue, pas le panier d'origine. Recomposer depuis la base est
       la seule façon d'avoir des prix à jour — ceux figés dans la piste datent
       du jour où elle a été abandonnée.
+
+      La nature était autrefois supposée : tout partait en « coffret ». En mode
+      « produits » la boutique ne vend pourtant que des formats, et la
+      conversion d'une piste échouait alors systématiquement. Le formulaire la
+      dit maintenant, et on la lit plutôt que de la deviner.
     */
     const lignes: LigneDemandee[] = [];
     for (const [cle, valeur] of formData.entries()) {
-      if (!cle.startsWith("qte_")) continue;
+      const nature = cle.startsWith("qte_pack_")
+        ? "pack"
+        : cle.startsWith("qte_produit_")
+          ? "produit"
+          : null;
+      if (!nature) continue;
       const quantity = Math.floor(Number(valeur));
       if (!Number.isFinite(quantity) || quantity <= 0) continue;
-      lignes.push({ kind: "pack", id: cle.slice(4), quantity });
+      lignes.push({
+        kind: nature,
+        id: cle.slice(nature === "pack" ? "qte_pack_".length : "qte_produit_".length),
+        quantity,
+      });
     }
     if (lignes.length === 0) throw new Error("Le panier est vide.");
 

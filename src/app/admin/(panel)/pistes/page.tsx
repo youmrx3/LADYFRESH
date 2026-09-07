@@ -6,11 +6,26 @@ import {
   commanderDepuisPiste,
   supprimerPiste,
 } from "@/lib/actions";
-import { getPacks, getPistesActives, getSettings } from "@/lib/data";
-import { da } from "@/lib/format";
+import { getPacks, getPistesActives, getProducts, getSettings } from "@/lib/data";
+import { da, unitPrice } from "@/lib/format";
 import { getT } from "@/i18n/server";
 import { WILAYAS, libelleWilaya, valeurWilaya } from "@/lib/wilayas";
-import type { Pack, Prospect, ProspectStatus } from "@/lib/types";
+import type { Prospect, ProspectStatus } from "@/lib/types";
+
+/**
+ * Ce qu'on peut mettre dans le bon, au téléphone.
+ *
+ * Coffrets et formats se ressemblent assez, une fois dans un bon de commande,
+ * pour tenir dans une seule forme : un nom, un prix, et de quoi dire au serveur
+ * de quelle nature il s'agit. C'est ce qui permet à l'écran de rappel de suivre
+ * `mode_boutique` au lieu de ne connaître que les coffrets.
+ */
+type Article = {
+  kind: "pack" | "produit";
+  id: string;
+  nom: string;
+  prix: number;
+};
 
 export const dynamic = "force-dynamic";
 
@@ -45,11 +60,37 @@ export default async function Pistes({
   const { f } = await searchParams;
   const filtre: Filtre = FILTRES.includes(f as Filtre) ? (f as Filtre) : "tous";
 
-  const [{ pistes, tableManquante }, packs, reglages] = await Promise.all([
+  const [{ pistes, tableManquante }, packs, produits, reglages] = await Promise.all([
     getPistesActives(),
     getPacks(),
+    getProducts(),
     getSettings(),
   ]);
+
+  /*
+    L'écran de rappel ne connaissait que les coffrets, et l'action ne savait
+    commander que cela. En mode « produits » la liste était donc vide : il n'y
+    avait rien à cocher, et valider rendait invariablement « Le panier est
+    vide » — le geste central de cette page était impossible.
+
+    On propose désormais ce que la boutique vend réellement.
+  */
+  const catalogue: Article[] =
+    reglages.mode_boutique === "produits"
+      ? produits.flatMap((p) =>
+          p.variants.map((v) => ({
+            kind: "produit" as const,
+            id: v.id,
+            nom: `${p.name || p.slug} — ${v.size_label}`,
+            prix: unitPrice(v),
+          })),
+        )
+      : packs.map((p) => ({
+          kind: "pack" as const,
+          id: p.id,
+          nom: p.name,
+          prix: p.price,
+        }));
 
   const a = t.admin.pistes;
   const devise = t.unites.devise;
@@ -105,7 +146,7 @@ export default async function Pistes({
             <LignePiste
               key={p.id}
               piste={p}
-              packs={packs}
+              catalogue={catalogue}
               livraison={reglages.livraison_active}
               t={t}
               devise={devise}
@@ -120,14 +161,14 @@ export default async function Pistes({
 
 function LignePiste({
   piste,
-  packs,
+  catalogue,
   livraison,
   t,
   devise,
   locale,
 }: {
   piste: Prospect;
-  packs: Pack[];
+  catalogue: Article[];
   livraison: boolean;
   t: Awaited<ReturnType<typeof getT>>["t"];
   devise: string;
@@ -140,12 +181,22 @@ function LignePiste({
   );
 
   /*
-    Le panier d'origine, retrouvé coffret par coffret.
-    La piste garde des libellés, pas des identifiants : c'est le nom qui fait le
-    rapprochement. Un coffret renommé depuis l'abandon ressort donc à zéro —
-    visible, corrigeable, et sans faux appariement.
+    Le panier d'origine, retrouvé ligne par ligne.
+
+    Un format se retrouve par son identifiant : la piste le porte, et c'est un
+    appariement exact — deux tailles d'un même produit ne se confondent pas. Un
+    coffret n'en a pas (`composer()` lui pose une chaîne vide), il se retrouve
+    donc par son nom ; renommé depuis l'abandon, il ressort à zéro, ce qui est
+    visible et corrigeable plutôt que faussement apparié.
   */
+  const parVariante = new Map(
+    piste.items.filter((i) => i.variant_id).map((i) => [i.variant_id, i.quantity]),
+  );
   const parNom = new Map(piste.items.map((i) => [i.product_name, i.quantity]));
+  const quantiteDe = (article: Article) =>
+    article.kind === "produit"
+      ? (parVariante.get(article.id) ?? 0)
+      : (parNom.get(article.nom) ?? 0);
 
   return (
     <li className="adm-carte p-4">
@@ -326,9 +377,9 @@ function LignePiste({
               {a.modifier}
             </p>
             <ul>
-              {packs.map((p) => (
+              {catalogue.map((article) => (
                 <li
-                  key={p.id}
+                  key={`${article.kind}:${article.id}`}
                   className="flex items-center gap-3 border-b py-2"
                   style={{ borderColor: "var(--adm-line)" }}
                 >
@@ -337,7 +388,7 @@ function LignePiste({
                       className="block truncate"
                       style={{ fontSize: "var(--adm-t-md)" }}
                     >
-                      {p.name}
+                      {article.nom}
                     </span>
                     <span
                       className="data block"
@@ -346,17 +397,19 @@ function LignePiste({
                         color: "var(--adm-muted)",
                       }}
                     >
-                      {da(p.price, devise)}
+                      {da(article.prix, devise)}
                     </span>
                   </span>
+                  {/* La nature voyage dans le nom du champ : l'action doit
+                      savoir si elle commande un coffret ou un format. */}
                   <input
                     type="number"
-                    name={`qte_${p.id}`}
+                    name={`qte_${article.kind}_${article.id}`}
                     min={0}
                     step={1}
                     inputMode="numeric"
-                    aria-label={p.name}
-                    defaultValue={parNom.get(p.name) ?? 0}
+                    aria-label={article.nom}
+                    defaultValue={quantiteDe(article)}
                     className="adm-champ w-20 shrink-0 text-center"
                   />
                 </li>
