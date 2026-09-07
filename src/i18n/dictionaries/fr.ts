@@ -72,7 +72,7 @@ export const fr = {
       {
         titre: "Choisissez votre format",
         texte:
-          "Gros par carton, ou demi-gros à partir de {min} pièces. Les prix de la boutique s'ajustent au format choisi.",
+          "Chaque produit existe en plusieurs formats. Les prix de la boutique s'ajustent au format choisi.",
       },
       {
         titre: "Composez votre commande",
@@ -104,9 +104,6 @@ export const fr = {
     repere: "Brume 250 ml",
     alaPiece: "à la pièce",
     auCarton: "au carton",
-    minDemi: "Dès {n} pièces par référence",
-    minGros: "Dès {n} carton par référence",
-    minGrosPluriel: "Dès {n} cartons par référence",
     detailDemi:
       "Vous commandez à l'unité, et mélangez les gammes que vous voulez. Le minimum s'applique à chaque référence.",
     detailGros:
@@ -162,7 +159,6 @@ export const fr = {
     colQte: "Qté",
     colPu: "P.U.",
     colTotal: "Total",
-    parCarton: "{n} pc/carton",
     retirer: "Retirer {nom}",
     quantiteLigne: "Quantité — {nom}",
     envoyer: "Envoyer la commande",
@@ -215,7 +211,7 @@ export const fr = {
 
   appel: {
     titre: "Prête à commander ?",
-    lede: "Demi-gros dès {min} pièces, gros au carton. Composez votre commande, envoyez-la, on s'occupe du reste.",
+    lede: "Composez votre commande, envoyez-la, on vous rappelle pour confirmer.",
     cta: "Composer ma commande",
   },
 
@@ -237,9 +233,6 @@ export const fr = {
     illisible: "Requête illisible.",
     vide: "Votre commande est vide.",
     aucuneRef: "Aucune référence valide dans la commande.",
-    minDemi:
-      "Le demi-gros démarre à {min} pièces par référence.",
-    minGros: "Le gros démarre à {min} carton par référence.",
     nomTel: "Indiquez votre nom, votre téléphone et votre wilaya.",
     minProduit: "Le minimum est de {min} par référence.",
     echec: "La commande n'a pas pu être enregistrée. Réessayez.",
@@ -579,12 +572,10 @@ export const fr = {
       titre: "Contenu du site",
       commandeContact: "Commande et contact",
       numeroWhatsapp: "Téléphone de contact (indicatif compris)",
-      minGros: "Minimum gros (cartons)",
       modeBoutique: "Ce que vend la boutique",
       modePacks: "Les coffrets",
       modeProduits: "Les produits à l'unité",
       minProduit: "Minimum par référence",
-      minDemi: "Minimum demi-gros (pièces)",
       telephoneAffiche: "Téléphone affiché",
       email: "E-mail",
       adresse: "Adresse",

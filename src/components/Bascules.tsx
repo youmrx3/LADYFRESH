@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useReglages } from "./Reglages";
-import { LOCALES, LOCALE_COOKIE, LOCALE_SHORT, LOCALE_LABEL } from "@/i18n/config";
 
 export type Theme = "clair" | "sombre";
 const THEME_STORAGE = "ladyfresh.theme";

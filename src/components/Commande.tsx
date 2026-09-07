@@ -170,7 +170,13 @@ export function Commande({
     try {
       const reponse = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          /* Le bridage répond depuis le middleware, qui tourne avant toute
+             lecture de la base : sans cet en-tête, son message est en français
+             quelle que soit la langue de la page. */
+          "X-LF-Langue": locale,
+        },
         body: JSON.stringify({
           pisteId: clePiste(client.phone),
           locale,

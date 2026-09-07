@@ -2,20 +2,13 @@
 
 import { Reveal } from "./Reveal";
 import { useReglages } from "./Reglages";
-import { fill } from "@/i18n";
-import type { Gamme, SiteSettings } from "@/lib/types";
+import type { Gamme } from "@/lib/types";
 
 /**
  * L'appel final. La bande défilante reprend les sept gammes en lettres
  * creuses : c'est le même index que le rail, réduit à sa signature.
  */
-export function AppelFinal({
-  gammes,
-  settings,
-}: {
-  gammes: Gamme[];
-  settings: SiteSettings;
-}) {
+export function AppelFinal({ gammes }: { gammes: Gamme[] }) {
   const { t } = useReglages();
   const noms = [...gammes, ...gammes];
 
@@ -44,7 +37,7 @@ export function AppelFinal({
             {t.appel.titre}
           </h2>
           <p className="lede mx-auto mt-4 max-w-[46ch] text-craie">
-            {fill(t.appel.lede, { min: settings.min_demi_gros_pieces })}
+            {t.appel.lede}
           </p>
           {/* Une seule sortie : la commande se passe sur le site. */}
           <div className="mt-8 flex justify-center">

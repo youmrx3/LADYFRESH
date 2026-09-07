@@ -34,6 +34,9 @@ const DEV = process.env.NODE_ENV !== "production";
 /** Nom de l'en-tête qui porte le chemin jusqu'au rendu. */
 export const EN_TETE_CHEMIN = "x-lf-chemin";
 
+/** En-tête par lequel le bon de commande dit dans quelle langue il s'affiche. */
+export const EN_TETE_LANGUE = "x-lf-langue";
+
 /*
   L'outil de configuration d'événements de Meta ouvre le site dans un cadre
   pour y détecter le pixel. `frame-ancestors 'none'` et `X-Frame-Options: DENY`
@@ -150,7 +153,18 @@ export function middleware(request: NextRequest) {
   if (request.method === "POST" && pathname === "/api/orders") {
     const ip = ipDe(request.headers);
     if (limiteDepassee(`orders:${ip}`, 20, 60 * 60 * 1000)) {
-      const locale = request.cookies.get("lf_locale")?.value ?? "fr";
+      /*
+        La langue vient d'un en-tête posé par le bon de commande.
+
+        Elle était lue dans un cookie `lf_locale` que personne n'écrivait : la
+        lecture retombait toujours sur le français, et les deux autres messages
+        ci-dessus étaient morts — une cliente arabophone bridée recevait du
+        français. Le middleware tourne trop tôt pour lire la base, et lire le
+        corps de la requête le consommerait ; l'en-tête est le seul canal qui
+        reste. Il vient du navigateur, donc il ne fait pas foi — mais il ne
+        choisit ici qu'une langue d'affichage, et se tromper ne coûte rien.
+      */
+      const locale = request.headers.get(EN_TETE_LANGUE) ?? "fr";
       return NextResponse.json(
         { error: MESSAGES[locale] ?? MESSAGES.fr },
         { status: 429, headers: { "Retry-After": "600" } },

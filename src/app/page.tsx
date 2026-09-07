@@ -100,13 +100,13 @@ export default async function Accueil() {
           settings={settings}
           referenceCount={referenceCount}
         />
-        <CommentCommander settings={settings} />
+        <CommentCommander />
         <RailGammes gammes={gammes} products={products} types={types} />
         <Boutique />
         <Avis />
         <Commande livraison={grilleLivraison} />
         <Videos videos={videos} />
-        <AppelFinal gammes={gammes} settings={settings} />
+        <AppelFinal gammes={gammes} />
       </main>
       <Footer settings={settings} />
     </BoutiqueProvider>

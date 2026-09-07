@@ -17,13 +17,19 @@ export async function amorcerBase(): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
 
-    const { count } = await db
-      .from("gammes")
-      .select("id", { count: "exact", head: true });
-    if ((count ?? 0) > 0)
-      throw new Error(
-        "La base contient déjà des gammes. Videz-les avant de réamorcer.",
-      );
+    /*
+      Le contrôle portait sur les gammes, alors que la première écriture porte
+      sur les types : une base aux gammes vidées mais aux types intacts passait
+      le contrôle, puis échouait sur un slug en double, avec un message Postgres
+      brut — là où cette fonction sait par ailleurs expliquer ses refus.
+    */
+    for (const table of ["product_types", "gammes"] as const) {
+      const { count } = await db.from(table).select("id", { count: "exact", head: true });
+      if ((count ?? 0) > 0)
+        throw new Error(
+          "La base contient déjà des données de catalogue. Videz les tables avant de réamorcer.",
+        );
+    }
 
     const { data: types, error: e0 } = await db
       .from("product_types")

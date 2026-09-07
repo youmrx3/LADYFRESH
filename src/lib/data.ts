@@ -3,6 +3,7 @@ import "server-only";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import {
   GAMMES,
   HERO_SLIDES,
@@ -647,21 +648,6 @@ export async function pisteConvertie(pisteId: string) {
     console.error("[pistes] marquage converti impossible —", error.message);
 }
 
-export async function getProspects(): Promise<{
-  pistes: Prospect[];
-  tableManquante: boolean;
-}> {
-  const db = supabaseAdmin();
-  if (!db) return { pistes: [], tableManquante: false };
-  const { data, error } = await db
-    .from("prospects")
-    .select("*")
-    .order("updated_at", { ascending: false })
-    .limit(500);
-  if (error) return { pistes: [], tableManquante: tableAbsente(error) };
-  return { pistes: (data ?? []) as Prospect[], tableManquante: false };
-}
-
 /**
  * La liste d'appels : ce qui reste à rappeler, et rien d'autre.
  *
@@ -983,7 +969,17 @@ export const getPacks = enCache("getPacks", getPacksBrut);
 export const getTarifs = enCache("getTarifs", getTarifsBrut);
 
 /*
-  Les réglages ne passent pas par le cache, contrairement au catalogue.
+  Les réglages ne passent pas par le cache **entre** requêtes, contrairement au
+  catalogue — mais `cache()` de React les mémorise **dans** une requête.
+
+  La distinction compte. Le cache d'une requête à l'autre rendait le changement
+  de langue incompréhensible, c'est ce que raconte la note ci-dessous, et il
+  reste écarté. Mais rien ne dédoublonnait les lectures d'un même rendu : sur
+  l'accueil, l'appel avait lieu dans `generateMetadata`, dans la mise en page,
+  puis dans la page — trois allers-retours pour une ligne lue par sa clé
+  primaire, et toutes les pages sont dynamiques, donc à chaque visiteur.
+  `cache()` referme cela sans rien rendre de rance : sa mémoire meurt avec la
+  requête.
 
   Ils étaient gardés cinq minutes comme le reste. Or c'est ici que vit la
   langue du site : on la basculait en arabe, la page restait en français, et
@@ -1000,7 +996,7 @@ export const getTarifs = enCache("getTarifs", getTarifsBrut);
   Les réglages sont une seule ligne lue par sa clé primaire ; la garder coûtait
   plus en confusion qu'elle ne rapportait en millisecondes.
 */
-export const getSettings = getSettingsBrut;
+export const getSettings = cache(getSettingsBrut);
 
 export const getHeroSlides = enCache("getHeroSlides", getHeroSlidesBrut);
 

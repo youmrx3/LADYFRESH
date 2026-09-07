@@ -4,7 +4,6 @@ export type Locale = (typeof LOCALES)[number];
 /** Le français d'abord : c'est la langue de la marque et du marché. */
 export const DEFAULT_LOCALE: Locale = "fr";
 
-export const LOCALE_COOKIE = "lf_locale";
 
 export const DIRECTION: Record<Locale, "ltr" | "rtl"> = {
   fr: "ltr",

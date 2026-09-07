@@ -94,9 +94,6 @@ export type SiteSettings = {
   locale: string;
   /** Langue propre à /boutique. Vide : la page suit celle du site. */
   locale_boutique: string;
-  whatsapp_number: string;
-  min_gros_cartons: number;
-  min_demi_gros_pieces: number;
   /** La grille de livraison s'applique-t-elle ? Sinon, tout est port compris. */
   livraison_active: boolean;
   /** Ce que la vitrine met en avant : coffrets ou produits à l'unité. */

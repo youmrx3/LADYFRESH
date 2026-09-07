@@ -70,7 +70,7 @@ export const en: Dictionary = {
       {
         titre: "Pick your format",
         texte:
-          "Wholesale by the carton, or half-wholesale from {min} pieces. Shop prices follow the format you choose.",
+          "Every product comes in several formats. Shop prices follow the format you choose.",
       },
       {
         titre: "Build your order",
@@ -102,9 +102,6 @@ export const en: Dictionary = {
     repere: "250 ml mist",
     alaPiece: "per piece",
     auCarton: "per carton",
-    minDemi: "From {n} pieces per product",
-    minGros: "From {n} carton per product",
-    minGrosPluriel: "From {n} cartons per product",
     detailDemi:
       "Order by the unit, and mix ranges as you like. The minimum applies to each product.",
     detailGros:
@@ -159,7 +156,6 @@ export const en: Dictionary = {
     colQte: "Qty",
     colPu: "Unit",
     colTotal: "Total",
-    parCarton: "{n} pc/carton",
     retirer: "Remove {nom}",
     quantiteLigne: "Quantity — {nom}",
     envoyer: "Send the order",
@@ -211,7 +207,7 @@ export const en: Dictionary = {
 
   appel: {
     titre: "Ready to order?",
-    lede: "Half-wholesale from {min} pieces, wholesale by the carton. Build your order, send it, we handle the rest.",
+    lede: "Build your order, send it, and we call you to confirm.",
     cta: "Build my order",
   },
 
@@ -233,8 +229,6 @@ export const en: Dictionary = {
     illisible: "Could not read the request.",
     vide: "Your order is empty.",
     aucuneRef: "No valid product in the order.",
-    minDemi: "Half-wholesale starts at {min} pieces per product.",
-    minGros: "Wholesale starts at {min} carton per product.",
     nomTel: "Please give your name, phone number and wilaya.",
     minProduit: "The minimum is {min} per product.",
     echec: "The order could not be saved. Try again.",
@@ -570,12 +564,10 @@ export const en: Dictionary = {
       titre: "Site content",
       commandeContact: "Ordering and contact",
       numeroWhatsapp: "Contact phone (with country code)",
-      minGros: "Wholesale minimum (cartons)",
       modeBoutique: "What the shop sells",
       modePacks: "Bundles",
       modeProduits: "Single products",
       minProduit: "Minimum per product",
-      minDemi: "Half-wholesale minimum (pieces)",
       telephoneAffiche: "Phone shown",
       email: "Email",
       adresse: "Address",

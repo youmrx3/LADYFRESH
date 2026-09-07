@@ -40,7 +40,3 @@ export function useReglages() {
   return useContext(Ctx);
 }
 
-/** Raccourci : `const t = useT()`. */
-function useT() {
-  return useContext(Ctx).t;
-}

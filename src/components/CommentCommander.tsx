@@ -2,10 +2,9 @@
 
 import { Reveal } from "./Reveal";
 import { useReglages } from "./Reglages";
-import { fill } from "@/i18n";
-import type { SiteSettings } from "@/lib/types";
 
-export function CommentCommander({ settings }: { settings: SiteSettings }) {
+
+export function CommentCommander() {
   const { t } = useReglages();
 
   return (
@@ -33,7 +32,7 @@ export function CommentCommander({ settings }: { settings: SiteSettings }) {
                 </div>
                 <h3 className="display display-m mt-6">{etape.titre}</h3>
                 <p className="mt-3 text-[15px] leading-relaxed text-craie">
-                  {fill(etape.texte, { min: settings.min_demi_gros_pieces })}
+                  {etape.texte}
                 </p>
               </div>
             </Reveal>

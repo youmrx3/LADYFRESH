@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { enregistrerPiste, getSettings } from "@/lib/data";
+import { enregistrerPiste } from "@/lib/data";
 import { composer, type LigneDemandee } from "@/lib/panier";
 import { numeroNormalise } from "@/lib/piste";
 import { DEFAULT_LOCALE, isLocale } from "@/i18n/config";
@@ -63,7 +63,6 @@ export async function POST(request: Request) {
 
   if (!Array.isArray(body.lignes) || body.lignes.length === 0) return recu;
 
-  const settings = await getSettings();
   // Le minimum ne filtre pas ici : une piste sous le minimum reste à rappeler.
   const { panier } = await composer(body.lignes, 1);
   if (panier.items.length === 0) return recu;
@@ -93,6 +92,5 @@ export async function POST(request: Request) {
     items,
   });
 
-  void settings;
   return recu;
 }
