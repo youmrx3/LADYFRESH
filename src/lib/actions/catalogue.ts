@@ -181,6 +181,15 @@ export async function enregistrerVariante(
     };
     if (!valeurs.product_id) throw new Error("Choisissez un produit.");
     if (!valeurs.size_label) throw new Error("Le format est requis.");
+    /*
+      Un prix laissé vide vaut `Number("") === 0`, et la contrainte SQL
+      (`price_demi_gros >= 0`) accepte zéro : le format partait alors en vitrine
+      à 0 DA, et `composer()` reprenait fidèlement ce prix — c'est son rôle. La
+      commande se réglait à zéro sans que rien ne l'ait signalé.
+
+      Le chemin des coffrets fait ce contrôle depuis toujours ; il manquait ici.
+    */
+    if (!(prix > 0)) throw new Error("Le prix de vente doit être supérieur à zéro.");
 
     const { error } = id
       ? await db.from("product_variants").update(valeurs).eq("id", id)

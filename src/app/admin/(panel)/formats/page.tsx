@@ -98,7 +98,8 @@ export default async function Formats() {
               label={fill(a.produits.prix, { devise })}
               name="price_demi_gros"
               type="number"
-              min={0}
+              required
+              min={1}
             />
             <Bascule label={a.commun.actif} name="active" defaultChecked />
           </div>
@@ -246,7 +247,8 @@ function ChampsVariante({
           label={fill(a.produits.prix, { devise })}
           name="price_demi_gros"
           type="number"
-          min={0}
+          required
+          min={1}
           defaultValue={variant.price_demi_gros}
         />
       </div>
