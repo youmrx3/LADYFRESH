@@ -92,6 +92,8 @@ export type SiteSettings = {
   id: string;
   /** Langue du site, choisie dans l'admin. Vitrine et back-office la suivent. */
   locale: string;
+  /** Langue propre à /boutique. Vide : la page suit celle du site. */
+  locale_boutique: string;
   whatsapp_number: string;
   min_gros_cartons: number;
   min_demi_gros_pieces: number;

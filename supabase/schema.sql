@@ -429,6 +429,16 @@ begin
   end loop;
 end $$;
 
+/*
+  La page de campagne a sa propre langue.
+
+  Le site de marque et la page de publicité ne s'adressent pas au même monde :
+  on peut vouloir la vitrine en français et faire tourner une campagne en
+  arabe, ou l'inverse, sans que l'un décide pour l'autre. Vide : /boutique suit
+  la langue du site, ce qui reste le comportement par défaut.
+*/
+alter table site_settings add column if not exists locale_boutique text not null default '';
+
 -- ------------------------------------------------------------- suivi simplifié
 /*
   Trois états de commande, plus quatre.

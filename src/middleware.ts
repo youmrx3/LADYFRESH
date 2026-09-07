@@ -31,6 +31,9 @@ const supabaseHost = (() => {
 
 const DEV = process.env.NODE_ENV !== "production";
 
+/** Nom de l'en-tête qui porte le chemin jusqu'au rendu. */
+export const EN_TETE_CHEMIN = "x-lf-chemin";
+
 /*
   L'outil de configuration d'événements de Meta ouvre le site dans un cadre
   pour y détecter le pixel. `frame-ancestors 'none'` et `X-Frame-Options: DENY`
@@ -164,7 +167,22 @@ export function middleware(request: NextRequest) {
   */
   if (request.method !== "GET") return NextResponse.next();
 
-  return poserEntetes(NextResponse.next(), pathname);
+  /*
+    Le chemin, transmis au rendu.
+
+    La page de campagne peut parler une autre langue que le site de marque, et
+    c'est la mise en page racine qui pose `lang` et `dir` sur le document. Or
+    une mise en page ne connaît pas l'adresse qu'elle rend : Next ne la lui
+    passe pas. On la lui écrit donc dans un en-tête de requête, seul canal qui
+    traverse la frontière.
+  */
+  const entrantes = new Headers(request.headers);
+  entrantes.set(EN_TETE_CHEMIN, pathname);
+
+  return poserEntetes(
+    NextResponse.next({ request: { headers: entrantes } }),
+    pathname,
+  );
 }
 
 export const config = {

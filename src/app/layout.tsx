@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Instrument_Sans, Jost, Noto_Kufi_Arabic } from "next/font/google";
+import { IBM_Plex_Mono, Instrument_Sans, Jost, Tajawal } from "next/font/google";
 import { PixelMeta } from "@/components/PixelMeta";
 import { ReglagesProvider } from "@/components/Reglages";
 import { PIXEL_ID, amorcePixel } from "@/lib/pixelAmorce";
@@ -29,15 +29,26 @@ const plexMono = IBM_Plex_Mono({
 });
 
 /*
-  Le kufi géométrique tient la même voix que Jost une fois passé en arabe.
+  L'arabe de la marque.
+
+  Le kufi employé jusqu'ici est une écriture d'enseigne : angles marqués,
+  terminaisons carrées, un dessin qui sert bien une signalétique et beaucoup
+  moins une marque de cosmétique. À côté de Jost, il jurait — l'une ronde et
+  géométrique, l'autre anguleuse.
+
+  Tajawal est construit sur les mêmes principes que Jost : tracé géométrique,
+  contraste de graisse presque nul, contreformes ouvertes. Dessiné pour tenir
+  aux côtés d'un sans-serif latin géométrique, il donne à l'arabe la même voix
+  qu'au français au lieu de le faire parler plus fort.
+
   `preload: false` : sans lui, les visiteurs francophones et anglophones
   téléchargeaient une fonte arabe qu'aucun glyphe de leur page n'utilise. Le
   navigateur ne va la chercher que s'il rencontre de l'arabe à rendre.
 */
-const kufi = Noto_Kufi_Arabic({
+const arabe = Tajawal({
   subsets: ["arabic"],
-  weight: ["300", "400", "500"],
-  variable: "--font-kufi",
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-arabe",
   display: "swap",
   preload: false,
 });
@@ -97,7 +108,7 @@ export default async function RootLayout({
       dir={DIRECTION[locale]}
       data-theme="clair"
       data-locale={locale}
-      className={`${jost.variable} ${instrument.variable} ${plexMono.variable} ${kufi.variable}`}
+      className={`${jost.variable} ${instrument.variable} ${plexMono.variable} ${arabe.variable}`}
       suppressHydrationWarning
     >
       <head>

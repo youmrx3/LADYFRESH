@@ -297,6 +297,10 @@ export const fr = {
       titre: "Page de campagne",
       aide: "Ce que voit quelqu'un qui arrive par une publicité, avant les coffrets. Le rayon et le formulaire suivent, eux, les réglages de la boutique.",
       voir: "Voir la page",
+      langue: "Langue de la page",
+      langueSuivre: "Suivre la langue du site",
+      langueAide:
+        "Le site de marque et la page de campagne peuvent parler des langues différentes. Ce réglage ne concerne que /boutique.",
       aideTraduction:
         "Ces champs traduisent la page publique, pas ce back-office : sa langue se règle dans « Contenu du site ». Un champ laissé vide reprend le texte français — c'est ce qu'on veut pour un nom de marque.",
       sansCoffret: "Aucun coffret pour l'instant : la page s'ouvrira sur un rayon vide.",

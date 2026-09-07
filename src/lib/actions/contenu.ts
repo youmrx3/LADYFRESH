@@ -202,11 +202,14 @@ export async function enregistrerCampagne(
       actuel as unknown as Record<string, unknown>,
     );
 
-    // Photo et interrupteur ne se traduisent pas : édités depuis le français.
+    // Photo, interrupteur et langue ne se traduisent pas : édités du français.
     if (lang === "fr") {
+      const cible = mot(formData, "locale_boutique");
       Object.assign(valeurs, {
         camp_image: mot(formData, "camp_image"),
         camp_bandeau_actif: formData.get("camp_bandeau_actif") === "on",
+        /* Vide — ou valeur inconnue — veut dire « suivre la langue du site ». */
+        locale_boutique: isLocale(cible) ? cible : "",
       });
     }
 

@@ -4,6 +4,7 @@ import {
   Champ,
   Envoyer,
   FormAction,
+  Liste,
   Zone,
 } from "@/components/admin/Champs";
 import { ChampImage } from "@/components/admin/ChampImage";
@@ -94,6 +95,31 @@ export default async function Campagne({
 
       <FormAction action={enregistrerCampagne}>
         <input type="hidden" name="edit_lang" value={langue} />
+
+        {/*
+          La langue de la page publique, distincte de celle du site.
+
+          Le site de marque et la publicité ne s'adressent pas au même monde :
+          on peut vouloir la vitrine en français et faire tourner une campagne
+          en arabe. Réglé depuis l'onglet français seulement — c'est un choix,
+          pas une traduction.
+        */}
+        {fr && (
+          <div className="adm-carte mb-4 p-4 sm:p-5">
+            <Liste
+              label={a.langue}
+              name="locale_boutique"
+              defaultValue={settings.locale_boutique}
+              aide={a.langueAide}
+              options={[
+                { value: "", label: a.langueSuivre },
+                { value: "fr", label: "Français" },
+                { value: "ar", label: "العربية" },
+                { value: "en", label: "English" },
+              ]}
+            />
+          </div>
+        )}
 
         <div className="adm-carte p-4 sm:p-5">
           {/* ------------------------------------------------- bandeau */}

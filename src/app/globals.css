@@ -40,9 +40,9 @@
 
   /* L'arabe rejoint la pile : Noto Kufi porte la même voix géométrique que
      Jost, et prend le relais pour les glyphes que Jost ne couvre pas. */
-  --font-display: var(--font-jost), var(--font-kufi), "Century Gothic",
+  --font-display: var(--font-jost), var(--font-arabe), "Century Gothic",
     ui-sans-serif, system-ui;
-  --font-body: var(--font-instrument), var(--font-kufi), ui-sans-serif,
+  --font-body: var(--font-instrument), var(--font-arabe), ui-sans-serif,
     system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
 

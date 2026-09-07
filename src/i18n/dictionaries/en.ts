@@ -291,6 +291,10 @@ export const en: Dictionary = {
       titre: "Campaign page",
       aide: "What someone arriving from an ad sees, before the bundles. The shop and the form follow the shop settings instead.",
       voir: "View the page",
+      langue: "Page language",
+      langueSuivre: "Follow the site language",
+      langueAide:
+        "The brand site and the campaign page can speak different languages. This setting only affects /boutique.",
       aideTraduction:
         "These fields translate the public page, not this admin: its language is set in “Site content”. A field left empty falls back to the French text — which is what you want for a brand name.",
       sansCoffret: "No bundles yet: the page will open on an empty shelf.",
