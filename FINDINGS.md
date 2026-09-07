@@ -21,6 +21,109 @@ Vérifications exécutées :
 
 ---
 
+## Phase 2 — état des corrections
+
+`npx tsc --noEmit` et `npm run build` passent après chaque palier. Un harnais de
+40 vérifications rejoue la logique de langue (parité des dictionnaires, garde-fou
+anti-recopie, replis, vidage des réglages, direction) : tout passe.
+
+| # | Sévérité | État |
+|---|---|---|
+| A-01 | P1 | ✅ corrigé — l'en-tête est défait si les lignes ne passent pas |
+| A-02 | P1 | ✅ corrigé — prix strictement positif, serveur et formulaire |
+| A-03 | P1 | ✅ corrigé — le catalogue de rappel suit `mode_boutique` |
+| A-04 | P1 | ✅ corrigé — suffixe à six caractères, plus une reprise sur doublon |
+| A-05 | P2 | ✅ corrigé — `src/lib/media.ts`, suppressions et remplacements |
+| A-06 | P2 | ✅ corrigé — pagination et compteurs en base |
+| A-07 | P2 | ✅ corrigé — les pistes suivent la période choisie |
+| A-08 | P2 | ✅ corrigé — le marquage est attendu |
+| A-09 | P2 | ⏸ **non corrigé** — demande une migration (`updated_at`), voir Q8 |
+| A-10 | P3 | ✅ corrigé |
+| A-11 | P3 | ✅ corrigé — *avec une correction, voir ci-dessous* |
+| A-12 | P3 | ⏸ **non corrigé** — demande un arbitrage, voir Q9 |
+| B-01 | P2 | ✅ corrigé — le garde-fou est branché sur les cinq formulaires manquants |
+| B-02 | P2 | ✅ corrigé — seuls les trois `hero_*` gardent leur repli |
+| B-03 | P2 | ✅ corrigé — la langue voyage jusqu'à `/merci` |
+| B-04 | P2 | ◐ partiellement — `robots.txt` et `sitemap.xml` posés ; `hreflang` reste impossible, voir Q10 |
+| B-05 | P3 | ✅ corrigé — en-tête `X-LF-Langue` |
+| B-06 | P2 | ✅ corrigé — **constat ajouté en phase 2**, voir ci-dessous |
+| C-01 | P2 | ✅ corrigé — *après correction de l'analyse, voir ci-dessous* |
+| C-02 | P2 | ✅ corrigé — arrondi à la saisie, total de ligne arrondi une fois |
+| C-03 | P3 | ⏸ constat, pas défaut — aucune notion de stock |
+| C-04 | P2 | ✅ corrigé — **constat ajouté en phase 2** |
+| C-05 | P2 | ✅ corrigé — **constat ajouté en phase 2** |
+| X-01 | P3 | ✅ corrigé — `cache()` de React, déduplication par requête |
+| X-02 | P3 | ⏸ **non corrigé** — ajouter une dépendance sort du cadre, voir Q11 |
+
+### Corrections apportées à la phase 1
+
+Deux constats du rapport étaient faux, et un troisième incomplet. Les laisser
+tels quels aurait été plus coûteux que de les avoir manqués.
+
+**C-01, première moitié : fausse.** Le rapport annonçait qu'allumer
+l'interrupteur de livraison sur une grille vide bloquait toutes les commandes.
+C'est impossible : `enregistrerLivraison` écrit les cinquante-huit wilayas
+**et** l'interrupteur dans la même action — on ne peut pas allumer l'un sans
+peupler l'autre. Seule la seconde moitié était réelle, et c'est elle qui a été
+corrigée : une wilaya dont aucun prix n'a été saisi était écrite « desservie à
+zéro dinar ».
+
+**A-11 : `min_demi_gros_pieces` n'était pas du code mort.** Il était lu dans
+`AppelFinal` et `CommentCommander`. C'est en essayant de le retirer que le
+compilateur l'a signalé — et que C-04 est apparu.
+
+**B-06 manquait entièrement.** Le relevé de chaînes en dur de la phase 1 ne
+cherchait que dans le JSX ; les messages des actions serveur n'y sont pas. Ils y
+étaient tous, en français.
+
+### [B-06] Le back-office parlait arabe, sauf quand il répondait
+**Sévérité :** P2 · ✅ corrigé
+**Emplacement :** les six modules de `src/lib/actions/`
+**Problème :** une soixantaine de messages de retour — succès, refus de
+validation, diagnostics — étaient des chaînes françaises écrites en dur. Une
+gestionnaire travaillant en arabe lisait donc ses menus, ses libellés et ses
+aides en arabe, puis « Coffret enregistré. » en français à chaque geste, et
+« Le prix du coffret doit être supérieur à zéro. » quand elle se trompait —
+c'est-à-dire au moment précis où le message compte. C'est très exactement le
+« à moitié traduit est pire que pas traduit » de l'audit, et cela touchait la
+moitié qui parle.
+**Correctif appliqué :** section `admin.messages` dans les trois dictionnaires,
+538 clefs par langue à parité vérifiée. Le type reste dérivé du français : une
+clef oubliée casse la compilation.
+**Reste :** les erreurs levées par la couche de données (« Base non connectée. »,
+replis sur fichier local) sont encore en français. Elles n'apparaissent qu'en
+développement sans Supabase, ou sur une installation incomplète que le
+back-office signale déjà par un bandeau ; les traduire ferait descendre un
+dictionnaire dans une couche qui sert aussi l'API publique.
+
+### [C-04] La vitrine vendait une offre que le code a abandonnée
+**Sévérité :** P2 · ✅ corrigé
+**Emplacement :** `fr.ts`, `ar.ts`, `en.ts` — `commander.etapes[0].texte` et `appel.lede`
+**Problème :** deux textes de l'accueil décrivaient l'achat en gros et en
+demi-gros, que la boutique ne propose plus : le sélecteur a disparu,
+`purchase_type` est figé côté serveur, `price_gros` est un vestige, et tout le
+code répète que la vente est au détail. Le nombre interpolé venait par-dessus de
+`min_demi_gros_pieces`, un réglage que le back-office n'expose plus — donc
+incorrigible par la gérante — pendant que la commande applique `min_produit`.
+La page annonçait un minimum, la caisse en appliquait un autre.
+**Correctif appliqué :** les deux textes réécrits dans les trois langues, sans
+minimum interpolé ; les clefs `minDemi`, `minGros`, `minGrosPluriel` retirées.
+Le seuil reste dit par la boutique et par le message d'erreur de l'API, qui
+lisent tous deux `min_produit`. La formulation est une proposition, voir Q12.
+
+### [C-05] Le jeu de secours traduisait un français qui n'existait plus
+**Sévérité :** P2 · ✅ corrigé
+**Emplacement :** `src/lib/catalog.ts` — `hero_lede_ar`, `hero_lede_en`
+**Problème :** trouvé en regardant la page rendue. Le `hero_lede` français du
+jeu de secours dit « Livrés partout en Algérie, payés à la réception » ; ses
+traductions arabe et anglaise disaient encore « au détail, en demi-gros dès
+5 pièces, ou en gros par carton ». Elles traduisaient une version antérieure du
+texte. Sur une installation neuve — le seul cas où ce jeu s'affiche — le site
+aurait vendu deux offres différentes selon la langue du visiteur.
+**Correctif appliqué :** les deux traductions alignées sur le français.
+
+---
+
 ## 1. Orientation
 
 ### 1.1 Routes du back-office
@@ -855,8 +958,37 @@ piste existe — donc qu'une cliente ait rempli le formulaire du site. Une
 commande prise au téléphone par quelqu'un qui n'est jamais passé par le site n'a
 pas de porte d'entrée. C'est peut-être délibéré ; c'est aussi ce qui rend A-03
 plus coûteux qu'il n'en a l'air.
+**Q8 — Faut-il une colonne `updated_at` sur les tables du catalogue ?** C'est ce
+que demande A-09, resté non corrigé : sans elle, deux onglets ouverts sur le même
+coffret se recouvrent en silence. La migration est courte, mais c'est une
+migration.
+
+**Q9 — `units_per_carton` : ajouter le champ, ou retirer la colonne ?** A-12.
+Elle est recopiée sur chaque ligne de commande et vaut invariablement 12, faute
+de formulaire pour la renseigner. Elle n'est affichée nulle part aujourd'hui.
+
+**Q10 — Veut-on que l'arabe et l'anglais soient indexables ?** `robots.txt` et
+`sitemap.xml` existent maintenant, mais `hreflang` reste sans objet tant qu'il
+n'y a qu'une adresse par page. Rendre les trois langues visibles à la recherche
+demande des URL par langue, donc une refonte du routage.
+
+**Q11 — Installe-t-on ESLint ?** Rien ne tourne au-delà de TypeScript
+aujourd'hui, ce qui laisse passer imports morts et fonctions inutilisées — c'est
+ainsi que quatre imports morts avaient survécu dans `Bascules.tsx`.
+
+**Q12 — La nouvelle formulation de l'accueil convient-elle ?** C-04 a remplacé
+deux phrases qui vendaient le gros et le demi-gros. Le remplacement suit le
+registre du reste du site, mais c'est une décision de marque : la reformuler ne
+demande que d'éditer trois lignes de dictionnaire.
+
+**Q13 — Le texte du hero en base parle encore de demi-gros.** À l'écran,
+aujourd'hui, l'accueil affiche « Au détail, en demi-gros dès 5 pièces, ou en gros
+par carton » — cette phrase ne vient pas du code mais de `site_settings.hero_lede`,
+donc de ce qui a été saisi dans `/admin/contenu`. Elle est modifiable là, en trois
+langues, et n'a pas été touchée : c'est du contenu, pas du code.
 
 ---
 
-*Fin de la phase 1. Aucun fichier du projet n'a été modifié : `git status` ne
-doit montrer que l'ajout de `FINDINGS.md`.*
+*Phase 1 : lecture seule, aucun fichier du projet modifié.*
+*Phase 2 : dix-neuf constats corrigés, un commit par palier, `tsc` et `build`
+verts après chacun. Six restent ouverts et attendent un arbitrage — Q8 à Q13.*

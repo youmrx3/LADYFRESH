@@ -496,10 +496,18 @@ export const SETTINGS: SiteSettings = {
   hero_title_en: "Seven ranges.\nOne freshness.",
   hero_lede:
     "Brumes parfumées, gels lavants intimes et déodorants. Livrés partout en Algérie, payés à la réception.",
+  /*
+    L'arabe et l'anglais traduisaient un français d'avant : ils promettaient
+    encore le demi-gros dès cinq pièces et le gros par carton, quand la version
+    française parlait déjà de livraison et de paiement à la réception. Une
+    traduction qui dit autre chose que son original n'en est pas une, et sur une
+    installation neuve — le seul cas où ce jeu de secours s'affiche — le site
+    aurait vendu deux offres différentes selon la langue.
+  */
   hero_lede_ar:
-    "بخاخات معطرة، جل منظف حميمي ومزيلات روائح ليدي فريش. بالتجزئة، بنصف الجملة ابتداءً من 5 قطع، أو بالجملة بالكرتون.",
+    "بخاخات معطرة، جل منظف حميمي ومزيلات روائح. توصيل إلى كامل الجزائر، والدفع عند الاستلام.",
   hero_lede_en:
-    "Lady Fresh fragrance mists, intimate washes and deodorants. Retail, half-wholesale from 5 pieces, or wholesale by the carton.",
+    "Fragrance mists, intimate washes and deodorants. Delivered anywhere in Algeria, paid on arrival.",
   camp_bandeau_actif: false,
   camp_image: "",
   camp_bandeau: "Livraison 58 wilayas — paiement à la réception",
