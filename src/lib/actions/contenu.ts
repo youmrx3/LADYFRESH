@@ -9,6 +9,7 @@ import {
   garde,
   langue,
   lireLigne,
+  messages,
   mot,
   tenter,
   texte,
@@ -25,6 +26,7 @@ export async function enregistrerReglages(
   return tenter(async () => {
     const lang = langue(formData);
     const db = await garde();
+    const m = await messages();
 
     const actuel = await getSettingsAdmin();
     const valeurs: Record<string, unknown> = traduits(
@@ -51,7 +53,7 @@ export async function enregistrerReglages(
       .from("site_settings")
       .upsert({ id: "settings", ...valeurs });
     if (error) throw new Error(error.message);
-    return "Réglages enregistrés.";
+    return m.reglagesEnregistres;
   });
 }
 
@@ -65,10 +67,11 @@ export async function changerLangueSite(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
 
   const cible = mot(formData, "locale");
-  if (!isLocale(cible)) return { error: "Langue inconnue." };
+  if (!isLocale(cible)) return { error: m.langueInconnue };
 
   return tenter(async () => {
     const db = supabaseAdmin();
@@ -78,11 +81,14 @@ export async function changerLangueSite(
         .upsert({ id: "settings", locale: cible });
       if (error) throw new Error(error.message);
     } else if (!writeLocalSettings({ locale: cible })) {
-      throw new Error(
-        "Langue non enregistrée : base absente et disque en lecture seule.",
-      );
+      throw new Error(m.langueNonEnregistree);
     }
-    return "Langue du site mise à jour.";
+    /*
+      Le message est celui de la langue *quittée*, pas de la nouvelle : il est
+      lu avant l'écriture, et c'est voulu — on le lit encore dans la langue où
+      l'on vient de cliquer, avant que la page ne bascule.
+    */
+    return m.langueEnregistree;
   });
 }
 
@@ -92,6 +98,7 @@ export async function enregistrerSlide(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const lang = langue(formData);
 
@@ -107,7 +114,7 @@ export async function enregistrerSlide(
         gamme_id: mot(formData, "gamme_id") || null,
         sort_order: Number(formData.get("sort_order") ?? 0),
       });
-      if (!valeurs.image) throw new Error("Une image est requise.");
+      if (!valeurs.image) throw new Error(m.imageRequise);
     }
 
     const { error } = id
@@ -116,7 +123,7 @@ export async function enregistrerSlide(
     if (error) throw new Error(error.message);
     if (lang === "fr")
       await oublierRemplacee(db, actuel?.image as string, valeurs.image as string);
-    return id ? "Visuel enregistré." : "Visuel ajouté.";
+    return id ? m.visuelEnregistre : m.visuelAjoute;
   });
 }
 
@@ -126,6 +133,7 @@ export async function supprimerSlide(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const actuel = await lireLigne(db, "hero_slides", id);
 
@@ -133,7 +141,7 @@ export async function supprimerSlide(
     if (error) throw new Error(error.message);
 
     await oublierMedias(db, [actuel?.image as string]);
-    return "Visuel supprimé.";
+    return m.visuelSupprime;
   });
 }
 
@@ -143,6 +151,7 @@ export async function enregistrerVideo(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const lang = langue(formData);
 
@@ -158,7 +167,7 @@ export async function enregistrerVideo(
         poster: texte(formData, "poster"),
         sort_order: Number(formData.get("sort_order") ?? 0),
       });
-      if (!valeurs.src) throw new Error("Le fichier vidéo est requis.");
+      if (!valeurs.src) throw new Error(m.videoRequise);
     }
 
     const { error } = id
@@ -169,7 +178,7 @@ export async function enregistrerVideo(
       await oublierRemplacee(db, actuel?.src as string, valeurs.src as string);
       await oublierRemplacee(db, actuel?.poster as string, valeurs.poster as string);
     }
-    return id ? "Vidéo enregistrée." : "Vidéo ajoutée.";
+    return id ? m.videoEnregistree : m.videoAjoutee;
   });
 }
 
@@ -179,6 +188,7 @@ export async function supprimerVideo(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const actuel = await lireLigne(db, "videos", id);
 
@@ -186,7 +196,7 @@ export async function supprimerVideo(
     if (error) throw new Error(error.message);
 
     await oublierMedias(db, [actuel?.src as string, actuel?.poster as string]);
-    return "Vidéo supprimée.";
+    return m.videoSupprimee;
   });
 }
 
@@ -205,6 +215,7 @@ export async function enregistrerCampagne(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const lang = langue(formData);
 
     const actuel = await getSettingsAdmin();
@@ -236,6 +247,6 @@ export async function enregistrerCampagne(
       .from("site_settings")
       .upsert({ id: "settings", ...valeurs });
     if (error) throw new Error(error.message);
-    return "Page de campagne enregistrée.";
+    return m.campagneEnregistree;
   });
 }

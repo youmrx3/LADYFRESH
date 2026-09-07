@@ -284,6 +284,101 @@ export const ar: Dictionary = {
     baseAbsenteAide:
       "شغّلي supabase/schema.sql ثم أضيفي مفاتيح Supabase في ‎.env.local، أو في متغيّرات بيئة الاستضافة مع إعادة النشر. حتى ذلك الحين يعرض الموقع الكتالوج المرجعي.",
 
+    /* Ce que les actions du back-office répondent à l'écran. */
+    messages: {
+      sessionExpiree: "انتهت الجلسة.",
+      echec: "فشلت العملية.",
+      baseAbsente:
+        "قاعدة البيانات غير موصولة: أدخلي NEXT_PUBLIC_SUPABASE_URL و SUPABASE_SERVICE_ROLE_KEY.",
+      baseNonConnectee: "قاعدة البيانات غير موصولة.",
+      cleRefusee:
+        "قاعدة البيانات ترفض مفتاح الخدمة. تحقّقي من SUPABASE_SERVICE_ROLE_KEY عند المستضيف — منسوخًا كاملًا، دون فراغ أو سطر جديد — ثم أعيدي النشر: أي متغيّر معدّل لا يسري إلا في النشر التالي.",
+      typeUtilise:
+        "هذا النوع ما زال مستعملًا في منتجات. غيّري نوعها، أو احذفي تلك المنتجات أولًا.",
+      typeUtiliseN: "هذا النوع ما زال مستعملًا في {n} منتج. غيّري نوعها قبل حذفه.",
+      encoreUtilise:
+        "هذا العنصر ما زال مستعملًا في مكان آخر. افصليه عمّا يرتبط به أولًا.",
+
+      slugRequis: "المعرّف مطلوب.",
+      nomRequis: "الاسم مطلوب.",
+      nomEtSlugRequis: "الاسم والمعرّف مطلوبان.",
+      choisirType: "اختاري نوع المنتج.",
+      choisirGamme: "اختاري المجموعة.",
+      choisirProduit: "اختاري المنتج.",
+      formatRequis: "الصيغة مطلوبة.",
+      prixPositif: "سعر البيع يجب أن يكون أكبر من صفر.",
+      prixCoffretPositif: "سعر العرض يجب أن يكون أكبر من صفر.",
+      prixBarreSuperieur: "السعر المشطوب يجب أن يكون أعلى من سعر البيع.",
+      imageRequise: "الصورة مطلوبة.",
+      videoRequise: "ملف الفيديو مطلوب.",
+
+      typeCree: "تمّ إنشاء النوع.",
+      typeEnregistre: "تمّ حفظ النوع.",
+      typeSupprime: "تمّ حذف النوع.",
+      gammeCreee: "تمّ إنشاء المجموعة.",
+      gammeEnregistree: "تمّ حفظ المجموعة.",
+      gammeSupprimee: "تمّ حذف المجموعة.",
+      produitCree: "تمّ إنشاء المنتج.",
+      produitEnregistre: "تمّ حفظ المنتج.",
+      produitSupprime: "تمّ حذف المنتج.",
+      formatAjoute: "تمّت إضافة الصيغة.",
+      formatEnregistre: "تمّ حفظ الصيغة.",
+      formatSupprime: "تمّ حذف الصيغة.",
+      coffretCree: "تمّ إنشاء العرض.",
+      coffretEnregistre: "تمّ حفظ العرض.",
+      coffretSupprime: "تمّ حذف العرض.",
+      visuelAjoute: "تمّت إضافة الصورة.",
+      visuelEnregistre: "تمّ حفظ الصورة.",
+      visuelSupprime: "تمّ حذف الصورة.",
+      videoAjoutee: "تمّت إضافة الفيديو.",
+      videoEnregistree: "تمّ حفظ الفيديو.",
+      videoSupprimee: "تمّ حذف الفيديو.",
+      reglagesEnregistres: "تمّ حفظ الإعدادات.",
+      campagneEnregistree: "تمّ حفظ صفحة الحملة.",
+      livraisonEnregistree: "تمّ حفظ جدول التوصيل.",
+
+      langueInconnue: "لغة غير معروفة.",
+      langueEnregistree: "تمّ تحديث لغة الموقع.",
+      langueNonEnregistree:
+        "لم تُحفظ اللغة: قاعدة البيانات غائبة والقرص للقراءة فقط.",
+
+      statutInconnu: "حالة غير معروفة.",
+      statutEnregistre: "تمّ تحديث الحالة.",
+      commandeSupprimee: "تمّ حذف الطلب.",
+      pisteIntrouvable: "لم يُعثر على السلة.",
+      pisteSupprimee: "تمّ حذف السلة.",
+      panierVide: "السلة فارغة.",
+      coordonneesRequises: "الاسم ورقم الهاتف والولاية مطلوبة.",
+      choisirLivraison: "اختاري طريقة التوصيل.",
+      wilayaSansTarif: "لا يوجد تسعير للتوصيل إلى هذه الولاية.",
+      commandeCreee: "تمّ إنشاء الطلب. خرجت السلة من قائمة الاتصالات.",
+
+      fichierRequis: "اختاري ملفًا.",
+      fichierTropLourd: "الملف ثقيل جدًا (60 ميغابايت كحدّ أقصى).",
+      formatRefuse:
+        "صيغة مرفوضة. صور JPEG أو PNG أو WebP أو AVIF، أو فيديو MP4 أو WebM فقط.",
+      televersementLocal: "الرفع المحلي لا يعمل في الإنتاج. اضبطي Supabase Storage.",
+      fichierTeleverse: "تمّ رفع الملف.",
+      fichierEnregistre: "تمّ حفظ الملف.",
+
+      baseDejaAmorcee:
+        "قاعدة البيانات تحتوي على بيانات كتالوج. أفرغي الجداول قبل إعادة التهيئة.",
+      baseAmorcee:
+        "تمّت تهيئة القاعدة: {types} أنواع، {gammes} مجموعات، {produits} منتجات، {formats} صيغ.",
+
+      identifiantsRequis: "البريد وكلمة المرور مطلوبان.",
+      identifiantsInvalides: "البريد أو كلمة المرور غير صحيحة.",
+      tropDeTentatives: "محاولات كثيرة مؤخرًا. أعيدي المحاولة بعد دقائق.",
+      authNonConfiguree:
+        "Supabase غير مضبوط: أدخلي NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_ANON_KEY عند المستضيف، ثم أعيدي النشر.",
+      adminsTableAbsente:
+        "جدول `admins` غير موجود بعد. نفّذي supabase/schema.sql في Supabase، ثم أضيفي هذا البريد إليه.",
+      adminsPasDeCle:
+        "SUPABASE_SERVICE_ROLE_KEY غائب عن النشر: يتعذّر التحقّق من الصلاحيات. أدخليه عند المستضيف ثم أعيدي النشر.",
+      adminsInconnue:
+        "الحساب موجود لكن لا يملك حقّ الإدارة. أضيفي {email} إلى جدول `admins` في Supabase.",
+    },
+
     campagne: {
       eyebrow: "الإعلان",
       titre: "صفحة الحملة",

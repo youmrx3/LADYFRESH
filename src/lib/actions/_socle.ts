@@ -6,6 +6,8 @@ import { isAdmin } from "../auth";
 import { ETIQUETTE_CATALOGUE } from "../data";
 import { supabaseAdmin } from "../supabase";
 import { isLocale, type Locale } from "@/i18n/config";
+import { getT } from "@/i18n/server";
+import type { Dictionary } from "@/i18n";
 
 /**
  * Le socle commun aux actions du back-office.
@@ -114,14 +116,28 @@ export async function lireLigne(
   return (data as Record<string, unknown> | null) ?? undefined;
 }
 
+/**
+ * Les messages que les actions rendent à l'écran, dans la langue du site.
+ *
+ * Ils étaient écrits en dur, en français, alors que tout le reste du
+ * back-office est traduit : une gestionnaire travaillant en arabe lisait ses
+ * menus, ses libellés et ses aides en arabe, puis « Coffret enregistré. » en
+ * français à chaque geste. À moitié traduit est pire que pas traduit.
+ *
+ * La lecture ne coûte rien : `getSettings()` est mémorisée par requête, et une
+ * action n'en est qu'une.
+ */
+export type Messages = Dictionary["admin"]["messages"];
+
+export async function messages(): Promise<Messages> {
+  return (await getT()).t.admin.messages;
+}
+
 export async function garde() {
-  if (!(await isAdmin())) throw new Error("Session expirée.");
+  const m = await messages();
+  if (!(await isAdmin())) throw new Error(m.sessionExpiree);
   const db = supabaseAdmin();
-  if (!db) {
-    throw new Error(
-      "Base de données non connectée : renseignez NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
-    );
-  }
+  if (!db) throw new Error(m.baseAbsente);
   return db;
 }
 
@@ -138,34 +154,31 @@ export function rafraichir() {
   seule l'écriture emploie la clé de service. On traduit donc le message en
   quelque chose d'actionnable.
 */
-function messageLisible(brut: string) {
+function messageLisible(brut: string, m: Messages) {
   /*
     Postgres refuse de supprimer une ligne encore référencée, et le dit dans sa
     langue : « violates foreign key constraint products_type_id_fkey ». Ça ne
     s'agit pas depuis un back-office. On nomme ce qui bloque.
   */
   if (/foreign key constraint/i.test(brut)) {
-    if (/products_type_id_fkey/i.test(brut)) {
-      return "Ce type est encore utilisé par des produits. Changez leur type, ou supprimez ces produits d'abord.";
-    }
-    return "Cet élément est encore utilisé ailleurs. Détachez-le d'abord de ce qui s'y rapporte.";
+    if (/products_type_id_fkey/i.test(brut)) return m.typeUtilise;
+    return m.encoreUtilise;
   }
 
-  if (/invalid api key|jw[st]|invalid.*token/i.test(brut)) {
-    return "La base refuse la clé de service. Vérifiez SUPABASE_SERVICE_ROLE_KEY chez l'hébergeur — collée en entier, sans espace ni retour à la ligne — puis redéployez : une variable modifiée ne s'applique qu'au déploiement suivant.";
-  }
+  if (/invalid api key|jw[st]|invalid.*token/i.test(brut)) return m.cleRefusee;
   return brut;
 }
 
 export async function tenter(action: () => Promise<string>): Promise<Retour> {
+  const m = await messages();
   try {
     const ok = await action();
     rafraichir();
     return { ok };
   } catch (error) {
-    const brut = error instanceof Error ? error.message : "Échec.";
+    const brut = error instanceof Error ? error.message : m.echec;
     // Trace complète côté serveur ; message compréhensible côté écran.
     console.error("[admin] action refusée —", brut);
-    return { error: messageLisible(brut) };
+    return { error: messageLisible(brut, m) };
   }
 }

@@ -285,6 +285,112 @@ export const fr = {
     baseAbsenteAide:
       "Exécutez supabase/schema.sql puis renseignez les clés Supabase dans .env.local, ou dans les variables d'environnement de l'hébergeur suivies d'un « Redeploy ». Le site affiche en attendant le catalogue de référence.",
 
+    /*
+      Ce que les actions du back-office répondent à l'écran.
+
+      Elles rendaient jusqu'ici des chaînes françaises écrites en dur, alors que
+      tout le reste de cet espace est traduit : une gestionnaire qui travaille en
+      arabe lisait ses menus, ses libellés et ses aides en arabe, puis « Coffret
+      enregistré. » en français à chaque geste. À moitié traduit est pire que pas
+      traduit du tout.
+    */
+    messages: {
+      sessionExpiree: "Session expirée.",
+      echec: "Échec.",
+      baseAbsente:
+        "Base de données non connectée : renseignez NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.",
+      baseNonConnectee: "Base non connectée.",
+      cleRefusee:
+        "La base refuse la clé de service. Vérifiez SUPABASE_SERVICE_ROLE_KEY chez l'hébergeur — collée en entier, sans espace ni retour à la ligne — puis redéployez : une variable modifiée ne s'applique qu'au déploiement suivant.",
+      typeUtilise:
+        "Ce type est encore utilisé par des produits. Changez leur type, ou supprimez ces produits d'abord.",
+      typeUtiliseN:
+        "Ce type est encore utilisé par {n} produit(s). Changez leur type avant de le supprimer.",
+      encoreUtilise:
+        "Cet élément est encore utilisé ailleurs. Détachez-le d'abord de ce qui s'y rapporte.",
+
+      slugRequis: "Le slug est requis.",
+      nomRequis: "Le nom est requis.",
+      nomEtSlugRequis: "Nom et slug requis.",
+      choisirType: "Choisissez un type de produit.",
+      choisirGamme: "Choisissez une gamme.",
+      choisirProduit: "Choisissez un produit.",
+      formatRequis: "Le format est requis.",
+      prixPositif: "Le prix de vente doit être supérieur à zéro.",
+      prixCoffretPositif: "Le prix du coffret doit être supérieur à zéro.",
+      prixBarreSuperieur: "Le prix barré doit être supérieur au prix de vente.",
+      imageRequise: "Une image est requise.",
+      videoRequise: "Le fichier vidéo est requis.",
+
+      typeCree: "Type créé.",
+      typeEnregistre: "Type enregistré.",
+      typeSupprime: "Type supprimé.",
+      gammeCreee: "Gamme créée.",
+      gammeEnregistree: "Gamme enregistrée.",
+      gammeSupprimee: "Gamme supprimée.",
+      produitCree: "Produit créé.",
+      produitEnregistre: "Produit enregistré.",
+      produitSupprime: "Produit supprimé.",
+      formatAjoute: "Format ajouté.",
+      formatEnregistre: "Format enregistré.",
+      formatSupprime: "Format supprimé.",
+      coffretCree: "Coffret créé.",
+      coffretEnregistre: "Coffret enregistré.",
+      coffretSupprime: "Coffret supprimé.",
+      visuelAjoute: "Visuel ajouté.",
+      visuelEnregistre: "Visuel enregistré.",
+      visuelSupprime: "Visuel supprimé.",
+      videoAjoutee: "Vidéo ajoutée.",
+      videoEnregistree: "Vidéo enregistrée.",
+      videoSupprimee: "Vidéo supprimée.",
+      reglagesEnregistres: "Réglages enregistrés.",
+      campagneEnregistree: "Page de campagne enregistrée.",
+      livraisonEnregistree: "Grille de livraison enregistrée.",
+
+      langueInconnue: "Langue inconnue.",
+      langueEnregistree: "Langue du site mise à jour.",
+      langueNonEnregistree:
+        "Langue non enregistrée : base absente et disque en lecture seule.",
+
+      statutInconnu: "Statut inconnu.",
+      statutEnregistre: "Statut mis à jour.",
+      commandeSupprimee: "Commande supprimée.",
+      pisteIntrouvable: "Piste introuvable.",
+      pisteSupprimee: "Piste supprimée.",
+      panierVide: "Le panier est vide.",
+      coordonneesRequises: "Nom, téléphone et wilaya sont nécessaires.",
+      choisirLivraison: "Choisissez un mode de livraison.",
+      wilayaSansTarif: "Pas de tarif de livraison pour cette wilaya.",
+      commandeCreee: "Commande créée. La piste sort de la liste d'appels.",
+
+      fichierRequis: "Choisissez un fichier.",
+      fichierTropLourd: "Fichier trop lourd (60 Mo maximum).",
+      formatRefuse:
+        "Format refusé. Images JPEG, PNG, WebP, AVIF ou vidéos MP4, WebM uniquement.",
+      televersementLocal:
+        "Le téléversement local ne fonctionne pas en production. Configurez Supabase Storage.",
+      fichierTeleverse: "Fichier téléversé.",
+      fichierEnregistre: "Fichier enregistré.",
+
+      baseDejaAmorcee:
+        "La base contient déjà des données de catalogue. Videz les tables avant de réamorcer.",
+      baseAmorcee:
+        "Base amorcée : {types} types, {gammes} gammes, {produits} produits, {formats} formats.",
+
+      identifiantsRequis: "Adresse et mot de passe requis.",
+      identifiantsInvalides: "Adresse ou mot de passe incorrect.",
+      tropDeTentatives:
+        "Trop de tentatives récentes. Réessayez dans quelques minutes.",
+      authNonConfiguree:
+        "Supabase n'est pas configuré : renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY chez l'hébergeur, puis redéployez.",
+      adminsTableAbsente:
+        "La table `admins` n'existe pas encore. Exécutez supabase/schema.sql dans Supabase, puis ajoutez-y cette adresse.",
+      adminsPasDeCle:
+        "SUPABASE_SERVICE_ROLE_KEY est absente du déploiement : impossible de vérifier les droits. Renseignez-la chez l'hébergeur puis redéployez.",
+      adminsInconnue:
+        "Le compte existe mais n'a pas accès à la gestion. Ajoutez {email} dans la table `admins` de Supabase.",
+    },
+
     campagne: {
       eyebrow: "Publicité",
       titre: "Page de campagne",

@@ -280,6 +280,104 @@ export const en: Dictionary = {
     baseAbsenteAide:
       "Run supabase/schema.sql then add your Supabase keys to .env.local, or to your host's environment variables followed by a redeploy. Until then the site shows the reference catalogue.",
 
+    /* Ce que les actions du back-office répondent à l'écran. */
+    messages: {
+      sessionExpiree: "Session expired.",
+      echec: "Failed.",
+      baseAbsente:
+        "Database not connected: set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
+      baseNonConnectee: "Database not connected.",
+      cleRefusee:
+        "The database is refusing the service key. Check SUPABASE_SERVICE_ROLE_KEY at your host — pasted in full, with no space or line break — then redeploy: a changed variable only applies to the next deployment.",
+      typeUtilise:
+        "This type is still used by products. Change their type, or delete those products first.",
+      typeUtiliseN:
+        "This type is still used by {n} product(s). Change their type before deleting it.",
+      encoreUtilise:
+        "This item is still used elsewhere. Detach it from what refers to it first.",
+
+      slugRequis: "The slug is required.",
+      nomRequis: "The name is required.",
+      nomEtSlugRequis: "Name and slug are required.",
+      choisirType: "Pick a product type.",
+      choisirGamme: "Pick a range.",
+      choisirProduit: "Pick a product.",
+      formatRequis: "The format is required.",
+      prixPositif: "The selling price must be greater than zero.",
+      prixCoffretPositif: "The bundle price must be greater than zero.",
+      prixBarreSuperieur:
+        "The struck-through price must be higher than the selling price.",
+      imageRequise: "An image is required.",
+      videoRequise: "The video file is required.",
+
+      typeCree: "Type created.",
+      typeEnregistre: "Type saved.",
+      typeSupprime: "Type deleted.",
+      gammeCreee: "Range created.",
+      gammeEnregistree: "Range saved.",
+      gammeSupprimee: "Range deleted.",
+      produitCree: "Product created.",
+      produitEnregistre: "Product saved.",
+      produitSupprime: "Product deleted.",
+      formatAjoute: "Format added.",
+      formatEnregistre: "Format saved.",
+      formatSupprime: "Format deleted.",
+      coffretCree: "Bundle created.",
+      coffretEnregistre: "Bundle saved.",
+      coffretSupprime: "Bundle deleted.",
+      visuelAjoute: "Visual added.",
+      visuelEnregistre: "Visual saved.",
+      visuelSupprime: "Visual deleted.",
+      videoAjoutee: "Video added.",
+      videoEnregistree: "Video saved.",
+      videoSupprimee: "Video deleted.",
+      reglagesEnregistres: "Settings saved.",
+      campagneEnregistree: "Campaign page saved.",
+      livraisonEnregistree: "Delivery grid saved.",
+
+      langueInconnue: "Unknown language.",
+      langueEnregistree: "Site language updated.",
+      langueNonEnregistree:
+        "Language not saved: no database, and the disk is read-only.",
+
+      statutInconnu: "Unknown status.",
+      statutEnregistre: "Status updated.",
+      commandeSupprimee: "Order deleted.",
+      pisteIntrouvable: "Lead not found.",
+      pisteSupprimee: "Lead deleted.",
+      panierVide: "The order is empty.",
+      coordonneesRequises: "Name, phone number and wilaya are required.",
+      choisirLivraison: "Pick a delivery method.",
+      wilayaSansTarif: "No delivery rate for this wilaya.",
+      commandeCreee: "Order created. The lead leaves the call list.",
+
+      fichierRequis: "Pick a file.",
+      fichierTropLourd: "File too large (60 MB maximum).",
+      formatRefuse:
+        "Format refused. JPEG, PNG, WebP, AVIF images or MP4, WebM videos only.",
+      televersementLocal:
+        "Local uploads do not work in production. Configure Supabase Storage.",
+      fichierTeleverse: "File uploaded.",
+      fichierEnregistre: "File saved.",
+
+      baseDejaAmorcee:
+        "The database already holds catalogue data. Empty the tables before seeding again.",
+      baseAmorcee:
+        "Database seeded: {types} types, {gammes} ranges, {produits} products, {formats} formats.",
+
+      identifiantsRequis: "Email and password are required.",
+      identifiantsInvalides: "Wrong email or password.",
+      tropDeTentatives: "Too many recent attempts. Try again in a few minutes.",
+      authNonConfiguree:
+        "Supabase is not configured: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY at your host, then redeploy.",
+      adminsTableAbsente:
+        "The `admins` table does not exist yet. Run supabase/schema.sql in Supabase, then add this address to it.",
+      adminsPasDeCle:
+        "SUPABASE_SERVICE_ROLE_KEY is missing from the deployment: rights cannot be checked. Set it at your host, then redeploy.",
+      adminsInconnue:
+        "The account exists but has no access to management. Add {email} to the `admins` table in Supabase.",
+    },
+
     campagne: {
       eyebrow: "Advertising",
       titre: "Campaign page",

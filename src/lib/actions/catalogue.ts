@@ -1,10 +1,12 @@
 "use server";
 
+import { fill } from "@/i18n";
 import { oublierMedias, oublierRemplacee } from "../media";
 import {
   garde,
   langue,
   lireLigne,
+  messages,
   mot,
   tenter,
   traduits,
@@ -35,6 +37,7 @@ export async function enregistrerType(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const lang = langue(formData);
 
@@ -48,15 +51,15 @@ export async function enregistrerType(
       valeurs.slug = mot(formData, "slug");
       valeurs.sort_order = Number(formData.get("sort_order") ?? 0);
       valeurs.active = formData.get("active") === "on";
-      if (!valeurs.slug) throw new Error("Le slug est requis.");
-      if (!valeurs.name) throw new Error("Le nom est requis.");
+      if (!valeurs.slug) throw new Error(m.slugRequis);
+      if (!valeurs.name) throw new Error(m.nomRequis);
     }
 
     const { error } = id
       ? await db.from("product_types").update(valeurs).eq("id", id)
       : await db.from("product_types").insert(valeurs);
     if (error) throw new Error(error.message);
-    return id ? "Type enregistré." : "Type créé.";
+    return id ? m.typeEnregistre : m.typeCree;
   });
 }
 
@@ -66,6 +69,7 @@ export async function supprimerType(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
 
     // Un type encore porté par des produits ne peut pas partir : on l'explique
@@ -75,13 +79,11 @@ export async function supprimerType(
       .select("id", { count: "exact", head: true })
       .eq("type_id", id);
     if ((count ?? 0) > 0)
-      throw new Error(
-        `Ce type est encore utilisé par ${count} produit(s). Changez leur type avant de le supprimer.`,
-      );
+      throw new Error(fill(m.typeUtiliseN, { n: count ?? 0 }));
 
     const { error } = await db.from("product_types").delete().eq("id", id);
     if (error) throw new Error(error.message);
-    return "Type supprimé.";
+    return m.typeSupprime;
   });
 }
 
@@ -93,6 +95,7 @@ export async function enregistrerGamme(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const lang = langue(formData);
 
@@ -112,7 +115,7 @@ export async function enregistrerGamme(
         sort_order: Number(formData.get("sort_order") ?? 0),
         active: formData.get("active") === "on",
       });
-      if (!valeurs.name || !valeurs.slug) throw new Error("Nom et slug requis.");
+      if (!valeurs.name || !valeurs.slug) throw new Error(m.nomEtSlugRequis);
     }
 
     const { error } = id
@@ -121,7 +124,7 @@ export async function enregistrerGamme(
     if (error) throw new Error(error.message);
     if (lang === "fr")
       await oublierRemplacee(db, actuel?.cover_image as string, valeurs.cover_image as string);
-    return id ? "Gamme enregistrée." : "Gamme créée.";
+    return id ? m.gammeEnregistree : m.gammeCreee;
   });
 }
 
@@ -131,6 +134,7 @@ export async function supprimerGamme(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
 
     /*
@@ -153,7 +157,7 @@ export async function supprimerGamme(
         (p) => [p.image, ...(p.variants ?? []).map((v) => v.image)],
       ),
     ]);
-    return "Gamme supprimée.";
+    return m.gammeSupprimee;
   });
 }
 
@@ -165,6 +169,7 @@ export async function enregistrerProduit(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const valeurs = {
       slug: mot(formData, "slug"),
@@ -177,9 +182,9 @@ export async function enregistrerProduit(
       sort_order: Number(formData.get("sort_order") ?? 0),
       active: formData.get("active") === "on",
     };
-    if (!valeurs.slug) throw new Error("Le slug est requis.");
-    if (!valeurs.type_id) throw new Error("Choisissez un type de produit.");
-    if (!valeurs.gamme_id) throw new Error("Choisissez une gamme.");
+    if (!valeurs.slug) throw new Error(m.slugRequis);
+    if (!valeurs.type_id) throw new Error(m.choisirType);
+    if (!valeurs.gamme_id) throw new Error(m.choisirGamme);
 
     const actuel = await lireLigne(db, "products", id);
     const { error } = id
@@ -187,7 +192,7 @@ export async function enregistrerProduit(
       : await db.from("products").insert(valeurs);
     if (error) throw new Error(error.message);
     await oublierRemplacee(db, actuel?.image as string, valeurs.image);
-    return id ? "Produit enregistré." : "Produit créé.";
+    return id ? m.produitEnregistre : m.produitCree;
   });
 }
 
@@ -197,6 +202,7 @@ export async function supprimerProduit(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
 
     // Les formats partent en cascade : leurs photos aussi doivent partir.
@@ -213,7 +219,7 @@ export async function supprimerProduit(
       actuel?.image as string,
       ...((formats ?? []) as { image: string }[]).map((v) => v.image),
     ]);
-    return "Produit supprimé.";
+    return m.produitSupprime;
   });
 }
 
@@ -223,6 +229,7 @@ export async function enregistrerVariante(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     /* Arrondi à la saisie : le dinar ne se manipule pas en centimes au
        comptoir, et un prix à décimales faisait diverger l'affichage du total
@@ -243,8 +250,8 @@ export async function enregistrerVariante(
       image: mot(formData, "image"),
       active: formData.get("active") === "on",
     };
-    if (!valeurs.product_id) throw new Error("Choisissez un produit.");
-    if (!valeurs.size_label) throw new Error("Le format est requis.");
+    if (!valeurs.product_id) throw new Error(m.choisirProduit);
+    if (!valeurs.size_label) throw new Error(m.formatRequis);
     /*
       Un prix laissé vide vaut `Number("") === 0`, et la contrainte SQL
       (`price_demi_gros >= 0`) accepte zéro : le format partait alors en vitrine
@@ -253,7 +260,7 @@ export async function enregistrerVariante(
 
       Le chemin des coffrets fait ce contrôle depuis toujours ; il manquait ici.
     */
-    if (!(prix > 0)) throw new Error("Le prix de vente doit être supérieur à zéro.");
+    if (!(prix > 0)) throw new Error(m.prixPositif);
 
     const actuel = await lireLigne(db, "product_variants", id);
     const { error } = id
@@ -261,7 +268,7 @@ export async function enregistrerVariante(
       : await db.from("product_variants").insert(valeurs);
     if (error) throw new Error(error.message);
     await oublierRemplacee(db, actuel?.image as string, valeurs.image);
-    return id ? "Format enregistré." : "Format ajouté.";
+    return id ? m.formatEnregistre : m.formatAjoute;
   });
 }
 
@@ -271,6 +278,7 @@ export async function supprimerVariante(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const actuel = await lireLigne(db, "product_variants", id);
 
@@ -278,7 +286,7 @@ export async function supprimerVariante(
     if (error) throw new Error(error.message);
 
     await oublierMedias(db, [actuel?.image as string]);
-    return "Format supprimé.";
+    return m.formatSupprime;
   });
 }
 
@@ -290,6 +298,7 @@ export async function enregistrerPack(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const lang = langue(formData);
 
@@ -309,10 +318,10 @@ export async function enregistrerPack(
       // Arrondis à la saisie, pour la même raison que les formats.
       const prix = Math.round(Number(formData.get("price") ?? 0));
       const barre = Math.round(Number(formData.get("prix_barre") ?? 0));
-      if (!mot(formData, "slug")) throw new Error("Le slug est requis.");
-      if (!(prix > 0)) throw new Error("Le prix du coffret doit être supérieur à zéro.");
+      if (!mot(formData, "slug")) throw new Error(m.slugRequis);
+      if (!(prix > 0)) throw new Error(m.prixCoffretPositif);
       if (barre && barre <= prix)
-        throw new Error("Le prix barré doit être supérieur au prix de vente.");
+        throw new Error(m.prixBarreSuperieur);
       Object.assign(valeurs, {
         slug: mot(formData, "slug"),
         image: mot(formData, "image"),
@@ -359,7 +368,7 @@ export async function enregistrerPack(
 
     if (lang === "fr")
       await oublierRemplacee(db, actuel?.image as string, valeurs.image as string);
-    return id ? "Coffret enregistré." : "Coffret créé.";
+    return id ? m.coffretEnregistre : m.coffretCree;
   });
 }
 
@@ -369,6 +378,7 @@ export async function supprimerPack(
 ): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
     const id = mot(formData, "id");
     const actuel = await lireLigne(db, "packs", id);
 
@@ -377,6 +387,6 @@ export async function supprimerPack(
     if (error) throw new Error(error.message);
 
     await oublierMedias(db, [actuel?.image as string]);
-    return "Coffret supprimé.";
+    return m.coffretSupprime;
   });
 }

@@ -4,7 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { isAdmin } from "../auth";
 import { supabaseAdmin } from "../supabase";
-import type { Retour } from "./_socle";
+import { messages, type Retour } from "./_socle";
 
 /*
   Types acceptés au téléversement, et l'extension qu'on leur impose.
@@ -43,13 +43,10 @@ export async function urlDeTeleversement(
   nom: string,
   type: string,
 ): Promise<{ url?: string; publicUrl?: string; error?: string }> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
 
-  if (!TYPES_AUTORISES.has(type))
-    return {
-      error:
-        "Format refusé. Images JPEG, PNG, WebP, AVIF ou vidéos MP4, WebM uniquement.",
-    };
+  if (!TYPES_AUTORISES.has(type)) return { error: m.formatRefuse };
 
   const db = supabaseAdmin();
   if (!db) return { error: "supabase-absent" };
@@ -88,14 +85,15 @@ export async function televerser(
   _prev: Retour & { url?: string },
   formData: FormData,
 ): Promise<Retour & { url?: string }> {
+  // Hors du `try` : le `catch` en a besoin lui aussi.
+  const m = await messages();
   try {
-    if (!(await isAdmin())) return { error: "Session expirée." };
+    if (!(await isAdmin())) return { error: m.sessionExpiree };
 
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0)
-      return { error: "Choisissez un fichier." };
-    if (file.size > 60 * 1024 * 1024)
-      return { error: "Fichier trop lourd (60 Mo maximum)." };
+      return { error: m.fichierRequis };
+    if (file.size > 60 * 1024 * 1024) return { error: m.fichierTropLourd };
 
     /*
       Liste blanche stricte. Le bucket est public : un SVG ou un HTML servi
@@ -103,11 +101,7 @@ export async function televerser(
       On refuse donc tout ce qui n'est pas une image matricielle ou une vidéo,
       SVG compris.
     */
-    if (!TYPES_AUTORISES.has(file.type))
-      return {
-        error:
-          "Format refusé. Images JPEG, PNG, WebP, AVIF ou vidéos MP4, WebM uniquement.",
-      };
+    if (!TYPES_AUTORISES.has(file.type)) return { error: m.formatRefuse };
 
     const chemin = `${Date.now()}-${nomPropre(file.name, file.type)}`;
 
@@ -120,20 +114,17 @@ export async function televerser(
       });
       if (error) throw new Error(error.message);
       const { data } = db.storage.from("media").getPublicUrl(chemin);
-      return { ok: "Fichier téléversé.", url: data.publicUrl };
+      return { ok: m.fichierTeleverse, url: data.publicUrl };
     }
 
     // Repli local : impossible sur un disque en lecture seule, on le dit.
     if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
-      return {
-        error:
-          "Le téléversement local ne fonctionne pas en production. Configurez Supabase Storage.",
-      };
+      return { error: m.televersementLocal };
     const dossier = join(process.cwd(), "public", "uploads");
     await mkdir(dossier, { recursive: true });
     await writeFile(join(dossier, chemin), Buffer.from(await file.arrayBuffer()));
-    return { ok: "Fichier enregistré.", url: `/uploads/${chemin}` };
+    return { ok: m.fichierEnregistre, url: `/uploads/${chemin}` };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Échec." };
+    return { error: error instanceof Error ? error.message : m.echec };
   }
 }

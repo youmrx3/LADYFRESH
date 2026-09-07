@@ -17,7 +17,7 @@ import { orderRef } from "../format";
 import { fraisLivraison } from "../livraison";
 import { composer, type LigneDemandee } from "../panier";
 import { WILAYAS } from "../wilayas";
-import { mot, tenter, type Retour } from "./_socle";
+import { messages, mot, tenter, type Retour } from "./_socle";
 import { STATUTS_ACTIFS, type OrderStatus, type TarifLivraison } from "../types";
 
 // ----------------------------------------------------------------- commandes
@@ -26,7 +26,8 @@ export async function changerStatutCommande(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
   const id = mot(formData, "id");
   const status = mot(formData, "status");
 
@@ -36,11 +37,11 @@ export async function changerStatutCommande(
     une erreur de type énuméré, illisible à l'écran ; on la refuse ici.
   */
   if (!STATUTS_ACTIFS.includes(status as (typeof STATUTS_ACTIFS)[number]))
-    return { error: "Statut inconnu." };
+    return { error: m.statutInconnu };
 
   return tenter(async () => {
     await setOrderStatus(id, status as OrderStatus);
-    return "Statut mis à jour.";
+    return m.statutEnregistre;
   });
 }
 
@@ -58,11 +59,12 @@ export async function enregistrerLivraison(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
 
   return tenter(async () => {
     const db = supabaseAdmin();
-    if (!db) throw new Error("Base non connectée.");
+    if (!db) throw new Error(m.baseNonConnectee);
 
     /*
       « Vide » et « zéro » ne veulent pas dire la même chose.
@@ -102,7 +104,7 @@ export async function enregistrerLivraison(
     });
     if (error) throw new Error(error.message);
 
-    return "Grille de livraison enregistrée.";
+    return m.livraisonEnregistree;
   });
 }
 
@@ -110,11 +112,12 @@ export async function supprimerCommande(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
   const id = mot(formData, "id");
   return tenter(async () => {
     await deleteOrder(id);
-    return "Commande supprimée.";
+    return m.commandeSupprimee;
   });
 }
 
@@ -128,7 +131,8 @@ export async function supprimerCommande(
  * diagnostic nomme la variable en cause ou recopie le refus du service.
  */
 export async function testerEmail(_prev: Retour, _formData: FormData): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
   const { ok, detail } = await envoyerEmailTest();
   return ok ? { ok: detail } : { error: detail };
 }
@@ -144,19 +148,20 @@ export async function changerStatutPiste(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
   const id = mot(formData, "id");
   const statut = mot(formData, "status");
   const permis = ["ouverte", "rappelee", "convertie"] as const;
   if (!permis.includes(statut as (typeof permis)[number]))
-    return { error: "Statut inconnu." };
+    return { error: m.statutInconnu };
 
   try {
     await setProspectStatus(id, statut as (typeof permis)[number]);
     revalidatePath("/admin/pistes");
-    return { ok: "Statut enregistré." };
+    return { ok: m.statutEnregistre };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Échec." };
+    return { error: error instanceof Error ? error.message : m.echec };
   }
 }
 
@@ -176,12 +181,13 @@ export async function commanderDepuisPiste(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
 
   return tenter(async () => {
     const id = mot(formData, "id");
     const piste = await getProspect(id);
-    if (!piste) throw new Error("Piste introuvable.");
+    if (!piste) throw new Error(m.pisteIntrouvable);
 
     /*
       Les quantités arrivent sous `qte_<nature>_<identifiant>` : le formulaire
@@ -210,23 +216,21 @@ export async function commanderDepuisPiste(
         quantity,
       });
     }
-    if (lignes.length === 0) throw new Error("Le panier est vide.");
+    if (lignes.length === 0) throw new Error(m.panierVide);
 
     const nom = mot(formData, "customer_name");
     const tel = mot(formData, "phone") || piste.phone;
     const wilaya = mot(formData, "wilaya") || piste.wilaya;
     if (!nom || !tel || !wilaya)
-      throw new Error("Nom, téléphone et wilaya sont nécessaires.");
+      throw new Error(m.coordonneesRequises);
 
     const { panier } = await composer(lignes, 1);
-    if (panier.items.length === 0) throw new Error("Le panier est vide.");
+    if (panier.items.length === 0) throw new Error(m.panierVide);
 
     const frais = await fraisLivraison(wilaya, mot(formData, "livraison_mode"));
     if (!frais.ok)
       throw new Error(
-        frais.raison === "mode"
-          ? "Choisissez un mode de livraison."
-          : "Pas de tarif de livraison pour cette wilaya.",
+        frais.raison === "mode" ? m.choisirLivraison : m.wilayaSansTarif,
       );
 
     await createOrder({
@@ -252,7 +256,7 @@ export async function commanderDepuisPiste(
     await setProspectStatus(id, "convertie");
     revalidatePath("/admin");
     revalidatePath("/admin/pistes");
-    return "Commande créée. La piste sort de la liste d'appels.";
+    return m.commandeCreee;
   });
 }
 
@@ -260,12 +264,13 @@ export async function supprimerPiste(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!(await isAdmin())) return { error: "Session expirée." };
+  const m = await messages();
+  if (!(await isAdmin())) return { error: m.sessionExpiree };
   try {
     await deleteProspect(mot(formData, "id"));
     revalidatePath("/admin/pistes");
-    return { ok: "Piste supprimée." };
+    return { ok: m.pisteSupprimee };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Échec." };
+    return { error: error instanceof Error ? error.message : m.echec };
   }
 }

@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import { authConfiguree, clientAuth, verdictAdmin } from "../auth";
 import { limiteDepassee } from "../limite";
-import { mot, type Retour } from "./_socle";
+import { fill } from "@/i18n";
+import { messages, mot, type Retour } from "./_socle";
 
 // ----------------------------------------------------------------- connexion
 
@@ -11,16 +12,12 @@ export async function seConnecter(
   _prev: Retour,
   formData: FormData,
 ): Promise<Retour> {
-  if (!authConfiguree) {
-    return {
-      error:
-        "Supabase n'est pas configuré : renseignez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY chez l'hébergeur, puis redéployez.",
-    };
-  }
+  const m = await messages();
+  if (!authConfiguree) return { error: m.authNonConfiguree };
 
   const email = mot(formData, "email").toLowerCase();
   const password = mot(formData, "password");
-  if (!email || !password) return { error: "Adresse et mot de passe requis." };
+  if (!email || !password) return { error: m.identifiantsRequis };
 
   /*
     Bridage global des échecs, pas par IP.
@@ -32,7 +29,7 @@ export async function seConnecter(
     ne peut plus parcourir un dictionnaire. Les réussites ne comptent pas.
   */
   if (limiteDepassee("login:echecs", 30, 15 * 60 * 1000)) {
-    return { error: "Trop de tentatives récentes. Réessayez dans quelques minutes." };
+    return { error: m.tropDeTentatives };
   }
 
   const supabase = await clientAuth();
@@ -45,7 +42,7 @@ export async function seConnecter(
       passe faux : distinguer les deux dirait à un inconnu quelles adresses
       existent.
     */
-    return { error: "Adresse ou mot de passe incorrect." };
+    return { error: m.identifiantsInvalides };
   }
 
   /*
@@ -56,11 +53,9 @@ export async function seConnecter(
   if (!verdict.autorisee) {
     await supabase.auth.signOut();
     const motifs = {
-      "table-absente":
-        "La table `admins` n'existe pas encore. Exécutez supabase/schema.sql dans Supabase, puis ajoutez-y cette adresse.",
-      "pas-de-cle":
-        "SUPABASE_SERVICE_ROLE_KEY est absente du déploiement : impossible de vérifier les droits. Renseignez-la chez l'hébergeur puis redéployez.",
-      inconnue: `Le compte existe mais n'a pas accès à la gestion. Ajoutez ${email} dans la table \`admins\` de Supabase.`,
+      "table-absente": m.adminsTableAbsente,
+      "pas-de-cle": m.adminsPasDeCle,
+      inconnue: fill(m.adminsInconnue, { email }),
     } as const;
     return { error: motifs[verdict.raison] };
   }

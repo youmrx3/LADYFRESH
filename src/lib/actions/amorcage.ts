@@ -8,7 +8,8 @@ import {
   SETTINGS,
   VIDEOS,
 } from "../catalog";
-import { garde, tenter, type Retour } from "./_socle";
+import { fill } from "@/i18n";
+import { garde, messages, tenter, type Retour } from "./_socle";
 
 // ------------------------------------------------------------------ amorçage
 
@@ -16,6 +17,7 @@ import { garde, tenter, type Retour } from "./_socle";
 export async function amorcerBase(): Promise<Retour> {
   return tenter(async () => {
     const db = await garde();
+    const m = await messages();
 
     /*
       Le contrôle portait sur les gammes, alors que la première écriture porte
@@ -26,9 +28,7 @@ export async function amorcerBase(): Promise<Retour> {
     for (const table of ["product_types", "gammes"] as const) {
       const { count } = await db.from(table).select("id", { count: "exact", head: true });
       if ((count ?? 0) > 0)
-        throw new Error(
-          "La base contient déjà des données de catalogue. Videz les tables avant de réamorcer.",
-        );
+        throw new Error(m.baseDejaAmorcee);
     }
 
     const { data: types, error: e0 } = await db
@@ -107,6 +107,11 @@ export async function amorcerBase(): Promise<Retour> {
       .upsert({ id: "settings", ...reglages });
     if (e6) throw new Error(e6.message);
 
-    return `Base amorcée : ${PRODUCT_TYPES.length} types, ${GAMMES.length} gammes, ${PRODUCTS.length} produits, ${variantes.length} formats.`;
+    return fill(m.baseAmorcee, {
+      types: PRODUCT_TYPES.length,
+      gammes: GAMMES.length,
+      produits: PRODUCTS.length,
+      formats: variantes.length,
+    });
   });
 }
