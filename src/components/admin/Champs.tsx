@@ -187,6 +187,7 @@ export function Zone({
   rows = 3,
   dir,
   aide,
+  placeholder,
   className,
 }: {
   label: string;
@@ -195,6 +196,9 @@ export function Zone({
   rows?: number;
   dir?: "ltr" | "rtl";
   aide?: string;
+  /* Sert de repli visible : le texte français d'origine, sous un champ de
+     traduction encore vide. Il renseigne sans jamais s'enregistrer. */
+  placeholder?: string;
   className?: string;
 }) {
   const id = useId();
@@ -205,6 +209,7 @@ export function Zone({
         name={name}
         rows={rows}
         dir={dir}
+        placeholder={placeholder}
         defaultValue={defaultValue ?? ""}
         className="adm-champ"
       />

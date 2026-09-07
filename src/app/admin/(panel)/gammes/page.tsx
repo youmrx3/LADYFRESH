@@ -19,7 +19,7 @@ import {
 import { enregistrerGamme, supprimerGamme } from "@/lib/actions";
 import { getGammesAdmin, getProductsAdmin } from "@/lib/data";
 import { fill } from "@/i18n";
-import { champ } from "@/i18n/contenu";
+import { champ, traduction } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 import type { Gamme } from "@/lib/types";
@@ -181,13 +181,15 @@ function ChampsGamme({
           label={a.gammes.surtitre}
           name="tagline"
           dir={dir}
-          defaultValue={gamme ? champ(gamme, "tagline", langue) : ""}
+          defaultValue={gamme ? traduction(gamme, "tagline", langue) : ""}
+          placeholder={langue === "fr" || !gamme ? undefined : champ(gamme, "tagline", "fr")}
         />
         <Zone
           label={a.commun.description}
           name="description"
           dir={dir}
-          defaultValue={gamme ? champ(gamme, "description", langue) : ""}
+          defaultValue={gamme ? traduction(gamme, "description", langue) : ""}
+          placeholder={langue === "fr" || !gamme ? undefined : champ(gamme, "description", "fr")}
           rows={2}
         />
       </div>

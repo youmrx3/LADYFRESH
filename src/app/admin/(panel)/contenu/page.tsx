@@ -30,7 +30,7 @@ import {
   getVideos,
 } from "@/lib/data";
 import { fill } from "@/i18n";
-import { champ } from "@/i18n/contenu";
+import { champ, traduction } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, LOCALES, LOCALE_LABEL, type Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 
@@ -192,20 +192,23 @@ export default async function Contenu({
                 label={a.contenu.surtitre}
                 name="hero_eyebrow"
                 dir={dir}
-                defaultValue={champ(settings, "hero_eyebrow", langue)}
+                defaultValue={traduction(settings, "hero_eyebrow", langue)}
+              placeholder={fr ? undefined : champ(settings, "hero_eyebrow", "fr")}
               />
               <Zone
                 label={a.contenu.titreHero}
                 name="hero_title"
                 dir={dir}
-                defaultValue={champ(settings, "hero_title", langue)}
+                defaultValue={traduction(settings, "hero_title", langue)}
+              placeholder={fr ? undefined : champ(settings, "hero_title", "fr")}
                 rows={2}
               />
               <Zone
                 label={a.contenu.accroche}
                 name="hero_lede"
                 dir={dir}
-                defaultValue={champ(settings, "hero_lede", langue)}
+                defaultValue={traduction(settings, "hero_lede", langue)}
+              placeholder={fr ? undefined : champ(settings, "hero_lede", "fr")}
                 rows={2}
               />
             </Groupe>
@@ -310,13 +313,15 @@ export default async function Contenu({
                       label={a.contenu.surtitre}
                       name="eyebrow"
                       dir={dir}
-                      defaultValue={champ(slide, "eyebrow", langue)}
+                      defaultValue={traduction(slide, "eyebrow", langue)}
+              placeholder={fr ? undefined : champ(slide, "eyebrow", "fr")}
                     />
                     <Champ
                       label={a.contenu.legende}
                       name="caption"
                       dir={dir}
-                      defaultValue={champ(slide, "caption", langue)}
+                      defaultValue={traduction(slide, "caption", langue)}
+              placeholder={fr ? undefined : champ(slide, "caption", "fr")}
                     />
                     {fr && (
                       <>
@@ -438,13 +443,15 @@ export default async function Contenu({
                       label={a.commun.titreChamp}
                       name="title"
                       dir={dir}
-                      defaultValue={champ(video, "title", langue)}
+                      defaultValue={traduction(video, "title", langue)}
+              placeholder={fr ? undefined : champ(video, "title", "fr")}
                     />
                     <Champ
                       label={a.contenu.sousTitre}
                       name="note"
                       dir={dir}
-                      defaultValue={champ(video, "note", langue)}
+                      defaultValue={traduction(video, "note", langue)}
+              placeholder={fr ? undefined : champ(video, "note", "fr")}
                     />
                     {fr && (
                       <Champ

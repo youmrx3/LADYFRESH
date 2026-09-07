@@ -21,6 +21,30 @@ export function champ<T extends Record<string, unknown>>(
   return typeof fr === "string" ? fr : "";
 }
 
+/**
+ * La traduction seule, sans repli — pour les formulaires du back-office.
+ *
+ * `champ()` retombe sur le français quand la traduction manque, ce qui est
+ * juste sur la vitrine et faux dans un formulaire : l'onglet « Arabe » arrivait
+ * prérempli de français, on ne pouvait plus distinguer « pas encore traduit »
+ * de « traduit », et le moindre enregistrement recopiait le français dans la
+ * colonne arabe. Une fois cela fait, le repli ne joue plus jamais : la page en
+ * arabe affiche du français pour toujours, et rien ne le signale.
+ *
+ * Ici, vide veut dire vide. Le texte français se met en indication de saisie,
+ * là où il renseigne sans jamais s'enregistrer.
+ */
+export function traduction<T extends Record<string, unknown>>(
+  row: T | undefined | null,
+  base: Extract<keyof T, string>,
+  locale: Locale,
+): string {
+  if (!row) return "";
+  const cle = (locale === "fr" ? base : `${base}_${locale}`) as keyof T;
+  const v = row[cle];
+  return typeof v === "string" ? v : "";
+}
+
 /** Nom du colonne d'une langue donnée : `description` ou `description_ar`. */
 export function colonne(base: string, locale: Locale) {
   return locale === "fr" ? base : `${base}_${locale}`;

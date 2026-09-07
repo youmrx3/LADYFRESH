@@ -1,20 +1,25 @@
 import Image from "next/image";
 import { champ } from "@/i18n/contenu";
 import { getT } from "@/i18n/server";
-import { da } from "@/lib/format";
 import type { Pack, SiteSettings } from "@/lib/types";
 
 /**
  * L'ouverture de la page de campagne.
  *
  * Elle se juge au pouce, sur un écran de six pouces, dans les deux secondes
- * qui suivent un clic payé. Trois choses doivent donc être lues avant tout
- * défilement : ce qu'on vend, à partir de quel prix, et où appuyer.
+ * qui suivent un clic payé. Deux choses doivent donc être lues avant tout
+ * défilement : ce qu'on vend, et où appuyer.
+ *
+ * Le prix n'y figure plus. « À partir de » annonce un plancher là où la page
+ * vend un assortiment : la cliente lisait le plus petit chiffre du catalogue
+ * avant d'avoir vu un seul coffret. Chaque coffret porte le sien, deux écrans
+ * plus bas, en face de ce qu'il contient.
  *
  * Ni carrousel ni vidéo de fond — les deux coûtent du réseau sur une 4G et
  * retardent exactement ce qu'on vient chercher. La mise en scène tient à trois
- * gestes : un cadre doré décalé derrière la photo, une seconde ligne de titre
- * en or, et un chiffre de prix assez gros pour se lire de loin.
+ * gestes qui ne pèsent rien : un cadre doré décalé derrière la photo, une
+ * seconde ligne de titre en or, et un plan qui se resserre lentement sur la
+ * photo, traversé d'un reflet.
  *
  * Tout le texte vient des réglages : une campagne s'ajuste entre deux
  * publicités, et une retouche qui exige un déploiement n'a jamais lieu.
@@ -44,7 +49,6 @@ export async function HeroCampagne({
      qu'une campagne lancée sans image ne s'ouvre pas sur un trou. */
   const visuel =
     settings.camp_image || packs.find((p) => p.image)?.image || "";
-  const depuis = packs.length ? Math.min(...packs.map((p) => p.price)) : 0;
 
   return (
     <section
@@ -86,7 +90,7 @@ export async function HeroCampagne({
               style={{ borderColor: "color-mix(in srgb, var(--or-plein) 55%, transparent)" }}
             />
             <div
-              className="relative aspect-[4/5] overflow-hidden rounded-[16px] sm:aspect-[5/4] lg:aspect-[4/5]"
+              className="photo-vive relative aspect-[4/5] overflow-hidden rounded-[16px] sm:aspect-[5/4] lg:aspect-[4/5]"
               style={{
                 background: "color-mix(in srgb, var(--or-plein) 10%, transparent)",
               }}
@@ -100,25 +104,6 @@ export async function HeroCampagne({
                 className="object-cover"
               />
 
-              {depuis > 0 && (
-                <span
-                  className="absolute bottom-0 end-0 flex flex-col items-end px-4 py-3 text-end"
-                  style={{
-                    background:
-                      "linear-gradient(to top left, rgba(11,11,12,0.9), transparent 85%)",
-                  }}
-                >
-                  <span className="eyebrow text-[9.5px] text-craie">
-                    {t.hero.aPartirDe}
-                  </span>
-                  <span
-                    className="data text-[1.6rem] leading-none"
-                    style={{ color: "var(--or-plein)" }}
-                  >
-                    {da(depuis, t.unites.devise)}
-                  </span>
-                </span>
-              )}
             </div>
           </div>
         </div>

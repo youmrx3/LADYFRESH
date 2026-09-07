@@ -19,7 +19,7 @@ import { enregistrerPack, supprimerPack } from "@/lib/actions";
 import { getPacksAdmin, getProductsAdmin, getProductTypes } from "@/lib/data";
 import { da } from "@/lib/format";
 import { fill } from "@/i18n";
-import { champ, nomTypeCourt } from "@/i18n/contenu";
+import { champ, nomTypeCourt, traduction } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 import type { Pack } from "@/lib/types";
@@ -181,14 +181,20 @@ function ChampsPack({
           label={t.admin.commun.nom}
           name="name"
           dir={dir}
-          defaultValue={pack ? champ(pack, "name", langue) : ""}
+          defaultValue={pack ? traduction(pack, "name", langue) : ""}
+          placeholder={
+            langue === "fr" || !pack ? undefined : champ(pack, "name", "fr")
+          }
           required={langue === "fr"}
         />
         <Champ
           label={a.accroche}
           name="tagline"
           dir={dir}
-          defaultValue={pack ? champ(pack, "tagline", langue) : ""}
+          defaultValue={pack ? traduction(pack, "tagline", langue) : ""}
+          placeholder={
+            langue === "fr" || !pack ? undefined : champ(pack, "tagline", "fr")
+          }
         />
       </div>
 
@@ -197,7 +203,10 @@ function ChampsPack({
           label={t.admin.commun.description}
           name="description"
           dir={dir}
-          defaultValue={pack ? champ(pack, "description", langue) : ""}
+          defaultValue={pack ? traduction(pack, "description", langue) : ""}
+          placeholder={
+            langue === "fr" || !pack ? undefined : champ(pack, "description", "fr")
+          }
           rows={2}
         />
       </div>

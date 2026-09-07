@@ -11,7 +11,7 @@ import { OngletsLangue } from "@/components/admin/OngletsLangue";
 import { EnTetePage, PiedFormulaire } from "@/components/admin/Volet";
 import { enregistrerCampagne } from "@/lib/actions";
 import { getPacks, getSettings } from "@/lib/data";
-import { champ } from "@/i18n/contenu";
+import { champ, traduction } from "@/i18n/contenu";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 
@@ -94,7 +94,8 @@ export default async function Campagne({
             label={a.bandeau}
             name="camp_bandeau"
             dir={dir}
-            defaultValue={champ(settings, "camp_bandeau", langue)}
+            defaultValue={traduction(settings, "camp_bandeau", langue)}
+              placeholder={fr ? undefined : champ(settings, "camp_bandeau", "fr")}
           />
           {fr && (
             <div className="mt-3">
@@ -117,13 +118,15 @@ export default async function Campagne({
               label={a.surtitre}
               name="camp_eyebrow"
               dir={dir}
-              defaultValue={champ(settings, "camp_eyebrow", langue)}
+              defaultValue={traduction(settings, "camp_eyebrow", langue)}
+              placeholder={fr ? undefined : champ(settings, "camp_eyebrow", "fr")}
             />
             <Champ
               label={a.bouton}
               name="camp_cta"
               dir={dir}
-              defaultValue={champ(settings, "camp_cta", langue)}
+              defaultValue={traduction(settings, "camp_cta", langue)}
+              placeholder={fr ? undefined : champ(settings, "camp_cta", "fr")}
             />
           </div>
 
@@ -133,7 +136,8 @@ export default async function Campagne({
               name="camp_titre"
               dir={dir}
               rows={2}
-              defaultValue={champ(settings, "camp_titre", langue)}
+              defaultValue={traduction(settings, "camp_titre", langue)}
+              placeholder={fr ? undefined : champ(settings, "camp_titre", "fr")}
             />
             <p className="mt-1 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.titreAide}</p>
           </div>
@@ -144,7 +148,8 @@ export default async function Campagne({
               name="camp_lede"
               dir={dir}
               rows={3}
-              defaultValue={champ(settings, "camp_lede", langue)}
+              defaultValue={traduction(settings, "camp_lede", langue)}
+              placeholder={fr ? undefined : champ(settings, "camp_lede", "fr")}
             />
           </div>
 
@@ -153,8 +158,12 @@ export default async function Campagne({
               label={a.gages}
               name="camp_gages"
               dir={dir}
-              defaultValue={champ(settings, "camp_gages", langue)}
-              placeholder="Livraison 58 wilayas|Paiement à la réception|On vous rappelle"
+              defaultValue={traduction(settings, "camp_gages", langue)}
+              placeholder={
+                fr
+                  ? "Livraison 58 wilayas|Paiement à la réception|On vous rappelle"
+                  : champ(settings, "camp_gages", "fr")
+              }
             />
             <p className="mt-1 text-[length:var(--adm-t-sm)] text-[color:var(--adm-muted)]">{a.gagesAide}</p>
           </div>
