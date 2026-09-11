@@ -70,17 +70,21 @@ export function nomTypeCourt(type: ProductType | undefined, locale: Locale) {
 
 
 /**
- * Le contenu d'un coffret, dit dans la langue de la page.
+ * Le contenu d'un coffret, en français quelle que soit la langue de la page.
  *
- * Les lignes d'un coffret portent un libellé figé au moment où on l'a composé,
- * en français : « Brume Brume parfumée ARA — 150 ml ». Sur une page arabe,
- * c'était le dernier bloc à rester en français — et sur la page qui vend.
+ * Les lignes d'un coffret portent un libellé figé au moment où on l'a composé :
+ * « Brume Brume parfumée ARA — 150 ml », avec le type répété dans le nom du
+ * produit. On le reconstruit plutôt que de l'afficher tel quel, pour retirer
+ * cette redondance : le nom d'un produit est « <type> <gamme> », on ôte le
+ * type, il reste la gamme — « ARA », « Sensuel » — et on la recompose avec le
+ * libellé court du type.
  *
- * Il se reconstruit pourtant sans rien ajouter en base. Le nom d'un produit
- * est « <type français> <gamme> », et le type est traduit : en retirant le
- * type du nom, il reste la gamme — « ARA », « Sensuel » — un nom propre qui
- * s'écrit pareil dans les trois langues. Au passage, la redondance disparaît
- * aussi en français.
+ * La recomposition suivait la langue de la page. La propriétaire a tranché
+ * autrement après avoir vu la campagne en arabe : « Brume ARA — 150 ml » est
+ * un nom de produit, il s'écrit en français partout — comme « PACK ARA » juste
+ * au-dessus, et comme le nom d'une gamme, jamais traduit. Sur une page arabe,
+ * tout ce qui parle à la cliente est en arabe ; ce qu'elle achète garde son
+ * nom.
  *
  * Un format supprimé du catalogue n'a plus rien à reconstruire : son libellé
  * figé reste, ce qui vaut mieux qu'une ligne vide.
@@ -89,7 +93,6 @@ export function libellePackItem(
   item: { variant_id: string | null; label: string },
   produits: Product[],
   types: ProductType[],
-  locale: Locale,
 ): string {
   if (!item.variant_id) return item.label;
 
@@ -103,7 +106,7 @@ export function libellePackItem(
 
   const typeFr = champ(type, "name", "fr");
   const gamme = (typeFr ? produit.name.replace(typeFr, "") : produit.name).trim();
-  const court = nomTypeCourt(type, locale);
+  const court = nomTypeCourt(type, "fr");
 
   return [court, gamme || produit.name, variante?.size_label && `— ${variante.size_label}`]
     .filter(Boolean)

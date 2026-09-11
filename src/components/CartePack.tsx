@@ -95,7 +95,7 @@ export function CartePack({ pack }: { pack: Pack }) {
                   ✓
                 </span>
                 <span>
-                  {libellePackItem(i, products, types, locale)}
+                  {libellePackItem(i, products, types)}
                   {i.quantity > 1 && ` × ${i.quantity}`}
                 </span>
               </li>
